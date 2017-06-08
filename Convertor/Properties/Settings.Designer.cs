@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace hjudge_server.Properties
+namespace Convertor.Properties
 {
 
 

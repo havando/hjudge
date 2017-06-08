@@ -1,4 +1,4 @@
-﻿namespace hjudge
+﻿namespace hjudge_server
 {
     public class Msg
     {
