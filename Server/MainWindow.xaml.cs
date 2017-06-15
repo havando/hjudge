@@ -36,7 +36,8 @@ namespace Server
             LoginGrid.Margin = new Thickness(10, 10, 0, 0);
             ContentGrid.Margin = new Thickness(10, 10, 0, 0);
             ContentGrid.Opacity = 0;
-
+            LoginGrid.Visibility = Visibility.Visible;
+            ContentGrid.Visibility = Visibility.Hidden;
             if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
             {
                 Directory.CreateDirectory(Environment.CurrentDirectory + "\\AppData");
@@ -77,6 +78,8 @@ namespace Server
             {
                 UserName.Text = "";
                 Password.Password = "";
+                LoginGrid.Visibility = Visibility.Hidden;
+                ContentGrid.Visibility = Visibility.Visible;
                 DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(1)));
                 DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(1)));
                 DoubleAnimation scratchWidthDaV = new DoubleAnimation(473, 673, new Duration(TimeSpan.FromSeconds(0.5)));
