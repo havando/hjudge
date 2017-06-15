@@ -92,6 +92,7 @@ namespace Server
                 Operations.Items.Add(new Button() { Height = 32, Width = 80, Content = "发送消息" });
                 Operations.Items.Add(new Button() { Height = 32, Width = 80, Content = "选手管理" });
                 Operations.Items.Add(new Button() { Height = 32, Width = 80, Content = "系统设置" });
+                Operations.Items.Add(new Button() { Height = 32, Width = 80, Content = "注销登录" });
                 Operations.Items.Add(new Button() { Height = 32, Width = 80, Content = "退出程序" });
             }
         }
