@@ -28,7 +28,7 @@ namespace Server
                     sqlTable.Append("CREATE TABLE Judge (");
                     sqlTable.Append("Id int identity(1,1) primary key,");
                     sqlTable.Append("UserId int,");
-                    sqlTable.Append("Date datetime2,");
+                    sqlTable.Append("Date ntext,");
                     sqlTable.Append("ProblemId int,");
                     sqlTable.Append("Code ntext,");
                     sqlTable.Append("Result ntext,");
@@ -40,7 +40,7 @@ namespace Server
                     sqlTable.Append("CREATE TABLE User (");
                     sqlTable.Append("UserId int identity(1,1) primary key,");
                     sqlTable.Append("UserName ntext,");
-                    sqlTable.Append("RegisterDate datetime2,");
+                    sqlTable.Append("RegisterDate ntext,");
                     sqlTable.Append("Password ntext,");
                     sqlTable.Append("Type int,");
                     sqlTable.Append("Icon ntext,");
