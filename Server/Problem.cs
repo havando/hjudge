@@ -6,7 +6,7 @@ namespace Server
     {
         public int ProblemId { get; set; }
         public string ProblemName { get; set; }
-        public DateTime AddDate { get; set; }
+        public string AddDate { get; set; }
         public int Level { get; set; }
         public Data[] DataSets { get; set; }
         public int Type { get; set; }

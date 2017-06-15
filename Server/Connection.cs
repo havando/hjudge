@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Server
 {
@@ -50,7 +51,7 @@ namespace Server
                     sqlTable.Append("CREATE TABLE Problem (");
                     sqlTable.Append("ProblemId int identity(1,1) primary key,");
                     sqlTable.Append("ProblemName ntext,");
-                    sqlTable.Append("AddDate datetime2,");
+                    sqlTable.Append("AddDate ntext,");
                     sqlTable.Append("Level int,");
                     sqlTable.Append("DataSets ntext,");
                     sqlTable.Append("Type int,");
@@ -78,7 +79,7 @@ namespace Server
                     };
                     parameters[0].Value = 1;
                     parameters[1].Value = "hjudgeBOSS";
-                    parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
                     parameters[3].Value = "cefb1f85346dfbfa4a341e9c41db918ba25bccc4e62c3939390084361126a417";
                     parameters[4].Value = 1;
                     parameters[5].Value = "";
@@ -109,7 +110,32 @@ namespace Server
 
         public static bool UpdateUserInfo(UserInfo toUpdateInfo)
         {
-            return false;
+            using (SQLiteCommand cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@2", DbType.String),
+                    new SQLiteParameter("@3", DbType.String),
+                    new SQLiteParameter("@4", DbType.Int32)
+                };
+                parameters[0].Value = toUpdateInfo.UserName;
+                parameters[1].Value = toUpdateInfo.Password;
+                parameters[2].Value = toUpdateInfo.Icon;
+                parameters[3].Value = toUpdateInfo.UserId;
+                cmd.Parameters.AddRange(parameters);
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+                
+            }
         }
 
         private static Task<int> TryLogin(string userName, string passwordHash)
@@ -147,6 +173,38 @@ namespace Server
                 }
                 return 2;
             });
+        }
+
+        public static Problem GetProblem(int problemId)
+        {
+            Problem a = new Problem();
+            using (SQLiteCommand cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From Problem Where ProblemId=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String)
+                };
+                parameters[0].Value = problemId;
+                cmd.Parameters.AddRange(parameters);
+                SQLiteDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    a.ProblemName = reader.GetString(1);
+                    a.AddDate = reader.GetString(2);
+                    a.Level = reader.GetInt32(3);
+                    a.DataSets = (Data[]) JsonConvert.DeserializeObject(reader.GetString(4));
+                    a.Type = reader.GetInt32(5);
+                    a.SpecialJudge = reader.GetString(6);
+                    a.ExtraFiles = (string[])JsonConvert.DeserializeObject(reader.GetString(7));
+                    a.InputFileName = reader.GetString(8);
+                    a.OutputFileName = reader.GetString(9);
+                    a.CompileCommand = reader.GetString(10);
+                    return a;
+                }
+                a.ProblemId = 0;
+                return a;
+            }
         }
     }
 }

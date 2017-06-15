@@ -91,6 +91,11 @@ namespace Server
                     }
                     _myInfo.Password = sb.ToString();
                 }
+                else
+                {
+                    MessageBox.Show("两次输入的密码不一致", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
             _myInfo.UserName = UserName.Text;
             if (Connection.UpdateUserInfo(_myInfo))

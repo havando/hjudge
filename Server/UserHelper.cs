@@ -11,10 +11,11 @@ namespace Server
         public int Type { get; set; }
         public string Icon { get; set; }
         public string Achievement { get; set; }
+        public bool? IsChanged { get; set; }
     }
     public static class UserHelper
     {
-        public static UserInfo CurrentUser{ get; private set; }
+        public static UserInfo CurrentUser { get; private set; }
 
         public static void SetCurrentUser(int userId, string userName, string registerDate, string passwordHash, int type,
             string icon, string achievement)
@@ -27,7 +28,8 @@ namespace Server
                 Password = passwordHash,
                 Type = type,
                 Icon = icon,
-                Achievement = achievement
+                Achievement = achievement,
+                IsChanged = true
             };
         }
     }
