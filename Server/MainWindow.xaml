@@ -1,12 +1,34 @@
-﻿<Window x:Class="Server.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
+        x:Class="Server.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="hjudge - Server" Height="328" Width="673" ResizeMode="CanMinimize" Icon="Resources/Server.ico">
     <Grid>
-        
+        <Grid x:Name="LoginGrid" HorizontalAlignment="Left" Height="179" Margin="4,315,0,-195" VerticalAlignment="Top" Width="447">
+            <Label Content="欢迎使用，请登录服务端" HorizontalAlignment="Center" Height="35.234" Margin="10,10,10,0" VerticalAlignment="Top" Width="427.398" FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="用户名：" HorizontalAlignment="Left" Height="25.801" Margin="46.456,58.087,0,0" VerticalAlignment="Top" Width="83.012" HorizontalContentAlignment="Center"/>
+            <Label Content="密码：" HorizontalAlignment="Left" Height="25.801" Margin="46.456,88.888,0,0" VerticalAlignment="Top" Width="83.012" HorizontalContentAlignment="Center"/>
+            <TextBox Name="UserName" HorizontalAlignment="Left" Height="25.801" Margin="129.468,58.087,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="254.647"/>
+            <PasswordBox Name="Password" HorizontalAlignment="Left" Height="25.801" Margin="129.468,88.888,0,0" VerticalAlignment="Top" Width="254.647"/>
+            <Button x:Name="LoginButton" Content="登录" HorizontalAlignment="Left" Height="30.529" Margin="321.295,119.689,0,0" VerticalAlignment="Top" Width="62.82" Click="LoginButton_ClickAsync"/>
+        </Grid>
+        <Grid Name="ContentGrid"  HorizontalAlignment="Left" Height="279" Margin="10,10,0,0" VerticalAlignment="Top" Width="647">
+            <Label Name="Identity" Content="UserName，欢迎回来！当前身份：Identity" HorizontalAlignment="Left" Margin="36,0,0,0" VerticalAlignment="Top"/>
+            <Label Content="当前主机地址：CurrentAddress" Margin="424,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+            <GroupBox Header="动态" HorizontalAlignment="Left" Height="238" Margin="10,31,0,0" VerticalAlignment="Top" Width="482">
+                <Grid HorizontalAlignment="Left" Height="218" VerticalAlignment="Top" Width="472" Margin="0,0,-2,-2">
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="操作" HorizontalAlignment="Left" Height="238" Margin="497,31,0,0" VerticalAlignment="Top" Width="140">
+                <ListBox Name="Operations"  HorizontalAlignment="Left" Height="202" Margin="10,10,0,0" VerticalAlignment="Top" Width="114">
+                </ListBox>
+            </GroupBox>
+            <Image Name="UserIcon" HorizontalAlignment="Left" Height="26" Margin="10,0,0,0" VerticalAlignment="Top" Width="26" Source="Resources/default_user_icon.png"/>
+        </Grid>
+
     </Grid>
 </Window>
