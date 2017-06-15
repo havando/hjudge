@@ -18,7 +18,7 @@
         </Grid>
         <Grid Name="ContentGrid"  HorizontalAlignment="Left" Height="279" Margin="10,10,0,0" VerticalAlignment="Top" Width="647">
             <Label Name="Identity" Content="UserName，欢迎回来！当前身份：Identity" HorizontalAlignment="Left" Margin="36,0,0,0" VerticalAlignment="Top"/>
-            <Label Content="当前主机地址：CurrentAddress" Margin="424,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+            <Label Name="CurrentAddress" Content="当前主机地址：CurrentAddress" Margin="424,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
             <GroupBox Header="动态" HorizontalAlignment="Left" Height="238" Margin="10,31,0,0" VerticalAlignment="Top" Width="482">
                 <Grid HorizontalAlignment="Left" Height="218" VerticalAlignment="Top" Width="472" Margin="0,0,-2,-2">
                 </Grid>

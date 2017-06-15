@@ -12,7 +12,7 @@ namespace Server
     public static class Connection
     {
         private static SQLiteConnection _sqLite;
-
+        public static string Address;
         public static void Init()
         {
             if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\hjudgeData.db"))
@@ -42,7 +42,7 @@ namespace Server
                     sqlTable.Append("RegisterDate datetime2,");
                     sqlTable.Append("Password ntext,");
                     sqlTable.Append("Type int,");
-                    sqlTable.Append("Icon image,");
+                    sqlTable.Append("Icon ntext,");
                     sqlTable.Append("Achievement ntext )");
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
@@ -63,12 +63,37 @@ namespace Server
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();
                 } //CreateTable
+                using (SQLiteCommand cmd = new SQLiteCommand(sqLite))
+                {
+                    cmd.CommandText = "INSERT INTO User VALUES (@1,@2,@3,@4,@5,@6,@7)";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.Int32),
+                        new SQLiteParameter("@2", DbType.String),
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String),
+                        new SQLiteParameter("@5", DbType.Int32),
+                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@7", DbType.String),
+                    };
+                    parameters[0].Value = 1;
+                    parameters[1].Value = "hjudgeBOSS";
+                    parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[3].Value = "cefb1f85346dfbfa4a341e9c41db918ba25bccc4e62c3939390084361126a417";
+                    parameters[4].Value = 1;
+                    parameters[5].Value = "";
+                    parameters[6].Value = "";
+                    cmd.Parameters.AddRange(parameters);
+                    cmd.ExecuteNonQuery();
+                } //InsertBOSSAccount
                 sqLite.Close();
             }
             _sqLite = new SQLiteConnection("Data Source=" +
                                           $"{Environment.CurrentDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Max Pool Size=10");
             _sqLite.Open();
+            Address = "127.0.0.1:23333";
         }
+
         public static async Task<int> Login(string userName, string password)
         {
             SHA256 s = new SHA256CryptoServiceProvider();
@@ -81,6 +106,12 @@ namespace Server
             int a = await TryLogin(userName, sb.ToString());
             return a;
         }
+
+        public static bool UpdateUserInfo(UserInfo toUpdateInfo)
+        {
+            return false;
+        }
+
         private static Task<int> TryLogin(string userName, string passwordHash)
         {
             return Task.Run(() =>
@@ -93,10 +124,7 @@ namespace Server
                         new SQLiteParameter("@1", DbType.String)
                     };
                     parameters[0].Value = userName;
-                    foreach (var t in parameters)
-                    {
-                        cmd.Parameters.Add(t);
-                    }
+                    cmd.Parameters.AddRange(parameters);
                     SQLiteDataReader reader = cmd.ExecuteReader();
                     if (reader.HasRows)
                     {
@@ -104,6 +132,8 @@ namespace Server
                         {
                             if (passwordHash == reader.GetString(3))
                             {
+                                Console.Write(reader.GetString(2));
+                                UserHelper.SetCurrentUser(reader.GetInt32(0),reader.GetString(1),reader.GetString(2),reader.GetString(3),reader.GetInt32(4),reader.GetString(5),reader.GetString(6));
                                 return 0;
                             }
                             return 1;
