@@ -95,12 +95,25 @@
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="JudgeLogs.xaml.cs">
+      <DependentUpon>JudgeLogs.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MembersManagement.xaml.cs">
+      <DependentUpon>MembersManagement.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Problem.cs" />
     <Compile Include="ProfilesManage.xaml.cs">
       <DependentUpon>ProfilesManage.xaml</DependentUpon>
     </Compile>
     <Compile Include="JudgeHelper.cs" />
+    <Compile Include="SystemConfiguratioin.xaml.cs">
+      <DependentUpon>SystemConfiguratioin.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserHelper.cs" />
+    <Page Include="JudgeLogs.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -114,6 +127,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MembersManagement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ProfilesManage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -121,6 +138,10 @@
     <Page Include="Simple Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SystemConfiguratioin.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\default_user_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Config.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.105.2\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.105.2\build\net46\System.Data.SQLite.Core.targets')" />

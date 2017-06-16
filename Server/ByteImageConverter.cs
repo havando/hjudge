@@ -9,8 +9,8 @@ namespace Server
     {
         public static ImageSource ByteToImage(byte[] imageData)
         {
-            BitmapImage biImg = new BitmapImage();
-            MemoryStream ms = new MemoryStream(imageData);
+            var biImg = new BitmapImage();
+            var ms = new MemoryStream(imageData);
             biImg.BeginInit();
             biImg.StreamSource = ms;
             biImg.EndInit();
@@ -19,9 +19,9 @@ namespace Server
 
         public static string ImageToByte(FileStream fs)
         {
-            byte[] imgBytes = new byte[fs.Length];
+            var imgBytes = new byte[fs.Length];
             fs.Read(imgBytes, 0, Convert.ToInt32(fs.Length));
-            string encodeData = Convert.ToBase64String(imgBytes, Base64FormattingOptions.InsertLineBreaks);
+            var encodeData = Convert.ToBase64String(imgBytes, Base64FormattingOptions.InsertLineBreaks);
             return encodeData;
         }
     }

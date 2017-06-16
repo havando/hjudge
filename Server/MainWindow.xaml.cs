@@ -53,17 +53,8 @@ namespace Server
                 Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
             }
             Connection.Init();
-            IPAddress[] ip = Dns.GetHostAddresses(Dns.GetHostName());
-            foreach (var t in ip)
-            {
-                if (t.ToString().Contains(":"))
-                {
-                    continue;
-                }
-
-                CurrentAddress.Content = "当前主机地址：" + t + ":23333";
-                break;
-            }
+            Configuration.Init();
+            CurrentAddress.Content = "当前主机地址：" + Connection.Address;
             UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();
@@ -72,7 +63,7 @@ namespace Server
         private async void LoginButton_ClickAsync(object sender, RoutedEventArgs e)
         {
             LoginButton.IsEnabled = false;
-            int res = await Connection.Login(UserName.Text, Password.Password);
+            var res = await Connection.Login(UserName.Text, Password.Password);
             switch (res)
             {
                 case 1:
@@ -96,10 +87,10 @@ namespace Server
                 Password.Password = "";
                 LoginGrid.Visibility = Visibility.Hidden;
                 ContentGrid.Visibility = Visibility.Visible;
-                DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation scratchWidthDaV = new DoubleAnimation(473, 673, new Duration(TimeSpan.FromSeconds(0.25)));
-                DoubleAnimation scratchHeightDaV = new DoubleAnimation(228, 328, new Duration(TimeSpan.FromSeconds(0.25)));
+                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+                var scratchWidthDaV = new DoubleAnimation(473, 673, new Duration(TimeSpan.FromSeconds(0.25)));
+                var scratchHeightDaV = new DoubleAnimation(228, 328, new Duration(TimeSpan.FromSeconds(0.25)));
                 LoginGrid.BeginAnimation(OpacityProperty, hiddenDaV);
                 BeginAnimation(WidthProperty, scratchWidthDaV);
                 await Task.Run(() => { Thread.Sleep(250); });
@@ -138,20 +129,28 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                ProfilesManage a = new ProfilesManage();
+                var a = new ProfilesManage();
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
             operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) => { }; //TODO: Members Management
-            operationsButton[5].Click += (o, args) => { }; //TODO: System Configuration
+            operationsButton[4].Click += (o, args) =>
+            {
+                var a = new MembersManagement();
+                a.Show();
+            };
+            operationsButton[5].Click += (o, args) =>
+            {
+                var a = new SystemConfiguratioin();
+                a.Show();
+            };
             operationsButton[6].Click += async (o, args) =>
             {
-                DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                DoubleAnimation unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
+                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
+                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
                 await Dispatcher.BeginInvoke((Action)(() =>
                  {
                      LoginGrid.Visibility = Visibility.Visible;
@@ -189,19 +188,23 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                ProfilesManage a = new ProfilesManage();
+                var a = new ProfilesManage();
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
             operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) => { }; //TODO: Students Management
+            operationsButton[4].Click += (o, args) =>
+            {
+                var a = new MembersManagement();
+                a.Show();
+            };
             operationsButton[5].Click += async (o, args) =>
             {
-                DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                DoubleAnimation unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
+                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
+                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
                 await Dispatcher.BeginInvoke((Action)(() =>
                 {
                     LoginGrid.Visibility = Visibility.Visible;
@@ -237,20 +240,28 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                ProfilesManage a = new ProfilesManage();
+                var a = new ProfilesManage();
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
             operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) => { }; //TODO: Members Management
-            operationsButton[5].Click += (o, args) => { }; //TODO: System Configuration
+            operationsButton[4].Click += (o, args) =>
+            {
+                var a = new MembersManagement();
+                a.Show();
+            };
+            operationsButton[5].Click += (o, args) =>
+            {
+                var a = new SystemConfiguratioin();
+                a.Show();
+            }; 
             operationsButton[6].Click += async (o, args) =>
             {
-                DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                DoubleAnimation unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
+                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
+                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
                 await Dispatcher.BeginInvoke((Action)(() =>
                 {
                     LoginGrid.Visibility = Visibility.Visible;
@@ -285,16 +296,16 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                ProfilesManage a = new ProfilesManage();
+                var a = new ProfilesManage();
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Judging Logs
             operationsButton[2].Click += async (o, args) =>
             {
-                DoubleAnimation hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                DoubleAnimation unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
+                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
+                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
                 await Dispatcher.BeginInvoke((Action)(() =>
                 {
                     LoginGrid.Visibility = Visibility.Visible;
@@ -341,7 +352,7 @@ namespace Server
                                 break;
                         }
                         Dispatcher.BeginInvoke((Action)(() => { Identity.Content = $"{UserHelper.CurrentUser.UserName}，欢迎回来！当前身份：{idnty}"; }));
-                        if (!String.IsNullOrEmpty(UserHelper.CurrentUser.Icon))
+                        if (!string.IsNullOrEmpty(UserHelper.CurrentUser.Icon))
                         {
                             Dispatcher.BeginInvoke((Action)(() =>
                             {

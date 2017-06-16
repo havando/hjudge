@@ -28,13 +28,13 @@ namespace Server
 
         private void Expander_Expanded(object sender, RoutedEventArgs e)
         {
-            DoubleAnimation scratchHeightDaV = new DoubleAnimation(194.618, 270.255, new Duration(TimeSpan.FromSeconds(0.25)));
+            var scratchHeightDaV = new DoubleAnimation(194.618, 270.255, new Duration(TimeSpan.FromSeconds(0.25)));
             BeginAnimation(HeightProperty, scratchHeightDaV);
         }
 
         private void Expander_Collapsed(object sender, RoutedEventArgs e)
         {
-            DoubleAnimation scratchHeightDaV = new DoubleAnimation(270.255, 194.618, new Duration(TimeSpan.FromSeconds(0.25)));
+            var scratchHeightDaV = new DoubleAnimation(270.255, 194.618, new Duration(TimeSpan.FromSeconds(0.25)));
             BeginAnimation(HeightProperty, scratchHeightDaV);
         }
 
@@ -52,7 +52,7 @@ namespace Server
                 Type = UserHelper.CurrentUser.Type
             };
             UserName.Text = _myInfo.UserName;
-            if (!String.IsNullOrEmpty(_myInfo.Icon)) { UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon)); }
+            if (!string.IsNullOrEmpty(_myInfo.Icon)) { UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon)); }
             Id.Content = _myInfo.UserId;
             switch (_myInfo.Type)
             {
@@ -78,13 +78,13 @@ namespace Server
 
         private void OK_Click(object sender, RoutedEventArgs e)
         {
-            if (!String.IsNullOrEmpty(NewPassword.Password))
+            if (!string.IsNullOrEmpty(NewPassword.Password))
             {
                 if (NewPassword.Password == ConfirmPassword.Password)
                 {
                     SHA256 s = new SHA256CryptoServiceProvider();
-                    byte[] retVal = s.ComputeHash(Encoding.Unicode.GetBytes(NewPassword.Password));
-                    StringBuilder sb = new StringBuilder();
+                    var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(NewPassword.Password));
+                    var sb = new StringBuilder();
                     foreach (var t in retVal)
                     {
                         sb.Append(t.ToString("x2"));
@@ -98,21 +98,15 @@ namespace Server
                 }
             }
             _myInfo.UserName = UserName.Text;
-            if (Connection.UpdateUserInfo(_myInfo))
-            {
-                UserHelper.SetCurrentUser(_myInfo.UserId, _myInfo.UserName, _myInfo.RegisterDate, _myInfo.Password,
-                    _myInfo.Type, _myInfo.Icon, _myInfo.Achievement);
-                Close();
-            }
-            else
-            {
-                MessageBox.Show("修改失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            Connection.UpdateUserInfo(_myInfo);
+            UserHelper.SetCurrentUser(_myInfo.UserId, _myInfo.UserName, _myInfo.RegisterDate, _myInfo.Password,
+                _myInfo.Type, _myInfo.Icon, _myInfo.Achievement);
+            Close();
         }
 
         private void UserIcon_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            OpenFileDialog ofg = new OpenFileDialog
+            var ofg = new OpenFileDialog
             {
                 Title = "选择一张图片：",
                 Filter = "图片文件 (.jpg, .png, .gif, .bmp)|*.jpg;*.png;*.gif;*.bmp",
@@ -123,7 +117,7 @@ namespace Server
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
                     ofg.OpenFile();
-                    FileStream fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read);
+                    var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read);
                     _myInfo.Icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon));
                 }

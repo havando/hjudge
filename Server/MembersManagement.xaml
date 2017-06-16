@@ -1,0 +1,38 @@
+﻿<Window x:Class="Server.MembersManagement"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Server"
+        mc:Ignorable="d"
+        Title="MembersManagement" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Loaded="Window_Loaded">
+    <Grid>
+        <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label Name="Identity" Content="" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top"/>
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="204" Margin="10,41,0,0" VerticalAlignment="Top" Width="469">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="用户名" Width="150" DisplayMemberBinding="{Binding Path=UserName}"/>
+                    <GridViewColumn Header="用户身份" Width="100" DisplayMemberBinding="{Binding Path=Type2}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <GroupBox Name="UserEdit" Header="编辑用户" Margin="53,77,142,53">
+            <Grid>
+                <Label Content="用户名：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                <Label Content="用户身份：" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
+                <TextBox Name="UserName" HorizontalAlignment="Left" Height="26" Margin="91,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237"/>
+                <Button Content="取消" HorizontalAlignment="Left" Height="21" Margin="246,72,0,0" VerticalAlignment="Top" Width="38" Click="Button_Click"/>
+                <Button Content="确定" HorizontalAlignment="Left" Height="21" Margin="289,72,0,0" VerticalAlignment="Top" Width="38" Click="Button_Click_1"/>
+                <Button Name="PasswordReset" Content="密码重置" HorizontalAlignment="Left" Height="21" Margin="183,72,0,0" VerticalAlignment="Top" Width="58" Click="PasswordReset_Click"/>
+                <ComboBox Name="UserIdentity" HorizontalAlignment="Left" Height="26" Margin="91,41,0,0" VerticalAlignment="Top" Width="236" IsReadOnly="True"/>
+            </Grid>
+        </GroupBox>
+        <Button Name="NewUser" Content="新增" HorizontalAlignment="Left" Height="31" Margin="484,41,0,0" VerticalAlignment="Top" Width="69" Click="NewUser_Click"/>
+        <Button Name="EditUser" Content="修改" HorizontalAlignment="Left" Height="31" Margin="484,77,0,0" VerticalAlignment="Top" Width="69" Click="EditUser_Click"/>
+        <Button Name="DeleteUser" Content="删除" HorizontalAlignment="Left" Height="31" Margin="484,113,0,0" VerticalAlignment="Top" Width="69" Click="DeleteUser_Click"/>
+        <Button Name="Cancel" Content="取消" HorizontalAlignment="Left" Height="31" Margin="484,178,0,0" VerticalAlignment="Top" Width="69" Click="Cancel_Click"/>
+        <Button Name="OkButton" Content="确定" HorizontalAlignment="Left" Height="31" Margin="484,214,0,0" VerticalAlignment="Top" Width="69" Click="OkButton_Click"/>
+
+    </Grid>
+</Window>
