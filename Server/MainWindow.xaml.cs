@@ -133,7 +133,10 @@ namespace Server
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
-            operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
+            operationsButton[2].Click += (o, args) => {
+                var a = new JudgeLogs();
+                a.Show();
+            };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
@@ -192,7 +195,11 @@ namespace Server
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
-            operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
+            operationsButton[2].Click += (o, args) =>
+            {
+                var a = new JudgeLogs();
+                a.Show();
+            };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
@@ -244,7 +251,10 @@ namespace Server
                 a.Show();
             };
             operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
-            operationsButton[2].Click += (o, args) => { }; //TODO: Judging Logs
+            operationsButton[2].Click += (o, args) => {
+                var a = new JudgeLogs();
+                a.Show();
+            };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
@@ -299,7 +309,11 @@ namespace Server
                 var a = new ProfilesManage();
                 a.Show();
             };
-            operationsButton[1].Click += (o, args) => { }; //TODO: Judging Logs
+            operationsButton[1].Click += (o, args) =>
+            {
+                var a = new JudgeLogs();
+                a.Show();
+            };
             operationsButton[2].Click += async (o, args) =>
             {
                 var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
