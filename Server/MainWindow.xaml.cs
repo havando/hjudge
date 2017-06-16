@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Drawing;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,6 +24,15 @@ namespace Server
         };
         public MainWindow()
         {
+            var mutex = new Mutex(
+                true,
+                "hjudge - server",
+                out bool isSucceed);
+            if (!isSucceed)
+            {
+                MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
+            }
             InitializeComponent();
             _notifyIcon.MouseClick += (sender, args) =>
             {
@@ -405,7 +413,7 @@ namespace Server
             });
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
             ShowInTaskbar = false;

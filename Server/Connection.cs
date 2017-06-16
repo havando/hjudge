@@ -346,7 +346,9 @@ namespace Server
         {
             using (var cmd = new SQLiteCommand(_sqLite))
             {
-                cmd.CommandText = "Delete * From Judge";
+                cmd.CommandText = "Delete From Judge";
+                cmd.ExecuteNonQuery();
+                cmd.CommandText = "DELETE FROM sqlite_sequence WHERE name = 'Judge'";
                 cmd.ExecuteNonQuery();
             }
         }

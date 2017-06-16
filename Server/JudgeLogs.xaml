@@ -20,8 +20,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock Name="JudgeDetails"  HorizontalAlignment="Left" Height="232" Margin="402,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
-        <TextBlock x:Name="Code"  HorizontalAlignment="Left" Height="373" Margin="402,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
+        <TextBox Name="JudgeDetails"  HorizontalAlignment="Left" Height="232" Margin="402,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
+        <TextBox x:Name="Code"  HorizontalAlignment="Left" Height="373" Margin="402,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
         <Label Content="刷新" HorizontalAlignment="Left" Margin="363,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1"/>
         <Label Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="324,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown"/>
 
