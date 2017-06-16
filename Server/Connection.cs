@@ -104,7 +104,7 @@ namespace Server
                 {
                     continue;
                 }
-                Address = t.ToString();
+                Address = t.ToString() + ":23333";
                 break;
             }
         }
@@ -534,7 +534,7 @@ namespace Server
 
         #region Network
 
-        
+
 
         #endregion
     }
