@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -132,7 +131,7 @@ namespace Server
             OutputFileName.Text = problem?.OutputFileName;
             CompileCommand.Text = problem?.CompileCommand;
             AddDate.Content = problem?.AddDate;
-            DataSetsNumber.Text = problem?.DataSets == null ? "0" : problem?.DataSets.Length.ToString();
+            DataSetsNumber.Text = problem?.DataSets?.Length.ToString() ?? "0";
             Level.Value = Convert.ToInt32(problem?.Level);
             LevelShow.Content = Level.Value;
             var a = problem?.DataSets?.Length ?? 0;
