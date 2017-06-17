@@ -31,7 +31,7 @@ namespace Server
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Connection.ClearJudgeLog();
-            ListView.Items.Clear();
+            _curJudgeInfo.Clear();
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
