@@ -1,31 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for ProfilesManage.xaml
+    /// Interaction logic for ProfileManagement.xaml
     /// </summary>
-    public partial class ProfilesManage : Window
+    public partial class ProfileManagement : Window
     {
-        public ProfilesManage()
+        public ProfileManagement()
         {
             InitializeComponent();
         }
-
         private void Expander_Expanded(object sender, RoutedEventArgs e)
         {
             var scratchHeightDaV = new DoubleAnimation(194.618, 270.255, new Duration(TimeSpan.FromSeconds(0.25)));

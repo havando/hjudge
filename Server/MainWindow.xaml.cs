@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,11 +21,14 @@ namespace Server
             Text = @"hjudge - server",
             Icon = Properties.Resources.Server
         };
+
+        private JudgeLogs _judgeLogsForm;
+
         public MainWindow()
         {
             var mutex = new Mutex(
                 true,
-                "hjudge - server",
+                "hjudge_server",
                 out bool isSucceed);
             if (!isSucceed)
             {
@@ -94,36 +96,34 @@ namespace Server
                     }
             }
             LoginButton.IsEnabled = true;
-            if (res == 0)
+            if (res != 0) return;
+            UserName.Text = "";
+            Password.Password = "";
+            LoginGrid.Visibility = Visibility.Hidden;
+            ContentGrid.Visibility = Visibility.Visible;
+            var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+            var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+            var scratchWidthDaV = new DoubleAnimation(473, 673, new Duration(TimeSpan.FromSeconds(0.25)));
+            var scratchHeightDaV = new DoubleAnimation(228, 328, new Duration(TimeSpan.FromSeconds(0.25)));
+            LoginGrid.BeginAnimation(OpacityProperty, hiddenDaV);
+            BeginAnimation(WidthProperty, scratchWidthDaV);
+            await Task.Run(() => { Thread.Sleep(250); });
+            BeginAnimation(HeightProperty, scratchHeightDaV);
+            ContentGrid.BeginAnimation(OpacityProperty, showDaV);
+            switch (UserHelper.CurrentUser.Type)
             {
-                UserName.Text = "";
-                Password.Password = "";
-                LoginGrid.Visibility = Visibility.Hidden;
-                ContentGrid.Visibility = Visibility.Visible;
-                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                var scratchWidthDaV = new DoubleAnimation(473, 673, new Duration(TimeSpan.FromSeconds(0.25)));
-                var scratchHeightDaV = new DoubleAnimation(228, 328, new Duration(TimeSpan.FromSeconds(0.25)));
-                LoginGrid.BeginAnimation(OpacityProperty, hiddenDaV);
-                BeginAnimation(WidthProperty, scratchWidthDaV);
-                await Task.Run(() => { Thread.Sleep(250); });
-                BeginAnimation(HeightProperty, scratchHeightDaV);
-                ContentGrid.BeginAnimation(OpacityProperty, showDaV);
-                switch (UserHelper.CurrentUser.Type)
-                {
-                    case 1:
-                        SetEnvironmentForBoss();
-                        break;
-                    case 2:
-                        SetEnvironmentForAdministrator();
-                        break;
-                    case 3:
-                        SetEnvironmentForTeacher();
-                        break;
-                    case 4:
-                        SetEnvironmentForStudent();
-                        break;
-                }
+                case 1:
+                    SetEnvironmentForBoss();
+                    break;
+                case 2:
+                    SetEnvironmentForAdministrator();
+                    break;
+                case 3:
+                    SetEnvironmentForTeacher();
+                    break;
+                case 4:
+                    SetEnvironmentForStudent();
+                    break;
             }
         }
 
@@ -143,47 +143,39 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                var a = new ProfilesManage();
-                a.Show();
+                var a = new ProfileManagement();
+                a.ShowDialog();
             };
-            operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
+            operationsButton[1].Click += (o, args) => {
+                var a = new ProblemManagement();
+                a.ShowDialog();
+            };
             operationsButton[2].Click += (o, args) =>
             {
-                var a = new JudgeLogs();
-                a.Show();
+                if (_judgeLogsForm == null)
+                {
+                    _judgeLogsForm = new JudgeLogs();
+                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
+                    _judgeLogsForm.Show();
+                }
+                else
+                {
+                    _judgeLogsForm.Activate();
+                }
             };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
                 var a = new MembersManagement();
-                a.Show();
+                a.ShowDialog();
             };
             operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
             operationsButton[6].Click += (o, args) =>
             {
                 var a = new SystemConfiguratioin();
-                a.Show();
+                a.ShowDialog();
             };
-            operationsButton[7].Click += async (o, args) =>
-            {
-                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
-                await Dispatcher.BeginInvoke((Action)(() =>
-                 {
-                     LoginGrid.Visibility = Visibility.Visible;
-                     ContentGrid.Visibility = Visibility.Hidden;
-                     UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
-                     UserHelper.CurrentUser.IsChanged = false;
-                     Operations.Items.Clear();
-                 }));
-                ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
-                BeginAnimation(WidthProperty, unscratchWidthDaV);
-                await Task.Run(() => { Thread.Sleep(250); });
-                BeginAnimation(HeightProperty, unscratchHeightDaV);
-                LoginGrid.BeginAnimation(OpacityProperty, showDaV);
-            };
+            operationsButton[7].Click += async (o, args) => { await Logout(); };
             operationsButton[8].Click += (o, args) =>
             {
                 _notifyIcon.Visible = false;
@@ -209,42 +201,34 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                var a = new ProfilesManage();
-                a.Show();
+                var a = new ProfileManagement();
+                a.ShowDialog();
             };
-            operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
+            operationsButton[1].Click += (o, args) => {
+                var a = new ProblemManagement();
+                a.ShowDialog();
+            };
             operationsButton[2].Click += (o, args) =>
             {
-                var a = new JudgeLogs();
-                a.Show();
+                if (_judgeLogsForm == null)
+                {
+                    _judgeLogsForm = new JudgeLogs();
+                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
+                    _judgeLogsForm.Show();
+                }
+                else
+                {
+                    _judgeLogsForm.Activate();
+                }
             };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
                 var a = new MembersManagement();
-                a.Show();
+                a.ShowDialog();
             };
             operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[6].Click += async (o, args) =>
-            {
-                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
-                await Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    LoginGrid.Visibility = Visibility.Visible;
-                    ContentGrid.Visibility = Visibility.Hidden;
-                    UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
-                    UserHelper.CurrentUser.IsChanged = false;
-                    Operations.Items.Clear();
-                }));
-                ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
-                BeginAnimation(WidthProperty, unscratchWidthDaV);
-                await Task.Run(() => { Thread.Sleep(250); });
-                BeginAnimation(HeightProperty, unscratchHeightDaV);
-                LoginGrid.BeginAnimation(OpacityProperty, showDaV);
-            };
+            operationsButton[6].Click += async (o, args) => { await Logout(); };
             foreach (var t in operationsButton)
             {
                 Operations.Items.Add(t);
@@ -267,47 +251,40 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                var a = new ProfilesManage();
-                a.Show();
+                var a = new ProfileManagement();
+                a.ShowDialog();
             };
-            operationsButton[1].Click += (o, args) => { }; //TODO: Problems Management
+            operationsButton[1].Click += (o, args) =>
+            {
+                var a = new ProblemManagement();
+                a.ShowDialog();
+            };
             operationsButton[2].Click += (o, args) =>
             {
-                var a = new JudgeLogs();
-                a.Show();
+                if (_judgeLogsForm == null)
+                {
+                    _judgeLogsForm = new JudgeLogs();
+                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
+                    _judgeLogsForm.Show();
+                }
+                else
+                {
+                    _judgeLogsForm.Activate();
+                }
             };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
             operationsButton[4].Click += (o, args) =>
             {
                 var a = new MembersManagement();
-                a.Show();
+                a.ShowDialog();
             };
             operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
             operationsButton[6].Click += (o, args) =>
             {
                 var a = new SystemConfiguratioin();
-                a.Show();
+                a.ShowDialog();
             };
-            operationsButton[7].Click += async (o, args) =>
-            {
-                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
-                await Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    LoginGrid.Visibility = Visibility.Visible;
-                    ContentGrid.Visibility = Visibility.Hidden;
-                    UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
-                    UserHelper.CurrentUser.IsChanged = false;
-                    Operations.Items.Clear();
-                }));
-                ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
-                BeginAnimation(WidthProperty, unscratchWidthDaV);
-                await Task.Run(() => { Thread.Sleep(250); });
-                BeginAnimation(HeightProperty, unscratchHeightDaV);
-                LoginGrid.BeginAnimation(OpacityProperty, showDaV);
-            };
+            operationsButton[7].Click += async (o, args) => { await Logout(); };
             operationsButton[8].Click += (o, args) =>
             {
                 _notifyIcon.Visible = false;
@@ -330,35 +307,24 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) =>
             {
-                var a = new ProfilesManage();
-                a.Show();
+                var a = new ProfileManagement();
+                a.ShowDialog();
             };
             operationsButton[1].Click += (o, args) =>
             {
-                var a = new JudgeLogs();
-                a.Show();
+                if (_judgeLogsForm == null)
+                {
+                    _judgeLogsForm = new JudgeLogs();
+                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
+                    _judgeLogsForm.Show();
+                }
+                else
+                {
+                    _judgeLogsForm.Activate();
+                }
             };
             operationsButton[2].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[3].Click += async (o, args) =>
-            {
-                var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-                var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-                var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
-                var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
-                await Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    LoginGrid.Visibility = Visibility.Visible;
-                    ContentGrid.Visibility = Visibility.Hidden;
-                    UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
-                    UserHelper.CurrentUser.IsChanged = false;
-                    Operations.Items.Clear();
-                }));
-                ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
-                BeginAnimation(WidthProperty, unscratchWidthDaV);
-                await Task.Run(() => { Thread.Sleep(250); });
-                BeginAnimation(HeightProperty, unscratchHeightDaV);
-                LoginGrid.BeginAnimation(OpacityProperty, showDaV);
-            };
+            operationsButton[3].Click += async (o, args) => { await Logout(); };
             foreach (var t in operationsButton)
             {
                 Operations.Items.Add(t);
@@ -413,11 +379,32 @@ namespace Server
             });
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
             ShowInTaskbar = false;
             Visibility = Visibility.Hidden;
+            await Logout();
+        }
+
+        private async Task Logout()
+        {
+            var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
+            var showDaV = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
+            var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
+            var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
+            UserName.Text = Connection.Logout();
+            await Dispatcher.BeginInvoke((Action)(() =>
+            {
+                LoginGrid.Visibility = Visibility.Visible;
+                ContentGrid.Visibility = Visibility.Hidden;
+                Operations.Items.Clear();
+            }));
+            ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
+            BeginAnimation(WidthProperty, unscratchWidthDaV);
+            await Task.Run(() => { Thread.Sleep(250); });
+            BeginAnimation(HeightProperty, unscratchHeightDaV);
+            LoginGrid.BeginAnimation(OpacityProperty, showDaV);
         }
     }
 }

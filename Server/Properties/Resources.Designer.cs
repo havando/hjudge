@@ -61,6 +61,21 @@ namespace Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;Grid Name=&quot;Data${index}&quot; Height=&quot;125&quot; Width=&quot;351&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        ///        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+        ///        xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+        ///        xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
+        ///        xmlns:local=&quot;clr-namespace:Server&quot;
+        ///        mc:Ignorable=&quot;d&quot;&gt;
+        ///                            &lt;Label Content=&quot;输入文件：&quot; HorizontalAlignment=&quot;Left&quot; Margin=&quot;10,36,0,0&quot; VerticalAlig [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string DataSetControl {
+            get {
+                return ResourceManager.GetString("DataSetControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Server {

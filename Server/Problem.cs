@@ -1,11 +1,21 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Server
 {
-    public class Problem
+    public class Problem : INotifyPropertyChanged
     {
         public int ProblemId { get; set; }
-        public string ProblemName { get; set; }
+
+        public string ProblemName
+        {
+            get => _problemName;
+            set
+            {
+                _problemName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ProblemName"));
+            }
+        }
         public string AddDate { get; set; }
         public int Level { get; set; }
         public Data[] DataSets { get; set; }
@@ -15,5 +25,7 @@ namespace Server
         public string InputFileName { get; set; }
         public string OutputFileName { get; set; }
         public string CompileCommand { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+        private string _problemName;
     }
 }

@@ -7,9 +7,9 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Server
 {
@@ -81,7 +81,7 @@ namespace Server
                         new SQLiteParameter("@3", DbType.String),
                         new SQLiteParameter("@4", DbType.Int32),
                         new SQLiteParameter("@5", DbType.String),
-                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@6", DbType.String)
                     };
                     parameters[0].Value = "hjudgeBOSS";
                     parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
@@ -104,9 +104,17 @@ namespace Server
                 {
                     continue;
                 }
-                Address = t.ToString() + ":23333";
+                Address = t + ":23333";
                 break;
             }
+        }
+
+        public static string Logout()
+        {
+            var a = UserHelper.CurrentUser.UserName;
+            UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
+            UserHelper.CurrentUser.IsChanged = false;
+            return a;
         }
 
         public static async Task<int> Login(string userName, string password)
@@ -208,7 +216,7 @@ namespace Server
                 {
                     while (reader.Read())
                     {
-                        a.Add(new UserInfo()
+                        a.Add(new UserInfo
                         {
                             UserId = reader.GetInt32(0),
                             UserName = reader.GetString(1),
@@ -236,16 +244,24 @@ namespace Server
                 var reader = cmd.ExecuteReader();
                 if (reader.HasRows)
                 {
-                    a.ProblemName = reader.GetString(1);
+                    a.ProblemId = reader.GetInt32(0);
                     a.AddDate = reader.GetString(2);
-                    a.Level = reader.GetInt32(3);
-                    a.DataSets = (Data[])JsonConvert.DeserializeObject(reader.GetString(4));
-                    a.Type = reader.GetInt32(5);
-                    a.SpecialJudge = reader.GetString(6);
-                    a.ExtraFiles = (string[])JsonConvert.DeserializeObject(reader.GetString(7));
-                    a.InputFileName = reader.GetString(8);
-                    a.OutputFileName = reader.GetString(9);
-                    a.CompileCommand = reader.GetString(10);
+                    try
+                    {
+                        a.ProblemName = reader.GetString(1);
+                        a.Level = reader.GetInt32(3);
+                        a.DataSets = (Data[]) JsonConvert.DeserializeObject(reader.GetString(4));
+                        a.Type = reader.GetInt32(5);
+                        a.SpecialJudge = reader.GetString(6);
+                        a.ExtraFiles = (string[]) JsonConvert.DeserializeObject(reader.GetString(7));
+                        a.InputFileName = reader.GetString(8);
+                        a.OutputFileName = reader.GetString(9);
+                        a.CompileCommand = reader.GetString(10);
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     return a;
                 }
                 a.ProblemId = 0;
@@ -253,7 +269,7 @@ namespace Server
             }
         }
 
-        public static List<string> SaveUser(List<int> toDelete)
+        public static List<string> SaveUser(IEnumerable<int> toDelete)
         {
             var failed = new List<string>();
             using (var cmd = new SQLiteCommand(_sqLite))
@@ -263,7 +279,7 @@ namespace Server
                     cmd.CommandText = "DELETE From User Where UserId=@1";
                     SQLiteParameter[] parameters =
                     {
-                        new SQLiteParameter("@1", DbType.Int32),
+                        new SQLiteParameter("@1", DbType.Int32)
                     };
                     parameters[0].Value = t;
                     cmd.Parameters.AddRange(parameters);
@@ -303,7 +319,7 @@ namespace Server
                             new SQLiteParameter("@3", DbType.String),
                             new SQLiteParameter("@4", DbType.Int32),
                             new SQLiteParameter("@5", DbType.String),
-                            new SQLiteParameter("@6", DbType.String),
+                            new SQLiteParameter("@6", DbType.String)
                         };
                         parameters[0].Value = t.UserName;
                         parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
@@ -326,7 +342,7 @@ namespace Server
                 cmd.CommandText = "SELECT * From User Where UserName=@1";
                 SQLiteParameter[] parameters =
                 {
-                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@1", DbType.String)
                 };
                 parameters[0].Value = userName;
                 cmd.Parameters.AddRange(parameters);
@@ -365,49 +381,63 @@ namespace Server
                 {
                     while (reader.Read())
                     {
-                        curJudgeInfo.Add(new JudgeInfo()
+                        try
                         {
-                            JudgeId = reader.GetInt32(0),
-                            UserId = reader.GetInt32(1),
-                            JudgeDate = reader.GetString(2),
-                            ProblemId = reader.GetInt32(3),
-                            Code = reader.GetString(4),
-                            Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
-                            Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
-                            Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
-                            Result = reader.GetString(8).Split(','),
-                            Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
-                        });
+                            curJudgeInfo.Add(new JudgeInfo
+                            {
+                                JudgeId = reader.GetInt32(0),
+                                UserId = reader.GetInt32(1),
+                                JudgeDate = reader.GetString(2),
+                                ProblemId = reader.GetInt32(3),
+                                Code = reader.GetString(4),
+                                Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
+                                Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
+                                Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
+                                Result = reader.GetString(8).Split(','),
+                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                            });
+                        }
+                        catch
+                        {
+                            curJudgeInfo.Add(new JudgeInfo()
+                            {
+                                JudgeId = reader.GetInt32(0),
+                                JudgeDate = reader.GetString(2)
+                            });
+                        }
                     }
                 }
             }
             return curJudgeInfo;
         }
 
-        private static int[] CastStringArrToIntArr(string[] p)
+        private static int[] CastStringArrToIntArr(IReadOnlyList<string> p)
         {
-            var f = new int[p.Length];
-            for (var i = 0; i < p.Length; i++)
+            if (p == null) return null;
+            var f = new int[p.Count];
+            for (var i = 0; i < p.Count; i++)
             {
                 f[i] = Convert.ToInt32(p[i]);
             }
             return f;
         }
 
-        private static long[] CastStringArrToLongArr(string[] p)
+        private static long[] CastStringArrToLongArr(IReadOnlyList<string> p)
         {
-            var f = new long[p.Length];
-            for (var i = 0; i < p.Length; i++)
+            if (p == null) return null;
+            var f = new long[p.Count];
+            for (var i = 0; i < p.Count; i++)
             {
                 f[i] = Convert.ToInt64(p[i]);
             }
             return f;
         }
 
-        private static float[] CastStringArrToFloatArr(string[] p)
+        private static float[] CastStringArrToFloatArr(IReadOnlyList<string> p)
         {
-            var f = new float[p.Length];
-            for (var i = 0; i < p.Length; i++)
+            if (p == null) return null;
+            var f = new float[p.Count];
+            for (var i = 0; i < p.Count; i++)
             {
                 f[i] = Convert.ToSingle(p[i]);
             }
@@ -477,7 +507,7 @@ namespace Server
                 cmd.Parameters.AddRange(parameters);
                 cmd.ExecuteNonQuery();
                 cmd.CommandText = "select last_insert_rowid() from Judge";
-                return (int)cmd.ExecuteScalar();
+                return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
 
@@ -496,7 +526,7 @@ namespace Server
                     new SQLiteParameter("@6", DbType.String),
                     new SQLiteParameter("@7", DbType.String),
                     new SQLiteParameter("@8", DbType.String),
-                    new SQLiteParameter("@9", DbType.Int32),
+                    new SQLiteParameter("@9", DbType.Int32)
                 };
                 parameters[0].Value = pInfo.UserId;
                 parameters[1].Value = pInfo.ProblemId;
@@ -527,6 +557,145 @@ namespace Server
                 parameters[6].Value = result;
                 parameters[7].Value = score;
                 parameters[8].Value = pInfo.JudgeId;
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static ObservableCollection<Problem> QueryProblems()
+        {
+            var curJudgeInfo = new ObservableCollection<Problem>();
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From Problem";
+                var reader = cmd.ExecuteReader();
+                if (!reader.HasRows) return curJudgeInfo;
+                while (reader.Read())
+                {
+                    try
+                    {
+                        curJudgeInfo.Add(new Problem
+                        {
+                            ProblemId = reader.GetInt32(0),
+                            ProblemName = reader.GetString(1),
+                            AddDate = reader.GetString(2),
+                            Level = reader.GetInt32(3),
+                            DataSets =
+                                CastJsonArrToDataArr((JArray) JsonConvert.DeserializeObject(reader.GetString(4))),
+                            Type = reader.GetInt32(5),
+                            SpecialJudge = reader.GetString(6),
+                            ExtraFiles =
+                                CastJsonArrToStringArr((JArray) JsonConvert.DeserializeObject(reader.GetString(7))),
+                            InputFileName = reader.GetString(8),
+                            OutputFileName = reader.GetString(9),
+                            CompileCommand = reader.GetString(10),
+                        });
+                    }
+                    catch
+                    {
+                        curJudgeInfo.Add(new Problem()
+                        {
+                            AddDate = reader.GetString(2),
+                            ProblemId = reader.GetInt32(0)
+                        });
+                    }
+                }
+            }
+            return curJudgeInfo;
+        }
+
+        private static string[] CastJsonArrToStringArr(JArray p)
+        {
+            var res = new string[p.Count];
+            for (var i = 0; i < p.Count; i++)
+            {
+                res[i] = p[i].ToString();
+            }
+            return res;
+        }
+        private static Data[] CastJsonArrToDataArr(JArray p)
+        {
+            var res = new Data[p.Count];
+            for (var i = 0; i < p.Count; i++)
+            {
+                res[i] = new Data()
+                {
+                    InputFile = p[i]["InputFile"].ToString(),
+                    OutputFile = p[i]["OutputFile"].ToString(),
+                    MemoryLimit = Convert.ToInt64(p[i]["MemoryLimit"].ToString()),
+                    TimeLimit = Convert.ToInt64(p[i]["TimeLimit"].ToString()),
+                    Score = Convert.ToSingle(p[i]["Score"].ToString())
+                };
+            }
+            return res;
+        }
+
+        public static int NewProblem()
+        {
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "Insert into Problem (AddDate, DataSets, ExtraFiles) VALUES (@1, @2, @3)";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@2", DbType.String),
+                    new SQLiteParameter("@3", DbType.String)
+
+                };
+                parameters[0].Value = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+                parameters[1].Value = JsonConvert.SerializeObject(new Data[0]);
+                parameters[2].Value = JsonConvert.SerializeObject(new string[0]);
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
+                cmd.CommandText = "select last_insert_rowid() from Problem";
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
+
+        public static void DeleteProblem(int problemId)
+        {
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "Delete from Problem Where ProblemId=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.Int32)
+                };
+                parameters[0].Value = problemId;
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static void UpdateProblem(Problem toUpdateProblem)
+        {
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText =
+                    "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9 Where ProblemId=@10";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@2", DbType.Int32),
+                    new SQLiteParameter("@3", DbType.String),
+                    new SQLiteParameter("@4", DbType.Int32),
+                    new SQLiteParameter("@5", DbType.String),
+                    new SQLiteParameter("@6", DbType.String),
+                    new SQLiteParameter("@7", DbType.String),
+                    new SQLiteParameter("@8", DbType.String),
+                    new SQLiteParameter("@9", DbType.String),
+                    new SQLiteParameter("@10", DbType.Int32),
+                };
+                parameters[0].Value = toUpdateProblem.ProblemName;
+                parameters[1].Value = toUpdateProblem.Level;
+                parameters[2].Value = JsonConvert.SerializeObject(toUpdateProblem.DataSets);
+                parameters[3].Value = toUpdateProblem.Type;
+                parameters[4].Value = toUpdateProblem.SpecialJudge;
+                parameters[5].Value = JsonConvert.SerializeObject(toUpdateProblem.ExtraFiles);
+                parameters[6].Value = toUpdateProblem.InputFileName;
+                parameters[7].Value = toUpdateProblem.OutputFileName;
+                parameters[8].Value = toUpdateProblem.CompileCommand;
+                parameters[9].Value = toUpdateProblem.ProblemId;
                 cmd.Parameters.AddRange(parameters);
                 cmd.ExecuteNonQuery();
             }

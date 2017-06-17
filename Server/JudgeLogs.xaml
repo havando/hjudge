@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="JudgeLogs" Height="661.149" Width="1064.308" Loaded="Window_Loaded">
+        Title="JudgeLogs" Height="661.149" Width="1064.308" Loaded="Window_Loaded" ResizeMode="CanMinimize" Icon="Resources/list.png">
     <Grid>
         <ListView Name="ListView"  HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387" Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged">
             <ListView.View>

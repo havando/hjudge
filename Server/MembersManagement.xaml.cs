@@ -72,23 +72,21 @@ namespace Server
                     break;
                 }
             }
-            MessageBox.Show("密码已重置为初始密码 123456", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("密码已重置为初始密码", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void EditUser_Click(object sender, RoutedEventArgs e)
         {
             var userInfo = ListView.SelectedItem as UserInfo;
-            if (userInfo != null)
-            {
-                _curItem = userInfo;
-                UserIdentity.SelectedItem = userInfo.Type2;
-                UserName.Text = userInfo.UserName;
-                UserName.IsEnabled = false;
-                UserEdit.Visibility = Visibility.Visible;
-                NewUser.IsEnabled = EditUser.IsEnabled =
-                    DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = false;
-                PasswordReset.Visibility = Visibility.Visible;
-            }
+            if (userInfo == null) return;
+            _curItem = userInfo;
+            UserIdentity.SelectedItem = userInfo.Type2;
+            UserName.Text = userInfo.UserName;
+            UserName.IsEnabled = false;
+            UserEdit.Visibility = Visibility.Visible;
+            NewUser.IsEnabled = EditUser.IsEnabled =
+                DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = false;
+            PasswordReset.Visibility = Visibility.Visible;
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)

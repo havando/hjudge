@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="MembersManagement" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Loaded="Window_Loaded">
+        Title="MembersManagement" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
     <Grid>
         <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Label Name="Identity" Content="" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top"/>
@@ -26,6 +26,7 @@
                 <Button Content="确定" HorizontalAlignment="Left" Height="21" Margin="289,72,0,0" VerticalAlignment="Top" Width="38" Click="Button_Click_1"/>
                 <Button Name="PasswordReset" Content="密码重置" HorizontalAlignment="Left" Height="21" Margin="183,72,0,0" VerticalAlignment="Top" Width="58" Click="PasswordReset_Click"/>
                 <ComboBox Name="UserIdentity" HorizontalAlignment="Left" Height="26" Margin="91,41,0,0" VerticalAlignment="Top" Width="236" IsReadOnly="True"/>
+                <Label Content="*注：初始密码为 123456" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top" Width="168" Foreground="Red"/>
             </Grid>
         </GroupBox>
         <Button Name="NewUser" Content="新增" HorizontalAlignment="Left" Height="31" Margin="484,41,0,0" VerticalAlignment="Top" Width="69" Click="NewUser_Click"/>
