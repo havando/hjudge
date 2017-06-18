@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -7,20 +8,29 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using HPSocketCS;
+using System.Runtime.InteropServices;
 
 namespace Server
 {
     public static class Connection
     {
-        #region DataBase
-
         private static SQLiteConnection _sqLite;
+        private static List<byte> _recv = new List<byte>();
+        private static ConcurrentQueue<ObjOperation> _operations = new ConcurrentQueue<ObjOperation>();
+        private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
         public static string Address;
+        private static readonly TcpPullServer HServer = new TcpPullServer();
+
         public static void Init()
         {
+            #region DataBase
+
             if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\hjudgeData.db"))
             {
                 SQLiteConnection.CreateFile(Environment.CurrentDirectory + "\\AppData\\hjudgeData.db");
@@ -97,17 +107,65 @@ namespace Server
             _sqLite = new SQLiteConnection("Data Source=" +
                                           $"{Environment.CurrentDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Max Pool Size=10");
             _sqLite.Open();
-            var ip = Dns.GetHostAddresses(Dns.GetHostName());
-            foreach (var t in ip)
+
+            #endregion
+
+            #region Network
+
+            var hostIp = Dns.GetHostAddresses(Dns.GetHostName());
+            var flag = false;
+
+            HServer.OnAccept += (id, client) =>
+            {
+                var ip = "";
+                ushort port = 0;
+                if (!HServer.GetRemoteAddress(id, ref ip, ref port)) { return HandleResult.Ignore; }
+                var clientInfo = new ClientInfo
+                {
+                    ConnId = id,
+                    IpAddress = ip,
+                    Port = port,
+                    PkgInfo = new PkgInfo
+                    {
+                        IsHeader = true,
+                        Length = PkgHeaderSize
+                    }
+                };
+                HServer.SetExtra(id, clientInfo);
+                return HandleResult.Ok;
+            };
+            HServer.OnClose += (id, operation, code) =>
+            {
+                HServer.RemoveExtra(id);
+                return HandleResult.Ok;
+            };
+            HServer.OnReceive += HServerOnOnReceive;
+
+            foreach (var t in hostIp)
             {
                 if (t.ToString().Contains(":"))
                 {
                     continue;
                 }
                 Address = t + ":23333";
+                HServer.IpAddress = t.ToString();
+                HServer.Port = 23333;
+                if (!HServer.Start()) { continue; }
+                flag = true;
                 break;
             }
+            DealingOperations();
+            if (flag) return;
+            MessageBox.Show("服务器初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            Environment.Exit(1);
+
+            #endregion
+
         }
+
+        #region DataBase
+
+
 
         public static string Logout()
         {
@@ -251,7 +309,7 @@ namespace Server
                     {
                         a.ProblemName = reader.GetString(1);
                         a.Level = reader.GetInt32(3);
-                        a.DataSets = CastJsonArrToDataArr((JArray) JsonConvert.DeserializeObject(reader.GetString(4)));
+                        a.DataSets = CastJsonArrToDataArr((JArray)JsonConvert.DeserializeObject(reader.GetString(4)));
                         a.Type = reader.GetInt32(5);
                         a.SpecialJudge = reader.GetString(6);
                         a.ExtraFiles = CastJsonArrToStringArr((JArray)JsonConvert.DeserializeObject(reader.GetString(7)));
@@ -582,11 +640,11 @@ namespace Server
                             AddDate = reader.GetString(2),
                             Level = reader.GetInt32(3),
                             DataSets =
-                                CastJsonArrToDataArr((JArray) JsonConvert.DeserializeObject(reader.GetString(4))),
+                                CastJsonArrToDataArr((JArray)JsonConvert.DeserializeObject(reader.GetString(4))),
                             Type = reader.GetInt32(5),
                             SpecialJudge = reader.GetString(6),
                             ExtraFiles =
-                                CastJsonArrToStringArr((JArray) JsonConvert.DeserializeObject(reader.GetString(7))),
+                                CastJsonArrToStringArr((JArray)JsonConvert.DeserializeObject(reader.GetString(7))),
                             InputFileName = reader.GetString(8),
                             OutputFileName = reader.GetString(9),
                             CompileCommand = reader.GetString(10),
@@ -706,8 +764,87 @@ namespace Server
 
         #region Network
 
+        private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
+        {
+            var clientInfo = (ClientInfo)HServer.GetExtra(connId);
+            if (clientInfo == null) { return HandleResult.Error; }
+            var pkgInfo = clientInfo.PkgInfo;
+            var required = pkgInfo.Length;
+            var remain = length;
+            while (remain >= required)
+            {
+                var bufferPtr = IntPtr.Zero;
+                try
+                {
+                    remain -= required;
+                    bufferPtr = Marshal.AllocHGlobal(required);
+                    if (HServer.Fetch(connId, bufferPtr, required) == FetchResult.Ok)
+                    {
+                        if (pkgInfo.IsHeader)
+                        {
+                            var header = (PkgHeader) Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            required = header.BodySize;
+                        }
+                        else
+                        {
+                            var recv = new byte[required];
+                            Marshal.Copy(bufferPtr, recv, 0, required);
+                            _recv.AddRange(recv);
+                        }
+                        pkgInfo.IsHeader = !pkgInfo.IsHeader;
+                        pkgInfo.Length = required;
+                        if (!HServer.SetExtra(connId, clientInfo))
+                        {
+                            return HandleResult.Error;
+                        }
+                    }
+                }
+                catch
+                {
+                    return HandleResult.Error;
+                }
+                finally
+                {
+                    if (bufferPtr != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(bufferPtr);
+                    }
+                }
+            }
+            return HandleResult.Ok;
+        }
 
+        private static void DealingOperations()
+        {
+            Task.Run(async () =>
+            {
+
+            });
+        }
 
         #endregion
+    }
+
+    public class ClientInfo
+    {
+        public IntPtr ConnId { get; set; }
+        public string IpAddress { get; set; }
+        public ushort Port { get; set; }
+        public PkgInfo PkgInfo { get; set; }
+    }
+    public class PkgHeader
+    {
+        public int Id;
+        public int BodySize;
+    }
+    public class PkgInfo
+    {
+        public bool IsHeader;
+        public int Length;
+    }
+    public class ObjOperation
+    {
+        public byte[] Content { get; set; }
+        public ClientInfo Client { get; set; }
     }
 }
