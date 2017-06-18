@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace Server
 {
@@ -27,5 +26,16 @@ namespace Server
         public string CompileCommand { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
         private string _problemName;
+        private bool _isChecked;
+
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set
+            {
+                _isChecked = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsChecked"));
+            }
+        }
     }
 }

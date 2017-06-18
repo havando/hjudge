@@ -12,9 +12,9 @@
             <Label Content="欢迎使用，请登录服务端" HorizontalAlignment="Center" Height="35.234" Margin="10,10,10,0" VerticalAlignment="Top" Width="427.398" FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
             <Label Content="用户名：" HorizontalAlignment="Left" Height="25.801" Margin="46.456,58.087,0,0" VerticalAlignment="Top" Width="83.012" HorizontalContentAlignment="Center"/>
             <Label Content="密码：" HorizontalAlignment="Left" Height="25.801" Margin="46.456,88.888,0,0" VerticalAlignment="Top" Width="83.012" HorizontalContentAlignment="Center"/>
-            <TextBox Name="UserName" HorizontalAlignment="Left" Height="25.801" Margin="129.468,58.087,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="254.647"/>
-            <PasswordBox Name="Password" HorizontalAlignment="Left" Height="25.801" Margin="129.468,88.888,0,0" VerticalAlignment="Top" Width="254.647"/>
-            <Button x:Name="LoginButton" Content="登录" HorizontalAlignment="Left" Height="30.529" Margin="321.295,119.689,0,0" VerticalAlignment="Top" Width="62.82" Click="LoginButton_ClickAsync"/>
+            <TextBox Name="UserName" HorizontalAlignment="Left" Height="25.801" Margin="129.468,58.087,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="254.647" KeyDown="UserName_KeyDown"/>
+            <PasswordBox Name="Password" HorizontalAlignment="Left" Height="25.801" Margin="129.468,88.888,0,0" VerticalAlignment="Top" Width="254.647" KeyDown="Password_KeyDown"/>
+            <Button Name="LoginButton" Content="登录" HorizontalAlignment="Left" Height="30.529" Margin="321.295,119.689,0,0" VerticalAlignment="Top" Width="62.82" Click="LoginButton_ClickAsync"/>
         </Grid>
         <Grid Name="ContentGrid"  HorizontalAlignment="Left" Height="279" Margin="10,10,0,0" VerticalAlignment="Top" Width="647">
             <Label Name="Identity" Content="UserName，欢迎回来！当前身份：Identity" HorizontalAlignment="Left" Margin="36,0,0,0" VerticalAlignment="Top"/>

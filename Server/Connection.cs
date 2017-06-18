@@ -244,16 +244,17 @@ namespace Server
                 var reader = cmd.ExecuteReader();
                 if (reader.HasRows)
                 {
+                    if (!reader.Read()) return a;
                     a.ProblemId = reader.GetInt32(0);
                     a.AddDate = reader.GetString(2);
                     try
                     {
                         a.ProblemName = reader.GetString(1);
                         a.Level = reader.GetInt32(3);
-                        a.DataSets = (Data[]) JsonConvert.DeserializeObject(reader.GetString(4));
+                        a.DataSets = CastJsonArrToDataArr((JArray) JsonConvert.DeserializeObject(reader.GetString(4)));
                         a.Type = reader.GetInt32(5);
                         a.SpecialJudge = reader.GetString(6);
-                        a.ExtraFiles = (string[]) JsonConvert.DeserializeObject(reader.GetString(7));
+                        a.ExtraFiles = CastJsonArrToStringArr((JArray)JsonConvert.DeserializeObject(reader.GetString(7)));
                         a.InputFileName = reader.GetString(8);
                         a.OutputFileName = reader.GetString(9);
                         a.CompileCommand = reader.GetString(10);

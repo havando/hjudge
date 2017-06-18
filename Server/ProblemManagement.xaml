@@ -56,7 +56,7 @@
                     <Label Content="多个额外文件请用 | 分隔开" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="评测时会自动以原文件名复制所有额外文件到测试工作目录下。" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="数据设置方法：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="修改数据时，请先在基本信息中修改数据数量，按下回车键即可生效。在数据设置中，可以使用上方组合框中的套用模板进行批量设置，套用模板中可以使用预定宏来减少工作量。" VerticalAlignment="Top" Height="55" Width="349"/>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="修改数据时，请先在基本信息中修改数据数量，按下回车键即可生效。在数据设置中，可以使用上方组合框中的套用模板进行批量设置，套用模板中可以使用预定宏来减少工作量。" VerticalAlignment="Top" Width="349"/>
                     <Label Content="套用模板格式：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="输入文件|输出文件|时间限制|内存限制|分数" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="比较程序、额外文件、编译参数、套用模板适用预定宏：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
@@ -68,6 +68,9 @@
                     <Label Content="${index0} 从 0 开始的测试点序号，仅在套用模板中生效" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="${name} 题目名称（仅取英文和数字部分）" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     <Label Content="如：例子_example2蛤33h蛤hh 中只会取example233hhh" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Label Content="关于比较程序：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Label Content="如无需自定义比较请留空，否则请填写比较程序路径" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="评测时 hjudge 会向比较程序传入 4 个参数，分别是：标准输入文件路径、标准输出文件路径、选手程序输出文件路径、比较结果文件路径。比较程序需要将结果写入比较结果文件，结果为一个 0~1 的小数，代表该测试点所得分数占该测试点满分的百分比。" VerticalAlignment="Top" Width="349"/>
                 </ListBox>
             </TabItem>
 

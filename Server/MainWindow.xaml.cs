@@ -141,15 +141,8 @@ namespace Server
                 new Button {Height = 32, Width = 80, Content = "注销登录"},
                 new Button {Height = 32, Width = 80, Content = "退出程序"}
             };
-            operationsButton[0].Click += (o, args) =>
-            {
-                var a = new ProfileManagement();
-                a.ShowDialog();
-            };
-            operationsButton[1].Click += (o, args) => {
-                var a = new ProblemManagement();
-                a.ShowDialog();
-            };
+            operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
+            operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
             operationsButton[2].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
@@ -164,18 +157,55 @@ namespace Server
                 }
             };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) =>
+            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
+            operationsButton[7].Click += async (o, args) => await Logout();
+            operationsButton[8].Click += (o, args) =>
             {
-                var a = new MembersManagement();
-                a.ShowDialog();
+                _notifyIcon.Visible = false;
+                Environment.Exit(0);
             };
-            operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[6].Click += (o, args) =>
+            foreach (var t in operationsButton)
             {
-                var a = new SystemConfiguratioin();
-                a.ShowDialog();
+                Operations.Items.Add(t);
+            }
+        }
+
+        private void SetEnvironmentForAdministrator()
+        {
+            Button[] operationsButton =
+            {
+                new Button {Height = 32, Width = 80, Content = "个人信息"},
+                new Button {Height = 32, Width = 80, Content = "题目管理"},
+                new Button {Height = 32, Width = 80, Content = "评测日志"},
+                new Button {Height = 32, Width = 80, Content = "发送消息"},
+                new Button {Height = 32, Width = 80, Content = "人员管理"},
+                new Button {Height = 32, Width = 80, Content = "离线评测"},
+                new Button {Height = 32, Width = 80, Content = "系统设置"},
+                new Button {Height = 32, Width = 80, Content = "注销登录"},
+                new Button {Height = 32, Width = 80, Content = "退出程序"}
             };
-            operationsButton[7].Click += async (o, args) => { await Logout(); };
+            operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
+            operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
+            operationsButton[2].Click += (o, args) =>
+            {
+                if (_judgeLogsForm == null)
+                {
+                    _judgeLogsForm = new JudgeLogs();
+                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
+                    _judgeLogsForm.Show();
+                }
+                else
+                {
+                    _judgeLogsForm.Activate();
+                }
+            };
+            operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
+            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
+            operationsButton[7].Click += async (o, args) => await Logout();
             operationsButton[8].Click += (o, args) =>
             {
                 _notifyIcon.Visible = false;
@@ -199,15 +229,8 @@ namespace Server
                 new Button {Height = 32, Width = 80, Content = "离线评测"},
                 new Button {Height = 32, Width = 80, Content = "注销登录"}
             };
-            operationsButton[0].Click += (o, args) =>
-            {
-                var a = new ProfileManagement();
-                a.ShowDialog();
-            };
-            operationsButton[1].Click += (o, args) => {
-                var a = new ProblemManagement();
-                a.ShowDialog();
-            };
+            operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
+            operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
             operationsButton[2].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
@@ -222,79 +245,15 @@ namespace Server
                 }
             };
             operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) =>
-            {
-                var a = new MembersManagement();
-                a.ShowDialog();
-            };
-            operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[6].Click += async (o, args) => { await Logout(); };
+            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[6].Click += async (o, args) => await Logout();
             foreach (var t in operationsButton)
             {
                 Operations.Items.Add(t);
             }
         }
 
-        private void SetEnvironmentForAdministrator()
-        {
-            Button[] operationsButton =
-            {
-                new Button {Height = 32, Width = 80, Content = "个人信息"},
-                new Button {Height = 32, Width = 80, Content = "题目管理"},
-                new Button {Height = 32, Width = 80, Content = "评测日志"},
-                new Button {Height = 32, Width = 80, Content = "发送消息"},
-                new Button {Height = 32, Width = 80, Content = "人员管理"},
-                new Button {Height = 32, Width = 80, Content = "离线评测"},
-                new Button {Height = 32, Width = 80, Content = "系统设置"},
-                new Button {Height = 32, Width = 80, Content = "注销登录"},
-                new Button {Height = 32, Width = 80, Content = "退出程序"}
-            };
-            operationsButton[0].Click += (o, args) =>
-            {
-                var a = new ProfileManagement();
-                a.ShowDialog();
-            };
-            operationsButton[1].Click += (o, args) =>
-            {
-                var a = new ProblemManagement();
-                a.ShowDialog();
-            };
-            operationsButton[2].Click += (o, args) =>
-            {
-                if (_judgeLogsForm == null)
-                {
-                    _judgeLogsForm = new JudgeLogs();
-                    _judgeLogsForm.Closed += (sender, eventArgs) => { _judgeLogsForm = null; };
-                    _judgeLogsForm.Show();
-                }
-                else
-                {
-                    _judgeLogsForm.Activate();
-                }
-            };
-            operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
-            operationsButton[4].Click += (o, args) =>
-            {
-                var a = new MembersManagement();
-                a.ShowDialog();
-            };
-            operationsButton[5].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[6].Click += (o, args) =>
-            {
-                var a = new SystemConfiguratioin();
-                a.ShowDialog();
-            };
-            operationsButton[7].Click += async (o, args) => { await Logout(); };
-            operationsButton[8].Click += (o, args) =>
-            {
-                _notifyIcon.Visible = false;
-                Environment.Exit(0);
-            };
-            foreach (var t in operationsButton)
-            {
-                Operations.Items.Add(t);
-            }
-        }
 
         private void SetEnvironmentForStudent()
         {
@@ -305,11 +264,7 @@ namespace Server
                 new Button {Height = 32, Width = 80, Content = "离线评测"},
                 new Button {Height = 32, Width = 80, Content = "注销登录"}
             };
-            operationsButton[0].Click += (o, args) =>
-            {
-                var a = new ProfileManagement();
-                a.ShowDialog();
-            };
+            operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
             operationsButton[1].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
@@ -323,8 +278,8 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[2].Click += (o, args) => { }; //TODO: Offline Judge
-            operationsButton[3].Click += async (o, args) => { await Logout(); };
+            operationsButton[2].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[3].Click += async (o, args) => await Logout();
             foreach (var t in operationsButton)
             {
                 Operations.Items.Add(t);
@@ -405,6 +360,22 @@ namespace Server
             await Task.Run(() => { Thread.Sleep(250); });
             BeginAnimation(HeightProperty, unscratchHeightDaV);
             LoginGrid.BeginAnimation(OpacityProperty, showDaV);
+        }
+
+        private void UserName_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                LoginButton_ClickAsync(null, null);
+            }
+        }
+
+        private void Password_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                LoginButton_ClickAsync(null, null);
+            }
         }
     }
 }

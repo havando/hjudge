@@ -21,11 +21,11 @@ namespace Server
             {
                 Configurations.Compiler = "";
                 Configurations.EnvironmentValues = "";
-                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations));
+                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());
             var rdr =
-                new StringReader(File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml"));
+                new StringReader(File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
             Configurations = (Config)xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist, EnvironmentVariableTarget.Process);
@@ -43,7 +43,7 @@ namespace Server
         {
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist, EnvironmentVariableTarget.Process);
-            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations), Encoding.Default);
+            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8.GetString(Encoding.Default.GetBytes(SerializeToXmlString(Configurations))), Encoding.UTF8);
         }
     }
 }
