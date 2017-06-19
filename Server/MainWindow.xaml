@@ -20,8 +20,8 @@
             <Label Name="Identity" Content="UserName，欢迎回来！当前身份：Identity" HorizontalAlignment="Left" Margin="36,0,0,0" VerticalAlignment="Top"/>
             <Label Name="CurrentAddress" Content="当前主机地址：CurrentAddress" Margin="424,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
             <GroupBox Header="动态" HorizontalAlignment="Left" Height="238" Margin="10,31,0,0" VerticalAlignment="Top" Width="482">
-                <Grid>
-                </Grid>
+                <ListBox Name="ListBox">
+                </ListBox>
             </GroupBox>
             <GroupBox Header="操作" HorizontalAlignment="Left" Height="238" Margin="497,31,0,0" VerticalAlignment="Top" Width="140">
                 <ListBox Name="Operations">

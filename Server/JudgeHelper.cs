@@ -143,6 +143,8 @@ namespace Server
                 t.InputFile = GetRealString(t.InputFile);
                 t.OutputFile = GetRealString(t.OutputFile);
             }
+            Connection.UpdateMainPageState(
+                $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，选手：{JudgeResult.UserName}");
             BeginJudge();
             Connection.UpdateJudgeInfo(JudgeResult);
             try

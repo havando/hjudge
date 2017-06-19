@@ -29,8 +29,8 @@ namespace Server
         private static readonly TcpPullServer HServer = new TcpPullServer();
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
-
-        public static void Init()
+        private static Action<string> _updateMain;
+        public static void Init(Action<string> updateMainPage)
         {
             #region DataBase
 
@@ -169,6 +169,7 @@ namespace Server
 
             #endregion
 
+            _updateMain = updateMainPage;
         }
 
         #region DataBase
@@ -1022,6 +1023,8 @@ namespace Server
                                                             u.Info.UserId =
                                                             GetUserId(Encoding.Unicode.GetString(res.Content[0]));
                                                             SendData("Login", "Succeed", res.Client.ConnId);
+                                                            UpdateMainPageState(
+                                                                $"{DateTime.Now} 选手 {res.Client.UserName} 登录了");
                                                             break;
                                                         }
                                                     case 1:
@@ -1047,6 +1050,8 @@ namespace Server
                                             {
                                                 Recv.Remove(x);
                                             }
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now} 选手 {res.Client.UserName} 注销了");
                                             SendData("Logout", "Succeed", res.Client.ConnId);
                                             break;
                                         }
@@ -1074,6 +1079,8 @@ namespace Server
                                             if (u.Info.UserId == 0) { break; }
                                             if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
                                             {
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now} 选手 {res.Client.UserName} 请求文件：{Encoding.Unicode.GetString(res.Content[0])}");
                                                 SendData("File", File.ReadAllBytes(Encoding.Unicode.GetString(res.Content[0])), res.Client.ConnId);
                                             }
                                             break;
@@ -1083,6 +1090,8 @@ namespace Server
                                             if (u.Info.UserId == 0) { break; }
                                             if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
                                             {
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now} 选手 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
                                                 Task.Run(() =>
                                                 {
                                                     var j = new Judge(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])), u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
@@ -1095,6 +1104,8 @@ namespace Server
                                     case "Messaging":
                                         {
                                             if (u.Info.UserId == 0) { break; }
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now} 选手 {res.Client.UserName} 发来了消息");
                                             var x = new Messaging();
                                             x.SetMessage(Encoding.Unicode.GetString(res.Content[0]), res.Client.ConnId);
                                             x.Show();
@@ -1133,6 +1144,11 @@ namespace Server
         }
 
         #endregion
+
+        public static void UpdateMainPageState(string content)
+        {
+            _updateMain.Invoke(content);
+        }
     }
 
     public class ClientData
@@ -1167,4 +1183,5 @@ namespace Server
         public List<byte[]> Content = new List<byte[]>();
         public ClientInfo Client { get; set; }
     }
+    
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media.Animation;
 using Button = System.Windows.Controls.Button;
@@ -62,7 +63,7 @@ namespace Server
                 Activate();
             };
             _notifyIcon.Visible = true;
-            
+
             Init();
         }
 
@@ -86,13 +87,27 @@ namespace Server
             {
                 Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
             }
-            
-            Connection.Init();
+
+            Connection.Init(UpdateListBoxContent);
             Configuration.Init();
             CurrentAddress.Content = "当前主机地址：" + Connection.Address;
             UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();
+
+            UpdateListBoxContent($"{DateTime.Now} 欢迎使用 hjudge");
+        }
+
+        private void UpdateListBoxContent(string content)
+        {
+            Dispatcher.BeginInvoke((Action)(() =>
+            {
+                ListBox.Items.Add(new TextBlock
+                {
+                    Text = content
+                });
+                ListBox.SelectedIndex = ListBox.Items.Count - 1;
+            }));
         }
 
         private async void LoginButton_ClickAsync(object sender, RoutedEventArgs e)
@@ -117,6 +132,7 @@ namespace Server
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;
+            UpdateListBoxContent($"{DateTime.Now} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端");
             UserName.Text = "";
             Password.Password = "";
             LoginGrid.Visibility = Visibility.Hidden;
