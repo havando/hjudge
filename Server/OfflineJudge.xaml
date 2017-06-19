@@ -10,7 +10,7 @@
         <TabControl HorizontalAlignment="Left" Height="324" Margin="10,10,0,0" VerticalAlignment="Top" Width="763" SelectionChanged="TabControl_SelectionChanged">
             <TabItem Header="评测状态">
                 <Grid>
-                    <ListView Name="ListView"  HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" VerticalAlignment="Top" Width="210">
+                    <ListView Name="ListView"  HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" VerticalAlignment="Top" Width="210"  GridViewColumnHeader.Click="ListView_Click">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn>
@@ -57,7 +57,7 @@
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
-                    <Button Content="导出" HorizontalAlignment="Left" Height="29" Margin="707,257,0,0" VerticalAlignment="Top" Width="46" Click="Button_Click"/>
+                    <Button Name="ExportButton"  Content="导出" HorizontalAlignment="Left" Height="29" Margin="707,257,0,0" VerticalAlignment="Top" Width="46" Click="Button_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="评测帮助">

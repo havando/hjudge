@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="发送消息" Height="379.886" Width="750.426" Icon="Resources/Messaging.png" ResizeMode="NoResize" Loaded="Window_Loaded">
     <Grid>
-        <ListView Name="ListView"  HorizontalAlignment="Left" Height="331" Margin="10,10,0,0" VerticalAlignment="Top" Width="269">
+        <ListView Name="ListView"  HorizontalAlignment="Left" Height="331" Margin="10,10,0,0" VerticalAlignment="Top" Width="269" GridViewColumnHeader.Click="ListView_Click">
             <ListView.View>
                 <GridView>
                     <GridViewColumn>

@@ -1120,9 +1120,9 @@ namespace Server
             });
         }
 
-        public static List<ClientInfo> GetAllConnectedClient()
+        public static ObservableCollection<ClientInfo> GetAllConnectedClient()
         {
-            var a = new List<ClientInfo>();
+            var a = new ObservableCollection<ClientInfo>();
             foreach (var i in Recv)
             {
                 if (i.Info.UserId == 0) continue;

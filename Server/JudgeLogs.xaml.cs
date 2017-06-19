@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -13,6 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace Server
 {
@@ -75,12 +79,39 @@ namespace Server
             Code.Margin = new Thickness(ListView.Width + 15, JudgeDetails.Height + 15, 0, 0);
             Refresh.Margin = new Thickness(ListView.Width - 20, ListView.Height + 10, 0, 0);
             ClearLabel.Margin = new Thickness(ListView.Width - 20 - 39, ListView.Height + 10, 0, 0);
-            Export.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
+            ExportLabel.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
         }
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            //TODO: EXPORT RESULTS
+            var a = JsonConvert.SerializeObject((from c in _curJudgeInfo where c.IsChecked select c).Select(JsonConvert.SerializeObject).ToList());
+            var sfg = new SaveFileDialog
+            {
+                Title = "保存导出数据：",
+                Filter = "Json 文件 (.json)|*.json"
+            };
+            if (sfg.ShowDialog() == true)
+            {
+                var s = sfg.OpenFile();
+                var tmp = Encoding.Unicode.GetBytes(a);
+                s.Write(tmp, 0, tmp.Length);
+            }
+        }
+
+        private void ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var clickedColumn = (e.OriginalSource as GridViewColumnHeader)?.Column;
+            if (clickedColumn == null) return;
+            var bindingProperty = (clickedColumn.DisplayMemberBinding as Binding)?.Path.Path;
+            var sdc = ListView.Items.SortDescriptions;
+            var sortDirection = ListSortDirection.Ascending;
+            if (sdc.Count > 0)
+            {
+                var sd = sdc[0];
+                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sdc.Clear();
+            }
+            sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
     }
 }

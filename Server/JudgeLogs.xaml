@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="JudgeLogs" Height="661.149" Width="1064.308" Loaded="Window_Loaded" Icon="Resources/list.png" SizeChanged="Window_SizeChanged">
     <Grid>
-        <ListView Name="ListView"  HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387" Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged">
+        <ListView Name="ListView"  HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387" Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding Path=JudgeId}"/>
@@ -24,7 +24,7 @@
         <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
         <Label Name="Refresh"  Content="刷新" HorizontalAlignment="Left" Margin="363,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1"/>
         <Label Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="324,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown"/>
-        <Label Name="Export" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown"/>
+        <Label Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown"/>
 
     </Grid>
 </Window>

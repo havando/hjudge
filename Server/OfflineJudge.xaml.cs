@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace Server
 {
@@ -43,21 +47,38 @@ namespace Server
 
         private void JudgeButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!Directory.Exists(JudgeDir.Text))
+            {
+                return;
+            }
+            string[] members;
+            try
+            {
+                members = GetAllMembers();
+            }
+            catch
+            {
+                return;
+            }
+            if (members == null)
+            {
+                return;
+            }
+            ExportButton.IsEnabled = false;
             JudgingLog.Items.Clear();
             JudgeDetails.Items.Clear();
             JudgingProcess.Value = 0;
             CurrentState.Content = "开始评测";
             JudgeButton.IsEnabled = false;
-            StartJudge(JudgeDir.Text);
+            _results.Clear();
+            StartJudge(members, JudgeDir.Text);
         }
 
-        private void StartJudge(string dirPath)
+        private void StartJudge(IReadOnlyCollection<string> members, string dirPath)
         {
-            var members = GetAllMembers();
-            _results.Clear();
             Task.Run(() =>
             {
-                var all = members.Length * _problems.Count(t => t.IsChecked);
+                var all = members.Count * _problems.Count(t => t.IsChecked);
                 int[] cur = { -1 };
                 foreach (var t in members)
                 {
@@ -94,20 +115,7 @@ namespace Server
                             continue;
                         }
                         var j = new Judge(m.ProblemId, 1, code);
-                        p.Result.Add(new JudgeInfo
-                        {
-                            Exitcode = new int[j.JudgeResult.Exitcode.Length],
-                            Memoryused = new long[j.JudgeResult.Memoryused.Length],
-                            Timeused = new long[j.JudgeResult.Timeused.Length],
-                            Result = new string[j.JudgeResult.Result.Length],
-                            Score = new float[j.JudgeResult.Score.Length],
-                            ProblemId = j.JudgeResult.ProblemId
-                        });
-                        j.JudgeResult.Exitcode.CopyTo(p.Result[p.Result.Count - 1].Exitcode, 0);
-                        j.JudgeResult.Memoryused.CopyTo(p.Result[p.Result.Count - 1].Memoryused, 0);
-                        j.JudgeResult.Timeused.CopyTo(p.Result[p.Result.Count - 1].Timeused, 0);
-                        j.JudgeResult.Result.CopyTo(p.Result[p.Result.Count - 1].Result, 0);
-                        j.JudgeResult.Score.CopyTo(p.Result[p.Result.Count - 1].Score, 0);
+                        p.Result.Add(j.JudgeResult);
                     }
                     Dispatcher.BeginInvoke((Action)(() =>
                     {
@@ -121,6 +129,7 @@ namespace Server
                     JudgingProcess.Value = 100;
                     JudgeResult.Items.Refresh();
                     JudgeButton.IsEnabled = true;
+                    ExportButton.IsEnabled = true;
                 }));
             });
         }
@@ -142,23 +151,29 @@ namespace Server
             {
                 f.Add(new ResultTree
                 {
-                    Content = $"{t.Result[i].ProblemName}：{t.Result[i].ResultSummery}",
+                    Content = $"{t.Result[i].ProblemName}：{t.Result[i].ResultSummery}，{t.Result[i].FullScore}",
                     Children = new ObservableCollection<ResultTree>()
                 });
                 for (var j = 0; j < t.Result[i].Result.Length; j++)
                 {
                     f[i].Children.Add(new ResultTree
                     {
-                        Content = $"#{j + 1}",
+                        Content = $"#{j + 1}：{t.Result[i].Result[j]}，{t.Result[i].Score[j]}",
                         Children = new ObservableCollection<ResultTree>()
                     });
                     f[i].Children[j].Children.Add(new ResultTree { Content = $"时间：{t.Result[i].Timeused[j]}ms" });
                     f[i].Children[j].Children.Add(new ResultTree { Content = $"内存：{t.Result[i].Memoryused[j]}kb" });
                     f[i].Children[j].Children.Add(new ResultTree { Content = $"退出代码：{t.Result[i].Exitcode[j]}" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"结果：{t.Result[i].Result[j]}" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"分数：{t.Result[i].Score[j]}" });
                 }
-
+                f[i].Children.Add(new ResultTree
+                {
+                    Content = "代码",
+                    Children = new ObservableCollection<ResultTree>()
+                });
+                f[i].Children[f[i].Children.Count - 1].Children.Add(new ResultTree
+                {
+                    Content = t.Result[i].Code
+                });
             }
             JudgeDetails.ItemsSource = f;
             JudgeDetails.Items.Refresh();
@@ -182,7 +197,36 @@ namespace Server
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //TODO: EXPORT RESULTS
+            JudgeButton.IsEnabled = false;
+            var a = JsonConvert.SerializeObject(_results);
+            var sfg = new SaveFileDialog
+            {
+                Title = "保存导出数据：",
+                Filter = "Json 文件 (.json)|*.json"
+            };
+            if (sfg.ShowDialog() == true)
+            {
+                var s = sfg.OpenFile();
+                var tmp = Encoding.Unicode.GetBytes(a);
+                s.Write(tmp, 0, tmp.Length);
+            }
+            JudgeButton.IsEnabled = true;
+        }
+
+        private void ListView_Click(object sender, RoutedEventArgs e)
+        {
+            var clickedColumn = (e.OriginalSource as GridViewColumnHeader)?.Column;
+            if (clickedColumn == null) return;
+            var bindingProperty = (clickedColumn.DisplayMemberBinding as Binding)?.Path.Path;
+            var sdc = ListView.Items.SortDescriptions;
+            var sortDirection = ListSortDirection.Ascending;
+            if (sdc.Count > 0)
+            {
+                var sd = sdc[0];
+                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sdc.Clear();
+            }
+            sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
     }
 

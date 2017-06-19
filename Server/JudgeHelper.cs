@@ -76,6 +76,8 @@ namespace Server
             }
         }
 
+        public bool IsChecked { get; set; }
+
         public float FullScore => Score?.Sum() ?? 0;
     }
 
@@ -299,7 +301,7 @@ namespace Server
                         JudgeResult.Score[_cur] = 0;
                         continue;
                     }
-                    if (string.IsNullOrEmpty(_problem.SpecialJudge))
+                    if (!string.IsNullOrEmpty(_problem.SpecialJudge))
                     {
                         if (File.Exists(_problem.SpecialJudge))
                         {
