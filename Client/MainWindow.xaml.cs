@@ -24,5 +24,10 @@ namespace Client
         {
             InitializeComponent();
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoginGrid.Margin = new Thickness(85,32,0,0);
+        }
     }
 }

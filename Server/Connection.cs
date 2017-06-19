@@ -174,6 +174,121 @@ namespace Server
 
         #region DataBase
 
+        private static bool RemoteChangePassword(string userName, string oldPassword, string newPassword)
+        {
+            SHA256 s = new SHA256CryptoServiceProvider();
+            var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(oldPassword));
+            var sb = new StringBuilder();
+            foreach (var t in retVal)
+            {
+                sb.Append(t.ToString("x2"));
+            }
+            SHA256 s2 = new SHA256CryptoServiceProvider();
+            var retVal2 = s2.ComputeHash(Encoding.Unicode.GetBytes(newPassword));
+            var sb2 = new StringBuilder();
+            foreach (var t in retVal2)
+            {
+                sb2.Append(t.ToString("x2"));
+            }
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From User Where userName=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String)
+                };
+                parameters[0].Value = userName;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    if (!reader.Read()) return false;
+                    if (sb.ToString() != reader.GetString(3)) return false;
+                    cmd.CommandText = "Update User SET Password=@1 Where UserName=@2";
+                    cmd.Parameters.Clear();
+                    SQLiteParameter[] parameters2 =
+                    {
+                        new SQLiteParameter("@1", DbType.String),
+                        new SQLiteParameter("@2", DbType.String)
+                    };
+                    parameters2[0].Value = sb2.ToString();
+                    parameters2[1].Value = userName;
+                    cmd.Parameters.AddRange(parameters2);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        private static bool RemoteUpdateProfile(int userId, string userName, string icon)
+        {
+            var k = CheckUser(userName);
+            if (k != userId && k != 0)
+            {
+                return false;
+            }
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "UPDATE User SET UserName=@1, Icon=@2 WHERE UserId=@3";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@2", DbType.String),
+                    new SQLiteParameter("@3", DbType.Int32)
+                };
+                parameters[0].Value = userName;
+                parameters[1].Value = icon;
+                parameters[2].Value = userId;
+                cmd.Parameters.AddRange(parameters);
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        private static int RemoteLogin(string userName, string password)
+        {
+            SHA256 s = new SHA256CryptoServiceProvider();
+            var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(password));
+            var sb = new StringBuilder();
+            foreach (var t in retVal)
+            {
+                sb.Append(t.ToString("x2"));
+            }
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From User Where userName=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String)
+                };
+                parameters[0].Value = userName;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        return sb.ToString() == reader.GetString(3) && reader.GetInt32(0) != 1 ? 0 : 1;
+                    }
+                }
+                else
+                {
+                    return 1;
+                }
+
+            }
+            return 2;
+        }
+
         public static string Logout()
         {
             var a = UserHelper.CurrentUser.UserName;
@@ -230,26 +345,12 @@ namespace Server
                     parameters[0].Value = userName;
                     cmd.Parameters.AddRange(parameters);
                     var reader = cmd.ExecuteReader();
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            if (passwordHash == reader.GetString(3))
-                            {
-                                Console.Write(reader.GetString(2));
-                                UserHelper.SetCurrentUser(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetInt32(4), reader.GetString(5), reader.GetString(6));
-                                return 0;
-                            }
-                            return 1;
-                        }
-                    }
-                    else
-                    {
-                        return 1;
-                    }
-
+                    if (!reader.HasRows) return 1;
+                    if (!reader.Read()) return 2;
+                    if (passwordHash != reader.GetString(3)) return 1;
+                    UserHelper.SetCurrentUser(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetInt32(4), reader.GetString(5), reader.GetString(6));
+                    return 0;
                 }
-                return 2;
             });
         }
 
@@ -413,12 +514,10 @@ namespace Server
                 parameters[0].Value = userName;
                 cmd.Parameters.AddRange(parameters);
                 var reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                if (!reader.HasRows) return 0;
+                if (reader.Read())
                 {
-                    if (reader.Read())
-                    {
-                        return reader.GetInt32(0);
-                    }
+                    return reader.GetInt32(0);
                 }
             }
             return 0;
@@ -440,37 +539,34 @@ namespace Server
             var curJudgeInfo = new ObservableCollection<JudgeInfo>();
             using (var cmd = new SQLiteCommand(_sqLite))
             {
-                if (UserHelper.CurrentUser.Type != 4) { cmd.CommandText = "SELECT * From Judge"; }
-                else { cmd.CommandText = $"SELECT * From Judge Where UserId={UserHelper.CurrentUser.UserId}"; }
+                cmd.CommandText = UserHelper.CurrentUser.Type != 4 ? "SELECT * From Judge" : $"SELECT * From Judge Where UserId={UserHelper.CurrentUser.UserId}";
                 var reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                if (!reader.HasRows) return curJudgeInfo;
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    try
                     {
-                        try
+                        curJudgeInfo.Add(new JudgeInfo
                         {
-                            curJudgeInfo.Add(new JudgeInfo
-                            {
-                                JudgeId = reader.GetInt32(0),
-                                UserId = reader.GetInt32(1),
-                                JudgeDate = reader.GetString(2),
-                                ProblemId = reader.GetInt32(3),
-                                Code = reader.GetString(4),
-                                Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
-                                Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
-                                Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
-                                Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
-                            });
-                        }
-                        catch
+                            JudgeId = reader.GetInt32(0),
+                            UserId = reader.GetInt32(1),
+                            JudgeDate = reader.GetString(2),
+                            ProblemId = reader.GetInt32(3),
+                            Code = reader.GetString(4),
+                            Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
+                            Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
+                            Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
+                            Result = reader.GetString(8).Split(','),
+                            Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                        });
+                    }
+                    catch
+                    {
+                        curJudgeInfo.Add(new JudgeInfo
                         {
-                            curJudgeInfo.Add(new JudgeInfo
-                            {
-                                JudgeId = reader.GetInt32(0),
-                                JudgeDate = reader.GetString(2)
-                            });
-                        }
+                            JudgeId = reader.GetInt32(0),
+                            JudgeDate = reader.GetString(2)
+                        });
                     }
                 }
             }
@@ -523,19 +619,17 @@ namespace Server
                 parameters[0].Value = userId;
                 cmd.Parameters.AddRange(parameters);
                 var reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                if (!reader.HasRows) return userName;
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        userName = reader.GetString(1);
-                        break;
-                    }
+                    userName = reader.GetString(1);
+                    break;
                 }
             }
             return userName;
         }
 
-        public static int GetUserId(string userName)
+        private static int GetUserId(string userName)
         {
             var userId = 0;
             using (var cmd = new SQLiteCommand(_sqLite))
@@ -548,16 +642,74 @@ namespace Server
                 parameters[0].Value = userName;
                 cmd.Parameters.AddRange(parameters);
                 var reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                if (!reader.HasRows) return userId;
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        userId = reader.GetInt32(0);
-                        break;
-                    }
+                    userId = reader.GetInt32(0);
+                    break;
                 }
             }
             return userId;
+        }
+
+        public static UserInfo GetUser(int userId)
+        {
+            var a = new ObservableCollection<UserInfo>();
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From User Where UserId=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.Int32)
+                };
+                parameters[0].Value = userId;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    if (reader.Read())
+                    {
+                        return new UserInfo
+                        {
+                            UserId = reader.GetInt32(0),
+                            UserName = reader.GetString(1),
+                            Password = reader.GetString(3),
+                            Type = reader.GetInt32(4)
+                        };
+                    }
+                }
+                return null;
+            }
+        }
+
+        private static UserInfo GetUser(string userName)
+        {
+            var a = new ObservableCollection<UserInfo>();
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From User Where UserName=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String)
+                };
+                parameters[0].Value = userName;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    if (reader.Read())
+                    {
+                        return new UserInfo
+                        {
+                            UserId = reader.GetInt32(0),
+                            UserName = reader.GetString(1),
+                            Password = reader.GetString(3),
+                            Type = reader.GetInt32(4)
+                        };
+                    }
+                }
+                return null;
+            }
         }
 
         public static string GetProblemName(int problemId)
@@ -573,13 +725,11 @@ namespace Server
                 parameters[0].Value = problemId;
                 cmd.Parameters.AddRange(parameters);
                 var reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                if (!reader.HasRows) return problemName;
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        problemName = reader.GetString(1);
-                        break;
-                    }
+                    problemName = reader.GetString(1);
+                    break;
                 }
             }
             return problemName;
@@ -704,6 +854,7 @@ namespace Server
             }
             return res;
         }
+
         private static Data[] CastJsonArrToDataArr(JArray p)
         {
             var res = new Data[p.Count];
@@ -800,11 +951,8 @@ namespace Server
         {
             var a = new List<string>();
             a.AddRange(Directory.GetFiles(path));
-            var b = Directory.GetDirectories(path);
-            foreach (var i in b)
-            {
-                a.AddRange(SearchFiles(i));
-            }
+            a.Add("|");
+            a.AddRange(Directory.GetDirectories(path));
             return a;
         }
 
@@ -1010,55 +1158,54 @@ namespace Server
                             {
                                 switch (res.Operation)
                                 {
-                                    case "Login":
+                                    case "Login": //userName, password : flag (Succeed, Incorrect, Unknown)
                                         {
-                                            Task.Run(async () =>
+                                            var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
+                                                Encoding.Unicode.GetString(res.Content[1]));
+                                            switch (x)
                                             {
-                                                var x = await Login(Encoding.Unicode.GetString(res.Content[0]),
-                                                    Encoding.Unicode.GetString(res.Content[1]));
-                                                switch (x)
-                                                {
-                                                    case 0:
-                                                        {
-                                                            u.Info.UserId =
-                                                            GetUserId(Encoding.Unicode.GetString(res.Content[0]));
-                                                            SendData("Login", "Succeed", res.Client.ConnId);
-                                                            UpdateMainPageState(
-                                                                $"{DateTime.Now} 选手 {res.Client.UserName} 登录了");
-                                                            break;
-                                                        }
-                                                    case 1:
-                                                        {
-                                                            SendData("Login", "Incorrect", res.Client.ConnId);
-                                                            break;
-                                                        }
-                                                    default:
-                                                        {
-                                                            SendData("Login", "Unknown", res.Client.ConnId);
-                                                            break;
-                                                        }
-                                                }
-                                            });
+                                                case 0:
+                                                    {
+                                                        u.Info.UserId =
+                                                        GetUserId(Encoding.Unicode.GetString(res.Content[0]));
+                                                        SendData("Login", "Succeed", res.Client.ConnId);
+                                                        UpdateMainPageState(
+                                                            $"{DateTime.Now} 选手 {res.Client.UserName} 登录了");
+                                                        break;
+                                                    }
+                                                case 1:
+                                                    {
+                                                        SendData("Login", "Incorrect", res.Client.ConnId);
+                                                        break;
+                                                    }
+                                                default:
+                                                    {
+                                                        SendData("Login", "Unknown", res.Client.ConnId);
+                                                        break;
+                                                    }
+                                            }
                                             break;
                                         }
-                                    case "Logout":
+                                    case "Logout": //none : flag (Succeed)
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
                                                 .FirstOrDefault();
                                             if (x != null)
                                             {
-                                                Recv.Remove(x);
+                                                x.Data.Clear();
+                                                x.Info.UserId = 0;
                                             }
                                             UpdateMainPageState(
                                                 $"{DateTime.Now} 选手 {res.Client.UserName} 注销了");
                                             SendData("Logout", "Succeed", res.Client.ConnId);
                                             break;
                                         }
-                                    case "AskFileList":
+                                    case "RequestFileList": //path : dirRoot, fileList
                                         {
                                             if (u.Info.UserId == 0) { break; }
-                                            var x = SearchFiles(Environment.CurrentDirectory + "\\Problem");
+                                            var x = SearchFiles(Environment.CurrentDirectory + "\\Problem\\" +
+                                                                Encoding.Unicode.GetString(res.Content[0]));
                                             var y = "";
                                             for (var i = 0; i < x.Count; i++)
                                             {
@@ -1071,10 +1218,10 @@ namespace Server
                                                     y += x[i];
                                                 }
                                             }
-                                            SendData("FileList", y, res.Client.ConnId);
+                                            SendData("FileList", Encoding.Unicode.GetString(res.Content[0]) + Divpar + y, res.Client.ConnId);
                                             break;
                                         }
-                                    case "AskFile":
+                                    case "RequestFile": //path : file
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
@@ -1085,7 +1232,7 @@ namespace Server
                                             }
                                             break;
                                         }
-                                    case "SubmitCode":
+                                    case "SubmitCode": //problemId, code : judgeResult
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
@@ -1101,7 +1248,7 @@ namespace Server
                                             }
                                             break;
                                         }
-                                    case "Messaging":
+                                    case "Messaging": //message : none
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             UpdateMainPageState(
@@ -1111,11 +1258,39 @@ namespace Server
                                             x.Show();
                                             break;
                                         }
-                                    case "AskProblemList":
+                                    case "RequestProblemList": //none : problemList
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = JsonConvert.SerializeObject(QueryProblems());
                                             SendData("ProblemList", x, res.Client.ConnId);
+                                            break;
+                                        }
+                                    case "RequestProfile": //none : profile
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            var x = JsonConvert.SerializeObject(GetUser(Encoding.Unicode.GetString(res.Content[0])));
+                                            SendData("Profile", x, res.Client.ConnId);
+                                            break;
+                                        }
+                                    case "ChangePassword": //userName, oldPassword, newPassword : flag (Succeed, Failed)
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            SendData("ChangePassword",
+                                                RemoteChangePassword(Encoding.Unicode.GetString(res.Content[0]),
+                                                    Encoding.Unicode.GetString(res.Content[1]),
+                                                    Encoding.Unicode.GetString(res.Content[2]))
+                                                    ? "Succeed"
+                                                    : "Failed", res.Client.ConnId);
+                                            break;
+                                        }
+                                    case "UpdateProfile": //userId, newUserName, newIcon : flag (Succeed, Failed)
+                                        {
+                                            SendData("UpdateProfile",
+                                                RemoteUpdateProfile(GetUserId(Encoding.Unicode.GetString(res.Content[0])),
+                                                    Encoding.Unicode.GetString(res.Content[1]),
+                                                    Encoding.Unicode.GetString(res.Content[2]))
+                                                    ? "Succeed"
+                                                    : "Failed", res.Client.ConnId);
                                             break;
                                         }
                                 }
