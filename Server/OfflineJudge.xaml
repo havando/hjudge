@@ -27,7 +27,7 @@
                     </ListView>
                     <Label Content="评测文件夹：" HorizontalAlignment="Left" Margin="225,10,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="JudgeDir"  HorizontalAlignment="Left" Height="23" Margin="312,12,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="384"/>
-                    <Label Content="当前评测：" HorizontalAlignment="Left" Margin="225,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>
+                    <Label Content="评测进度：" HorizontalAlignment="Left" Margin="225,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>
                     <Button Name="JudgeButton"  Content="开始" HorizontalAlignment="Left" Margin="701,10,0,0" VerticalAlignment="Top" Width="46" Height="26" Click="JudgeButton_Click"/>
                     <Label Content="评测选手：" HorizontalAlignment="Left" Margin="257,72,0,0" VerticalAlignment="Top"/>
                     <Label Name="CurrentMember"  Content="" HorizontalAlignment="Left" Margin="332,72,0,0" VerticalAlignment="Top" Width="364"/>
@@ -57,7 +57,7 @@
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
-                    <Button Content="导出" HorizontalAlignment="Left" Height="29" Margin="707,257,0,0" VerticalAlignment="Top" Width="40"/>
+                    <Button Content="导出" HorizontalAlignment="Left" Height="29" Margin="707,257,0,0" VerticalAlignment="Top" Width="46" Click="Button_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="评测帮助">

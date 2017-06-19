@@ -63,5 +63,24 @@ namespace Server
             ListView.ItemsSource = _curJudgeInfo;
             if (UserHelper.CurrentUser.Type >= 3) { ClearLabel.Visibility = Visibility.Hidden; }
         }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ListView.Height = ActualHeight - 82.149;
+            ListView.Width = (ActualWidth - 24) * 0.4;
+            JudgeDetails.Width = Code.Width = (ActualWidth - 48) * 0.6;
+            JudgeDetails.Height = (ActualHeight - 48) * 0.4;
+            Code.Height = (ActualHeight - 72) * 0.6;
+            JudgeDetails.Margin = new Thickness(ListView.Width + 15, 10, 0, 0);
+            Code.Margin = new Thickness(ListView.Width + 15, JudgeDetails.Height + 15, 0, 0);
+            Refresh.Margin = new Thickness(ListView.Width - 20, ListView.Height + 10, 0, 0);
+            ClearLabel.Margin = new Thickness(ListView.Width - 20 - 39, ListView.Height + 10, 0, 0);
+            Export.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
+        }
+
+        private void Export_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //TODO: EXPORT RESULTS
+        }
     }
 }

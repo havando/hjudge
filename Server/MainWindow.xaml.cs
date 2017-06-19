@@ -35,6 +35,24 @@ namespace Server
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
+            try
+            {
+                if (Environment.Is64BitProcess)
+                {
+                    File.Copy(Environment.CurrentDirectory + "\\x64\\HPSocket4C_U.dll",
+                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                }
+                else
+                {
+                    File.Copy(Environment.CurrentDirectory + "\\x86\\HPSocket4C_U.dll",
+                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("程序初始化失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
+            }
             InitializeComponent();
             _notifyIcon.MouseClick += (sender, args) =>
             {
@@ -44,6 +62,7 @@ namespace Server
                 Activate();
             };
             _notifyIcon.Visible = true;
+            
             Init();
         }
 
@@ -67,6 +86,7 @@ namespace Server
             {
                 Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
             }
+            
             Connection.Init();
             Configuration.Init();
             CurrentAddress.Content = "当前主机地址：" + Connection.Address;
@@ -156,7 +176,7 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
+            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
             operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
             operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
             operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
@@ -201,7 +221,7 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
+            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
             operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
             operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
             operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
@@ -244,7 +264,7 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => { }; //TODO: Messaging
+            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
             operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
             operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
             operationsButton[6].Click += async (o, args) => await Logout();
@@ -253,7 +273,6 @@ namespace Server
                 Operations.Items.Add(t);
             }
         }
-
 
         private void SetEnvironmentForStudent()
         {

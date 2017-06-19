@@ -26,6 +26,10 @@ namespace Server
         {
             get
             {
+                if (Result == null)
+                {
+                    return "Unknown Error";
+                }
                 var error = new int[11];
                 var tot = 0;
                 foreach (var t in Result)
@@ -71,6 +75,8 @@ namespace Server
                 return "Unknown Error";
             }
         }
+
+        public float FullScore => Score?.Sum() ?? 0;
     }
 
     public class Judge

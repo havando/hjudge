@@ -5,27 +5,30 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using HPSocketCS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using HPSocketCS;
-using System.Runtime.InteropServices;
 
 namespace Server
 {
     public static class Connection
     {
         private static SQLiteConnection _sqLite;
-        private static List<byte> _recv = new List<byte>();
-        private static ConcurrentQueue<ObjOperation> _operations = new ConcurrentQueue<ObjOperation>();
-        private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
+        private static bool _isUsing;
+        private static readonly List<ClientData> Recv = new List<ClientData>();
+        private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         public static string Address;
         private static readonly TcpPullServer HServer = new TcpPullServer();
+        private const string Divtot = "<|h~|split|~j|>";
+        private const string Divpar = "<h~|~j>";
 
         public static void Init()
         {
@@ -122,21 +125,25 @@ namespace Server
                 if (!HServer.GetRemoteAddress(id, ref ip, ref port)) { return HandleResult.Ignore; }
                 var clientInfo = new ClientInfo
                 {
+                    UserId = 0,
                     ConnId = id,
                     IpAddress = ip,
                     Port = port,
                     PkgInfo = new PkgInfo
                     {
                         IsHeader = true,
-                        Length = PkgHeaderSize
+                        Length = 8
                     }
                 };
+                Recv.Add(new ClientData { Info = clientInfo });
                 HServer.SetExtra(id, clientInfo);
                 return HandleResult.Ok;
             };
             HServer.OnClose += (id, operation, code) =>
             {
                 HServer.RemoveExtra(id);
+                var t = (from c in Recv where c.Info.ConnId == id select c).FirstOrDefault();
+                if (t != null) { Recv.Remove(t); }
                 return HandleResult.Ok;
             };
             HServer.OnReceive += HServerOnOnReceive;
@@ -154,6 +161,7 @@ namespace Server
                 flag = true;
                 break;
             }
+            DealingBytes();
             DealingOperations();
             if (flag) return;
             MessageBox.Show("服务器初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -164,8 +172,6 @@ namespace Server
         }
 
         #region DataBase
-
-
 
         public static string Logout()
         {
@@ -458,7 +464,7 @@ namespace Server
                         }
                         catch
                         {
-                            curJudgeInfo.Add(new JudgeInfo()
+                            curJudgeInfo.Add(new JudgeInfo
                             {
                                 JudgeId = reader.GetInt32(0),
                                 JudgeDate = reader.GetString(2)
@@ -526,6 +532,31 @@ namespace Server
                 }
             }
             return userName;
+        }
+
+        public static int GetUserId(string userName)
+        {
+            var userId = 0;
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From User Where UserName=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String)
+                };
+                parameters[0].Value = userName;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        userId = reader.GetInt32(0);
+                        break;
+                    }
+                }
+            }
+            return userId;
         }
 
         public static string GetProblemName(int problemId)
@@ -647,12 +678,12 @@ namespace Server
                                 CastJsonArrToStringArr((JArray)JsonConvert.DeserializeObject(reader.GetString(7))),
                             InputFileName = reader.GetString(8),
                             OutputFileName = reader.GetString(9),
-                            CompileCommand = reader.GetString(10),
+                            CompileCommand = reader.GetString(10)
                         });
                     }
                     catch
                     {
-                        curJudgeInfo.Add(new Problem()
+                        curJudgeInfo.Add(new Problem
                         {
                             AddDate = reader.GetString(2),
                             ProblemId = reader.GetInt32(0)
@@ -677,7 +708,7 @@ namespace Server
             var res = new Data[p.Count];
             for (var i = 0; i < p.Count; i++)
             {
-                res[i] = new Data()
+                res[i] = new Data
                 {
                     InputFile = p[i]["InputFile"].ToString(),
                     OutputFile = p[i]["OutputFile"].ToString(),
@@ -743,7 +774,7 @@ namespace Server
                     new SQLiteParameter("@7", DbType.String),
                     new SQLiteParameter("@8", DbType.String),
                     new SQLiteParameter("@9", DbType.String),
-                    new SQLiteParameter("@10", DbType.Int32),
+                    new SQLiteParameter("@10", DbType.Int32)
                 };
                 parameters[0].Value = toUpdateProblem.ProblemName;
                 parameters[1].Value = toUpdateProblem.Level;
@@ -764,6 +795,45 @@ namespace Server
 
         #region Network
 
+        private static List<string> SearchFiles(string path)
+        {
+            var a = new List<string>();
+            a.AddRange(Directory.GetFiles(path));
+            var b = Directory.GetDirectories(path);
+            foreach (var i in b)
+            {
+                a.AddRange(SearchFiles(i));
+            }
+            return a;
+        }
+
+        private static void WaitingForUnusing()
+        {
+            while (_isUsing)
+            {
+                Thread.Sleep(10);
+            }
+        }
+
+        private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
+        {
+            var temp = Encoding.Unicode.GetBytes(operation);
+            temp = temp.Concat(sendBytes).ToArray();
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+            HServer.Send(connId, temp, temp.Length);
+        }
+
+        private static void SendData(string operation, string sendString, IntPtr connId)
+        {
+            var temp = Encoding.Unicode.GetBytes(operation + sendString + Divtot);
+            HServer.Send(connId, temp, temp.Length);
+        }
+
+        public static void SendMsg(string sendString, IntPtr connId)
+        {
+            SendData("Messaging", sendString, connId);
+        }
+
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
         {
             var clientInfo = (ClientInfo)HServer.GetExtra(connId);
@@ -782,14 +852,18 @@ namespace Server
                     {
                         if (pkgInfo.IsHeader)
                         {
-                            var header = (PkgHeader) Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
                         }
                         else
                         {
                             var recv = new byte[required];
                             Marshal.Copy(bufferPtr, recv, 0, required);
-                            _recv.AddRange(recv);
+                            WaitingForUnusing();
+                            _isUsing = true;
+                            var i = (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault();
+                            i?.Data.AddRange(recv);
+                            _isUsing = false;
                         }
                         pkgInfo.IsHeader = !pkgInfo.IsHeader;
                         pkgInfo.Length = required;
@@ -814,37 +888,283 @@ namespace Server
             return HandleResult.Ok;
         }
 
+        private static int Searchbytes(IReadOnlyList<byte> srcBytes, IReadOnlyList<byte> searchBytes, int start)
+        {
+            if (srcBytes == null) { return -1; }
+            if (searchBytes == null) { return -1; }
+            if (srcBytes.Count == 0) { return -1; }
+            if (searchBytes.Count == 0) { return -1; }
+            if (srcBytes.Count < searchBytes.Count) { return -1; }
+            if (start >= srcBytes.Count) { return -1; }
+            for (var i = start; i < srcBytes.Count - searchBytes.Count + 1; i++)
+            {
+                if (srcBytes[i] != searchBytes[0]) continue;
+                if (searchBytes.Count == 1) { return i; }
+                var flag = true;
+                for (var j = 1; j < searchBytes.Count; j++)
+                {
+                    if (srcBytes[i + j] == searchBytes[j]) continue;
+                    flag = false;
+                    break;
+                }
+                if (flag) { return i; }
+            }
+            return -1;
+        }
+
+        private static List<byte[]> Bytespilt(IReadOnlyList<byte> ori, IReadOnlyList<byte> spi)
+        {
+            var pp = new List<byte[]>();
+            var idx = 0;
+            var idxx = 0;
+            while (idxx != -1)
+            {
+                var tmp = new List<byte>();
+                idxx = Searchbytes(ori, spi, idx + 1);
+                if (idxx != -1)
+                {
+                    for (var i = idx; i < idxx; i++)
+                    {
+                        tmp.Add(ori[i]);
+                    }
+                }
+                else
+                {
+                    for (var i = idx; i < ori.Count; i++)
+                    {
+                        tmp.Add(ori[i]);
+                    }
+                }
+                idx = idxx + spi.Count;
+                pp.Add(tmp.ToArray());
+            }
+            return pp;
+        }
+
+        private static void DealingBytes()
+        {
+            Task.Run(() =>
+            {
+                while (!Environment.HasShutdownStarted)
+                {
+                    foreach (var t in Recv)
+                    {
+                        WaitingForUnusing();
+                        _isUsing = true;
+                        var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
+                        if (temp.Count != 0)
+                        {
+                            t.Data.Clear();
+                            t.Data.AddRange(temp[temp.Count - 1]);
+                        }
+                        _isUsing = false;
+                        temp.RemoveAt(temp.Count - 1);
+                        foreach (var i in temp)
+                        {
+                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
+                            if (temp2.Count == 0)
+                            {
+                                continue;
+                            }
+                            switch (Encoding.Unicode.GetString(temp2[0]))
+                            {
+                                case "@":
+                                    {
+                                        var respond = Encoding.Unicode.GetBytes("&");
+                                        HServer.Send(t.Info.ConnId, respond, respond.Length);
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Operations.Enqueue(new ObjOperation
+                                        {
+                                            Operation = Encoding.Unicode.GetString(temp2[0]),
+                                            Client = t.Info,
+                                            Content = temp2
+                                        });
+                                        break;
+                                    }
+                            }
+                        }
+                        Thread.Sleep(10);
+                    }
+                    Thread.Sleep(10);
+                }
+            });
+        }
+
         private static void DealingOperations()
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-
+                while (!Environment.HasShutdownStarted)
+                {
+                    if (Operations.TryDequeue(out var res))
+                    {
+                        var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
+                            .FirstOrDefault();
+                        if (u != null)
+                        {
+                            try
+                            {
+                                switch (res.Operation)
+                                {
+                                    case "Login":
+                                        {
+                                            Task.Run(async () =>
+                                            {
+                                                var x = await Login(Encoding.Unicode.GetString(res.Content[0]),
+                                                    Encoding.Unicode.GetString(res.Content[1]));
+                                                switch (x)
+                                                {
+                                                    case 0:
+                                                        {
+                                                            u.Info.UserId =
+                                                            GetUserId(Encoding.Unicode.GetString(res.Content[0]));
+                                                            SendData("Login", "Succeed", res.Client.ConnId);
+                                                            break;
+                                                        }
+                                                    case 1:
+                                                        {
+                                                            SendData("Login", "Incorrect", res.Client.ConnId);
+                                                            break;
+                                                        }
+                                                    default:
+                                                        {
+                                                            SendData("Login", "Unknown", res.Client.ConnId);
+                                                            break;
+                                                        }
+                                                }
+                                            });
+                                            break;
+                                        }
+                                    case "Logout":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
+                                                .FirstOrDefault();
+                                            if (x != null)
+                                            {
+                                                Recv.Remove(x);
+                                            }
+                                            SendData("Logout", "Succeed", res.Client.ConnId);
+                                            break;
+                                        }
+                                    case "AskFileList":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            var x = SearchFiles(Environment.CurrentDirectory + "\\Problem");
+                                            var y = "";
+                                            for (var i = 0; i < x.Count; i++)
+                                            {
+                                                if (i != x.Count - 1)
+                                                {
+                                                    y += x[i] + Divpar;
+                                                }
+                                                else
+                                                {
+                                                    y += x[i];
+                                                }
+                                            }
+                                            SendData("FileList", y, res.Client.ConnId);
+                                            break;
+                                        }
+                                    case "AskFile":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
+                                            {
+                                                SendData("File", File.ReadAllBytes(Encoding.Unicode.GetString(res.Content[0])), res.Client.ConnId);
+                                            }
+                                            break;
+                                        }
+                                    case "SubmitCode":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
+                                            {
+                                                Task.Run(() =>
+                                                {
+                                                    var j = new Judge(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])), u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
+                                                    var x = JsonConvert.SerializeObject(j);
+                                                    SendData("JudgeResult", x, res.Client.ConnId);
+                                                });
+                                            }
+                                            break;
+                                        }
+                                    case "Messaging":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            var x = new Messaging();
+                                            x.SetMessage(Encoding.Unicode.GetString(res.Content[0]), res.Client.ConnId);
+                                            x.Show();
+                                            break;
+                                        }
+                                    case "AskProblemList":
+                                        {
+                                            if (u.Info.UserId == 0) { break; }
+                                            var x = JsonConvert.SerializeObject(QueryProblems());
+                                            SendData("ProblemList", x, res.Client.ConnId);
+                                            break;
+                                        }
+                                }
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                    Thread.Sleep(10);
+                }
             });
+        }
+
+        public static List<ClientInfo> GetAllConnectedClient()
+        {
+            var a = new List<ClientInfo>();
+            foreach (var i in Recv)
+            {
+                if (i.Info.UserId == 0) continue;
+                i.Info.IsChecked = false;
+                a.Add(i.Info);
+            }
+            return a;
         }
 
         #endregion
     }
 
+    public class ClientData
+    {
+        public ClientInfo Info;
+        public readonly List<byte> Data = new List<byte>();
+    }
     public class ClientInfo
     {
+        public int UserId { get; set; }
         public IntPtr ConnId { get; set; }
         public string IpAddress { get; set; }
         public ushort Port { get; set; }
         public PkgInfo PkgInfo { get; set; }
+        public bool IsChecked { get; set; }
+        public string UserName => UserId == 0 ? "" : Connection.GetUserName(UserId);
+        public string Address => IpAddress + ":" + Convert.ToString(Port);
     }
     public class PkgHeader
     {
-        public int Id;
-        public int BodySize;
+        public int Id { get; set; }
+        public int BodySize { get; set; }
     }
     public class PkgInfo
     {
-        public bool IsHeader;
-        public int Length;
+        public bool IsHeader { get; set; }
+        public int Length { get; set; }
     }
     public class ObjOperation
     {
-        public byte[] Content { get; set; }
+        public string Operation { get; set; }
+        public List<byte[]> Content = new List<byte[]>();
         public ClientInfo Client { get; set; }
     }
 }
