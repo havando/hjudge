@@ -106,7 +106,7 @@ namespace Server
                 {
                     Text = content
                 });
-                ListBox.SelectedIndex = ListBox.Items.Count - 1;
+                ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
             }));
         }
 
@@ -384,6 +384,7 @@ namespace Server
             var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
             var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
             UserName.Text = Connection.Logout();
+            UpdateListBoxContent($"{DateTime.Now} {UserName.Text} 在服务端注销");
             await Dispatcher.BeginInvoke((Action)(() =>
             {
                 LoginGrid.Visibility = Visibility.Visible;

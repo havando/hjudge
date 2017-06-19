@@ -32,6 +32,8 @@ namespace Server
         private static Action<string> _updateMain;
         public static void Init(Action<string> updateMainPage)
         {
+            _updateMain = updateMainPage;
+
             #region DataBase
 
             if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\hjudgeData.db"))
@@ -168,8 +170,6 @@ namespace Server
             Environment.Exit(1);
 
             #endregion
-
-            _updateMain = updateMainPage;
         }
 
         #region DataBase
@@ -1183,5 +1183,5 @@ namespace Server
         public List<byte[]> Content = new List<byte[]>();
         public ClientInfo Client { get; set; }
     }
-    
+
 }
