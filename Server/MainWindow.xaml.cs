@@ -38,6 +38,18 @@ namespace Server
             }
             try
             {
+                if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
+                {
+                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\AppData");
+                }
+                if (!Directory.Exists(Environment.CurrentDirectory + "\\Problems"))
+                {
+                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\Problems");
+                }
+                if (!Directory.Exists(Environment.CurrentDirectory + "\\Data"))
+                {
+                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
+                }
                 if (Environment.Is64BitProcess)
                 {
                     File.Copy(Environment.CurrentDirectory + "\\x64\\HPSocket4C_U.dll",
@@ -75,19 +87,7 @@ namespace Server
             ContentGrid.Opacity = 0;
             LoginGrid.Visibility = Visibility.Visible;
             ContentGrid.Visibility = Visibility.Hidden;
-            if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
-            {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\AppData");
-            }
-            if (!Directory.Exists(Environment.CurrentDirectory + "\\Problems"))
-            {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\Problems");
-            }
-            if (!Directory.Exists(Environment.CurrentDirectory + "\\Data"))
-            {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
-            }
-
+            
             Connection.Init(UpdateListBoxContent);
             Configuration.Init();
             CurrentAddress.Content = "当前主机地址：" + Connection.Address;

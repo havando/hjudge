@@ -229,18 +229,4 @@ namespace Server
             sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
     }
-
-    public class JudgeResult
-    {
-        public string MemberName { get; set; }
-        public List<JudgeInfo> Result { get; set; }
-
-        public float FullScore => Result?.Sum(i => i.FullScore) ?? 0;
-    }
-
-    internal class ResultTree
-    {
-        public string Content { get; set; }
-        public ObservableCollection<ResultTree> Children { get; set; }
-    }
 }

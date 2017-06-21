@@ -10,6 +10,13 @@
         <ListView Name="ListView"  HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387" Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding Path=JudgeId}"/>
                     <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding Path=UserName}" />
                     <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}"/>

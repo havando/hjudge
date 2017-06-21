@@ -130,12 +130,7 @@ namespace Server
                     UserId = 0,
                     ConnId = id,
                     IpAddress = ip,
-                    Port = port,
-                    PkgInfo = new PkgInfo
-                    {
-                        IsHeader = true,
-                        Length = 8
-                    }
+                    Port = port
                 };
                 Recv.Add(new ClientData { Info = clientInfo });
                 HServer.SetExtra(id, clientInfo);
@@ -166,7 +161,7 @@ namespace Server
             DealingBytes();
             DealingOperations();
             if (flag) return;
-            MessageBox.Show("服务器初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("服务端初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             Environment.Exit(1);
 
             #endregion
@@ -219,7 +214,6 @@ namespace Server
                 }
                 return false;
             }
-            return false;
         }
 
         private static bool RemoteUpdateProfile(int userId, string userName, string icon)
@@ -967,6 +961,7 @@ namespace Server
         private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
         {
             var temp = Encoding.Unicode.GetBytes(operation);
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
             HServer.Send(connId, temp, temp.Length);
@@ -974,7 +969,7 @@ namespace Server
 
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
-            var temp = Encoding.Unicode.GetBytes(operation + sendString + Divtot);
+            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
             HServer.Send(connId, temp, temp.Length);
         }
 
@@ -987,51 +982,31 @@ namespace Server
         {
             var clientInfo = (ClientInfo)HServer.GetExtra(connId);
             if (clientInfo == null) { return HandleResult.Error; }
-            var pkgInfo = clientInfo.PkgInfo;
-            var required = pkgInfo.Length;
             var remain = length;
-            while (remain >= required)
+            var bufferPtr = IntPtr.Zero;
+            try
             {
-                var bufferPtr = IntPtr.Zero;
-                try
+                bufferPtr = Marshal.AllocHGlobal(length);
+                if (HServer.Fetch(connId, bufferPtr, length) == FetchResult.Ok)
                 {
-                    remain -= required;
-                    bufferPtr = Marshal.AllocHGlobal(required);
-                    if (HServer.Fetch(connId, bufferPtr, required) == FetchResult.Ok)
-                    {
-                        if (pkgInfo.IsHeader)
-                        {
-                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
-                            required = header.BodySize;
-                        }
-                        else
-                        {
-                            var recv = new byte[required];
-                            Marshal.Copy(bufferPtr, recv, 0, required);
-                            WaitingForUnusing();
-                            _isUsing = true;
-                            var i = (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault();
-                            i?.Data.AddRange(recv);
-                            _isUsing = false;
-                        }
-                        pkgInfo.IsHeader = !pkgInfo.IsHeader;
-                        pkgInfo.Length = required;
-                        if (!HServer.SetExtra(connId, clientInfo))
-                        {
-                            return HandleResult.Error;
-                        }
-                    }
+                    var recv = new byte[length];
+                    Marshal.Copy(bufferPtr, recv, 0, length);
+                    WaitingForUnusing();
+                    _isUsing = true;
+                    var i = (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault();
+                    i?.Data.AddRange(recv);
+                    _isUsing = false;
                 }
-                catch
+            }
+            catch
+            {
+                return HandleResult.Error;
+            }
+            finally
+            {
+                if (bufferPtr != IntPtr.Zero)
                 {
-                    return HandleResult.Error;
-                }
-                finally
-                {
-                    if (bufferPtr != IntPtr.Zero)
-                    {
-                        Marshal.FreeHGlobal(bufferPtr);
-                    }
+                    Marshal.FreeHGlobal(bufferPtr);
                 }
             }
             return HandleResult.Ok;
@@ -1099,6 +1074,10 @@ namespace Server
                     foreach (var t in Recv)
                     {
                         WaitingForUnusing();
+                        if (t.Data.Count == 0)
+                        {
+                            continue;
+                        }
                         _isUsing = true;
                         var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
                         if (temp.Count != 0)
@@ -1115,7 +1094,8 @@ namespace Server
                             {
                                 continue;
                             }
-                            switch (Encoding.Unicode.GetString(temp2[0]))
+                            var operation = Encoding.Unicode.GetString(temp2[0]);
+                            switch (operation)
                             {
                                 case "@":
                                     {
@@ -1125,9 +1105,10 @@ namespace Server
                                     }
                                 default:
                                     {
+                                        temp2.RemoveAt(0);
                                         Operations.Enqueue(new ObjOperation
                                         {
-                                            Operation = Encoding.Unicode.GetString(temp2[0]),
+                                            Operation = operation,
                                             Client = t.Info,
                                             Content = temp2
                                         });
@@ -1158,7 +1139,7 @@ namespace Server
                             {
                                 switch (res.Operation)
                                 {
-                                    case "Login": //userName, password : flag (Succeed, Incorrect, Unknown)
+                                    case "Login":
                                         {
                                             var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
                                                 Encoding.Unicode.GetString(res.Content[1]));
@@ -1170,7 +1151,7 @@ namespace Server
                                                         GetUserId(Encoding.Unicode.GetString(res.Content[0]));
                                                         SendData("Login", "Succeed", res.Client.ConnId);
                                                         UpdateMainPageState(
-                                                            $"{DateTime.Now} 选手 {res.Client.UserName} 登录了");
+                                                            $"{DateTime.Now} 用户 {res.Client.UserName} 登录了");
                                                         break;
                                                     }
                                                 case 1:
@@ -1186,7 +1167,7 @@ namespace Server
                                             }
                                             break;
                                         }
-                                    case "Logout": //none : flag (Succeed)
+                                    case "Logout":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
@@ -1201,7 +1182,7 @@ namespace Server
                                             SendData("Logout", "Succeed", res.Client.ConnId);
                                             break;
                                         }
-                                    case "RequestFileList": //path : dirRoot, fileList
+                                    case "RequestFileList":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = SearchFiles(Environment.CurrentDirectory + "\\Problem\\" +
@@ -1221,18 +1202,18 @@ namespace Server
                                             SendData("FileList", Encoding.Unicode.GetString(res.Content[0]) + Divpar + y, res.Client.ConnId);
                                             break;
                                         }
-                                    case "RequestFile": //path : file
+                                    case "RequestFile":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
                                             {
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now} 选手 {res.Client.UserName} 请求文件：{Encoding.Unicode.GetString(res.Content[0])}");
-                                                SendData("File", File.ReadAllBytes(Encoding.Unicode.GetString(res.Content[0])), res.Client.ConnId);
+                                                SendData("File", res.Content[0].Concat(Encoding.Unicode.GetBytes(Divpar).Concat(File.ReadAllBytes(Encoding.Unicode.GetString(res.Content[0])))), res.Client.ConnId);
                                             }
                                             break;
                                         }
-                                    case "SubmitCode": //problemId, code : judgeResult
+                                    case "SubmitCode":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
@@ -1248,7 +1229,7 @@ namespace Server
                                             }
                                             break;
                                         }
-                                    case "Messaging": //message : none
+                                    case "Messaging":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             UpdateMainPageState(
@@ -1258,21 +1239,21 @@ namespace Server
                                             x.Show();
                                             break;
                                         }
-                                    case "RequestProblemList": //none : problemList
+                                    case "RequestProblemList":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = JsonConvert.SerializeObject(QueryProblems());
                                             SendData("ProblemList", x, res.Client.ConnId);
                                             break;
                                         }
-                                    case "RequestProfile": //none : profile
+                                    case "RequestProfile":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             var x = JsonConvert.SerializeObject(GetUser(Encoding.Unicode.GetString(res.Content[0])));
                                             SendData("Profile", x, res.Client.ConnId);
                                             break;
                                         }
-                                    case "ChangePassword": //userName, oldPassword, newPassword : flag (Succeed, Failed)
+                                    case "ChangePassword":
                                         {
                                             if (u.Info.UserId == 0) { break; }
                                             SendData("ChangePassword",
@@ -1283,7 +1264,7 @@ namespace Server
                                                     : "Failed", res.Client.ConnId);
                                             break;
                                         }
-                                    case "UpdateProfile": //userId, newUserName, newIcon : flag (Succeed, Failed)
+                                    case "UpdateProfile":
                                         {
                                             SendData("UpdateProfile",
                                                 RemoteUpdateProfile(GetUserId(Encoding.Unicode.GetString(res.Content[0])),
@@ -1325,38 +1306,4 @@ namespace Server
             _updateMain.Invoke(content);
         }
     }
-
-    public class ClientData
-    {
-        public ClientInfo Info;
-        public readonly List<byte> Data = new List<byte>();
-    }
-    public class ClientInfo
-    {
-        public int UserId { get; set; }
-        public IntPtr ConnId { get; set; }
-        public string IpAddress { get; set; }
-        public ushort Port { get; set; }
-        public PkgInfo PkgInfo { get; set; }
-        public bool IsChecked { get; set; }
-        public string UserName => UserId == 0 ? "" : Connection.GetUserName(UserId);
-        public string Address => IpAddress + ":" + Convert.ToString(Port);
-    }
-    public class PkgHeader
-    {
-        public int Id { get; set; }
-        public int BodySize { get; set; }
-    }
-    public class PkgInfo
-    {
-        public bool IsHeader { get; set; }
-        public int Length { get; set; }
-    }
-    public class ObjOperation
-    {
-        public string Operation { get; set; }
-        public List<byte[]> Content = new List<byte[]>();
-        public ClientInfo Client { get; set; }
-    }
-
 }

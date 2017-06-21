@@ -49,7 +49,7 @@
     </Reference>
     <Reference Include="HPSocketCS, Version=4.2.1.28491, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>x86\HPSocketCS.dll</HintPath>
+      <HintPath>.\HPSocketCS.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
@@ -92,17 +92,23 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
+    <Compile Include="ClientData.cs" />
+    <Compile Include="ClientInfo.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="Judge.cs" />
     <Compile Include="JudgeLogs.xaml.cs">
       <DependentUpon>JudgeLogs.xaml</DependentUpon>
     </Compile>
+    <Compile Include="JudgeResult.cs" />
     <Compile Include="MembersManagement.xaml.cs">
       <DependentUpon>MembersManagement.xaml</DependentUpon>
     </Compile>
     <Compile Include="Messaging.xaml.cs">
       <DependentUpon>Messaging.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjOperation.cs" />
     <Compile Include="OfflineJudge.xaml.cs">
       <DependentUpon>OfflineJudge.xaml</DependentUpon>
     </Compile>
@@ -113,7 +119,8 @@
     <Compile Include="ProfileManagement.xaml.cs">
       <DependentUpon>ProfileManagement.xaml</DependentUpon>
     </Compile>
-    <Compile Include="JudgeHelper.cs" />
+    <Compile Include="JudgeInfo.cs" />
+    <Compile Include="ResultTree.cs" />
     <Compile Include="SendMessaging.xaml.cs">
       <DependentUpon>SendMessaging.xaml</DependentUpon>
     </Compile>
@@ -121,6 +128,7 @@
       <DependentUpon>SystemConfiguratioin.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserHelper.cs" />
+    <Compile Include="UserInfo.cs" />
     <Page Include="JudgeLogs.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -220,16 +228,11 @@
   <ItemGroup />
   <ItemGroup>
     <Resource Include="Resources\Messaging.png" />
+    <Content Include="HPSocketCS.dll" />
     <Content Include="x64\HPSocket4C_U.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="x64\HPSocketCS.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="x86\HPSocket4C_U.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\HPSocketCS.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

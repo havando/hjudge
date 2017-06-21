@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="hjudge - Client" Height="401.601" Width="738.233" Icon="Resources/Client.png" Loaded="Window_Loaded">
+        Title="hjudge - Client" Height="401.601" Width="738.233" Icon="Resources/Client.png" Loaded="Window_Loaded" ResizeMode="CanMinimize">
     <Grid>
         <TabControl HorizontalAlignment="Left" Height="346" Margin="10,10,0,0" VerticalAlignment="Top" Width="703">
             <TabItem Header="选手主页">
@@ -16,26 +16,29 @@
                         <Label Name="Identity"  Content="身份：" HorizontalAlignment="Left" Margin="163,76,0,0" VerticalAlignment="Top" FontSize="14"/>
 
                     </Grid>
-                    <Grid Name="LoginGrid"  HorizontalAlignment="Left" Height="222" Margin="68,372,0,-276" VerticalAlignment="Top" Width="571">
+                    <Grid Name="LoginGrid"  HorizontalAlignment="Left" Height="222" Margin="61,372,0,-276" VerticalAlignment="Top" Width="571">
                         <Label Content="欢迎使用，请登录客户端" HorizontalAlignment="Left" Margin="187,26,0,0" VerticalAlignment="Top" FontSize="18"/>
                         <Label Content="用户名：" HorizontalAlignment="Left" Margin="66,95,0,0" VerticalAlignment="Top"/>
                         <Label Content="密码：" HorizontalAlignment="Left" Margin="66,126,0,0" VerticalAlignment="Top"/>
                         <TextBox Name="UserName"  HorizontalAlignment="Left" Height="26" Margin="129,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="308"/>
                         <PasswordBox Name="Password"  HorizontalAlignment="Left" Height="26" Margin="129,126,0,0" VerticalAlignment="Top" Width="308"/>
-                        <Button Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0" VerticalAlignment="Top" Width="66" Height="57"/>
+                        <Button Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0" VerticalAlignment="Top" Width="66" Height="57" Click="Button_Click"/>
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Name="CodeSubmit"  Header="代码提交" Visibility="Hidden">
+            <TabItem Name="CodeSubmit"  Header="代码提交">
                 <Grid/>
             </TabItem>
-            <TabItem Name="Messaging" Header="发送消息" Visibility="Hidden">
+            <TabItem Name="Messaging" Header="发送消息">
                 <Grid/>
             </TabItem>
-            <TabItem Name="JudgeResult" Header="评测结果" Visibility="Hidden">
+            <TabItem Name="Messages" Header="消息记录">
                 <Grid/>
             </TabItem>
-            <TabItem Name="GetFiles" Header="获取文件" Visibility="Hidden">
+            <TabItem Name="JudgeResult" Header="评测记录">
+                <Grid/>
+            </TabItem>
+            <TabItem Name="GetFiles" Header="获取文件">
                 <Grid/>
             </TabItem>
         </TabControl>
