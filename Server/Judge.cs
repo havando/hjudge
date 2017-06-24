@@ -76,12 +76,25 @@ namespace Server
             Connection.UpdateJudgeInfo(JudgeResult);
             try
             {
-                Directory.Delete(_workingdir);
+                DeleteFiles(_workingdir);
             }
             catch
             {
                 //ignored
             }
+        }
+
+        private void DeleteFiles(string path)
+        {
+            foreach (var t in Directory.GetDirectories(path))
+            {
+                DeleteFiles(t);
+            }
+            foreach (var t in Directory.GetFiles(path))
+            {
+                File.Delete(t);
+            }
+            Directory.Delete(path);
         }
 
         private void BeginJudge()
