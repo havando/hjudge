@@ -148,7 +148,7 @@ namespace Server
                     }
                     catch
                     {
-                        JudgeResult.Result[_cur] = "Problem Configuration Error";
+                        JudgeResult.Result[_cur] = "Unknown Error";
                         JudgeResult.Exitcode[_cur] = 0;
                         JudgeResult.Score[_cur] = 0;
                         JudgeResult.Timeused[_cur] = 0;
