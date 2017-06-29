@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Windows;
+using Newtonsoft.Json;
 
 namespace Client
 {
@@ -95,14 +96,14 @@ namespace Client
                         {
                             if (content == "Succeed")
                             {
-                                Dispatcher.BeginInvoke((Action) (() =>
-                                {
-                                    Password.Password = "";
-                                    CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                        JudgeResult.Visibility =
-                                            GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
-                                    LoginGrid.Visibility = Visibility.Hidden;
-                                }));
+                                Dispatcher.BeginInvoke((Action)(() =>
+                               {
+                                   Password.Password = "";
+                                   CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
+                                       JudgeResult.Visibility =
+                                           GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
+                                   LoginGrid.Visibility = Visibility.Hidden;
+                               }));
                             }
                             else
                             {
@@ -140,6 +141,7 @@ namespace Client
                         }
                     case "Profile":
                         {
+                            var x = (UserInfo)JsonConvert.DeserializeObject(content);
                             break;
                         }
                     case "UpdateProfile":
