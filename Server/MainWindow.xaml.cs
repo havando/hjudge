@@ -143,7 +143,7 @@ namespace Server
             var scratchHeightDaV = new DoubleAnimation(228, 328, new Duration(TimeSpan.FromSeconds(0.25)));
             LoginGrid.BeginAnimation(OpacityProperty, hiddenDaV);
             BeginAnimation(WidthProperty, scratchWidthDaV);
-            await Task.Run(() => { Thread.Sleep(250); });
+            await Task.Run(() => { Thread.Sleep(300); });
             BeginAnimation(HeightProperty, scratchHeightDaV);
             ContentGrid.BeginAnimation(OpacityProperty, showDaV);
             switch (UserHelper.CurrentUser.Type)
@@ -393,7 +393,7 @@ namespace Server
             }));
             ContentGrid.BeginAnimation(OpacityProperty, hiddenDaV);
             BeginAnimation(WidthProperty, unscratchWidthDaV);
-            await Task.Run(() => { Thread.Sleep(250); });
+            await Task.Run(() => { Thread.Sleep(300); });
             BeginAnimation(HeightProperty, unscratchHeightDaV);
             LoginGrid.BeginAnimation(OpacityProperty, showDaV);
         }

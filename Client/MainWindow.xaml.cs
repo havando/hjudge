@@ -12,6 +12,7 @@ namespace Client
     public partial class MainWindow : Window
     {
         private const string Divpar = "<h~|~j>";
+        private string _userName;
         public MainWindow()
         {
             var mutex = new Mutex(
@@ -97,13 +98,15 @@ namespace Client
                             if (content == "Succeed")
                             {
                                 Dispatcher.BeginInvoke((Action)(() =>
-                               {
-                                   Password.Password = "";
-                                   CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                       JudgeResult.Visibility =
-                                           GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
-                                   LoginGrid.Visibility = Visibility.Hidden;
-                               }));
+                                {
+                                    _userName = UserName.Text;
+                                    Password.Password = "";
+                                    CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
+                                        JudgeResult.Visibility =
+                                            GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
+                                    LoginGrid.Visibility = Visibility.Hidden;
+                                }));
+                                Connection.SendData("RequestProfile", _userName);
                             }
                             else
                             {
