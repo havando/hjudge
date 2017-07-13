@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="MembersManagement" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
+        Title="成员管理" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
     <Grid>
         <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Label Name="Identity" Content="" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top"/>

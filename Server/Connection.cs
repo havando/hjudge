@@ -30,6 +30,9 @@ namespace Server
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
         private static Action<string> _updateMain;
+        private static bool _hasBytesToDeal;
+        private static bool _hasOperationsToDeal;
+
         public static void Init(Action<string> updateMainPage)
         {
             _updateMain = updateMainPage;
@@ -132,7 +135,10 @@ namespace Server
                     IpAddress = ip,
                     Port = port
                 };
+                WaitingForUnusing();
+                _isUsing = true;
                 Recv.Add(new ClientData { Info = clientInfo });
+                _isUsing = false;
                 HServer.SetExtra(id, clientInfo);
                 return HandleResult.Ok;
             };
@@ -140,7 +146,10 @@ namespace Server
             {
                 HServer.RemoveExtra(id);
                 var t = (from c in Recv where c.Info.ConnId == id select c).FirstOrDefault();
+                WaitingForUnusing();
+                _isUsing = true;
                 if (t != null) { Recv.Remove(t); }
+                _isUsing = false;
                 return HandleResult.Ok;
             };
             HServer.OnReceive += HServerOnOnReceive;
@@ -964,13 +973,27 @@ namespace Server
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-            HServer.Send(connId, temp, temp.Length);
+            bool isSucceed;
+            var cnt = 0;
+            do
+            {
+                isSucceed = HServer.Send(connId, temp, temp.Length);
+                cnt++;
+                Thread.Sleep(50);
+            } while (!isSucceed && cnt <= 3);
         }
 
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-            HServer.Send(connId, temp, temp.Length);
+            bool isSucceed;
+            var cnt = 0;
+            do
+            {
+                isSucceed = HServer.Send(connId, temp, temp.Length);
+                cnt++;
+                Thread.Sleep(50);
+            } while (!isSucceed && cnt <= 3);
         }
 
         public static void SendMsg(string sendString, IntPtr connId)
@@ -982,7 +1005,6 @@ namespace Server
         {
             var clientInfo = (ClientInfo)HServer.GetExtra(connId);
             if (clientInfo == null) { return HandleResult.Error; }
-            var remain = length;
             var bufferPtr = IntPtr.Zero;
             try
             {
@@ -996,6 +1018,7 @@ namespace Server
                     var i = (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault();
                     i?.Data.AddRange(recv);
                     _isUsing = false;
+                    _hasBytesToDeal = true;
                 }
             }
             catch
@@ -1071,52 +1094,64 @@ namespace Server
             {
                 while (!Environment.HasShutdownStarted)
                 {
-                    foreach (var t in Recv)
+                    if (_hasBytesToDeal)
                     {
-                        WaitingForUnusing();
-                        if (t.Data.Count == 0)
+                        _hasBytesToDeal = false;
+                        foreach (var t in Recv)
                         {
-                            continue;
-                        }
-                        _isUsing = true;
-                        var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
-                        if (temp.Count != 0)
-                        {
-                            t.Data.Clear();
-                            t.Data.AddRange(temp[temp.Count - 1]);
-                        }
-                        _isUsing = false;
-                        temp.RemoveAt(temp.Count - 1);
-                        foreach (var i in temp)
-                        {
-                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
-                            if (temp2.Count == 0)
+                            WaitingForUnusing();
+                            if (t.Data.Count == 0)
                             {
                                 continue;
                             }
-                            var operation = Encoding.Unicode.GetString(temp2[0]);
-                            switch (operation)
+                            _isUsing = true;
+                            var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
+                            if (temp.Count != 0)
                             {
-                                case "@":
-                                    {
-                                        var respond = Encoding.Unicode.GetBytes("&");
-                                        HServer.Send(t.Info.ConnId, respond, respond.Length);
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        temp2.RemoveAt(0);
-                                        Operations.Enqueue(new ObjOperation
-                                        {
-                                            Operation = operation,
-                                            Client = t.Info,
-                                            Content = temp2
-                                        });
-                                        break;
-                                    }
+                                t.Data.Clear();
+                                t.Data.AddRange(temp[temp.Count - 1]);
                             }
+                            _isUsing = false;
+                            temp.RemoveAt(temp.Count - 1);
+                            foreach (var i in temp)
+                            {
+                                var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
+                                if (temp2.Count == 0)
+                                {
+                                    continue;
+                                }
+                                var operation = Encoding.Unicode.GetString(temp2[0]);
+                                switch (operation)
+                                {
+                                    case "@":
+                                        {
+                                            var respond = Encoding.Unicode.GetBytes($"&{Divpar}{Divtot}");
+                                            bool isSucceed;
+                                            var cnt = 0;
+                                            do
+                                            {
+                                                isSucceed = HServer.Send(t.Info.ConnId, respond, respond.Length);
+                                                cnt++;
+                                                Thread.Sleep(50);
+                                            } while (!isSucceed && cnt <= 3);
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            temp2.RemoveAt(0);
+                                            Operations.Enqueue(new ObjOperation
+                                            {
+                                                Operation = operation,
+                                                Client = t.Info,
+                                                Content = temp2
+                                            });
+                                            _hasOperationsToDeal = true;
+                                            break;
+                                        }
+                                }
+                            }
+                            Thread.Sleep(10);
                         }
-                        Thread.Sleep(10);
                     }
                     Thread.Sleep(10);
                 }
@@ -1129,156 +1164,195 @@ namespace Server
             {
                 while (!Environment.HasShutdownStarted)
                 {
-                    if (Operations.TryDequeue(out var res))
+                    if (_hasOperationsToDeal)
                     {
-                        var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
-                            .FirstOrDefault();
-                        if (u != null)
+                        _hasOperationsToDeal = false;
+                        if (Operations.TryDequeue(out var res))
                         {
-                            try
+                            var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
+                                .FirstOrDefault();
+                            if (u != null)
                             {
-                                switch (res.Operation)
+                                try
                                 {
-                                    case "Login":
-                                        {
-                                            var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
-                                                Encoding.Unicode.GetString(res.Content[1]));
-                                            switch (x)
+                                    switch (res.Operation)
+                                    {
+                                        case "Login":
                                             {
-                                                case 0:
-                                                    {
-                                                        u.Info.UserId =
-                                                        GetUserId(Encoding.Unicode.GetString(res.Content[0]));
-                                                        SendData("Login", "Succeed", res.Client.ConnId);
-                                                        UpdateMainPageState(
-                                                            $"{DateTime.Now} 用户 {res.Client.UserName} 登录了");
-                                                        break;
-                                                    }
-                                                case 1:
-                                                    {
-                                                        SendData("Login", "Incorrect", res.Client.ConnId);
-                                                        break;
-                                                    }
-                                                default:
-                                                    {
-                                                        SendData("Login", "Unknown", res.Client.ConnId);
-                                                        break;
-                                                    }
-                                            }
-                                            break;
-                                        }
-                                    case "Logout":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
-                                                .FirstOrDefault();
-                                            if (x != null)
-                                            {
-                                                x.Data.Clear();
-                                                x.Info.UserId = 0;
-                                            }
-                                            UpdateMainPageState(
-                                                $"{DateTime.Now} 选手 {res.Client.UserName} 注销了");
-                                            SendData("Logout", "Succeed", res.Client.ConnId);
-                                            break;
-                                        }
-                                    case "RequestFileList":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            var x = SearchFiles(Environment.CurrentDirectory + "\\Problem\\" +
-                                                                Encoding.Unicode.GetString(res.Content[0]));
-                                            var y = "";
-                                            for (var i = 0; i < x.Count; i++)
-                                            {
-                                                if (i != x.Count - 1)
+                                                var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
+                                                    Encoding.Unicode.GetString(res.Content[1]));
+                                                switch (x)
                                                 {
-                                                    y += x[i] + Divpar;
+                                                    case 0:
+                                                        {
+                                                            u.Info.UserId =
+                                                                GetUserId(Encoding.Unicode.GetString(res.Content[0]));
+                                                            SendData("Login", "Succeed", res.Client.ConnId);
+                                                            UpdateMainPageState(
+                                                                $"{DateTime.Now} 用户 {res.Client.UserName} 登录了");
+                                                            break;
+                                                        }
+                                                    case 1:
+                                                        {
+                                                            SendData("Login", "Incorrect", res.Client.ConnId);
+                                                            break;
+                                                        }
+                                                    default:
+                                                        {
+                                                            SendData("Login", "Unknown", res.Client.ConnId);
+                                                            break;
+                                                        }
                                                 }
-                                                else
+                                                break;
+                                            }
+                                        case "Logout":
+                                            {
+                                                if (u.Info.UserId == 0)
                                                 {
-                                                    y += x[i];
+                                                    break;
                                                 }
-                                            }
-                                            SendData("FileList", Encoding.Unicode.GetString(res.Content[0]) + Divpar + y, res.Client.ConnId);
-                                            break;
-                                        }
-                                    case "RequestFile":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
-                                            {
                                                 UpdateMainPageState(
-                                                    $"{DateTime.Now} 选手 {res.Client.UserName} 请求文件：{Encoding.Unicode.GetString(res.Content[0])}");
-                                                SendData("File", res.Content[0].Concat(Encoding.Unicode.GetBytes(Divpar).Concat(File.ReadAllBytes(Encoding.Unicode.GetString(res.Content[0])))), res.Client.ConnId);
-                                            }
-                                            break;
-                                        }
-                                    case "SubmitCode":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
-                                            {
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now} 选手 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
-                                                Task.Run(() =>
+                                                    $"{DateTime.Now} 用户 {res.Client.UserName} 注销了");
+                                                var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
+                                                    .FirstOrDefault();
+                                                if (x != null)
                                                 {
-                                                    var j = new Judge(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])), u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
-                                                    var x = JsonConvert.SerializeObject(j);
-                                                    SendData("JudgeResult", x, res.Client.ConnId);
-                                                });
+                                                    x.Data.Clear();
+                                                    x.Info.UserId = 0;
+                                                }
+                                                SendData("Logout", "Succeed", res.Client.ConnId);
+                                                break;
                                             }
-                                            break;
-                                        }
-                                    case "Messaging":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            UpdateMainPageState(
-                                                $"{DateTime.Now} 选手 {res.Client.UserName} 发来了消息");
-                                            var x = new Messaging();
-                                            x.SetMessage(Encoding.Unicode.GetString(res.Content[0]), res.Client.ConnId);
-                                            x.Show();
-                                            break;
-                                        }
-                                    case "RequestProblemList":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            var x = JsonConvert.SerializeObject(QueryProblems());
-                                            SendData("ProblemList", x, res.Client.ConnId);
-                                            break;
-                                        }
-                                    case "RequestProfile":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            var x = JsonConvert.SerializeObject(GetUser(Encoding.Unicode.GetString(res.Content[0])));
-                                            SendData("Profile", x, res.Client.ConnId);
-                                            break;
-                                        }
-                                    case "ChangePassword":
-                                        {
-                                            if (u.Info.UserId == 0) { break; }
-                                            SendData("ChangePassword",
-                                                RemoteChangePassword(Encoding.Unicode.GetString(res.Content[0]),
-                                                    Encoding.Unicode.GetString(res.Content[1]),
-                                                    Encoding.Unicode.GetString(res.Content[2]))
-                                                    ? "Succeed"
-                                                    : "Failed", res.Client.ConnId);
-                                            break;
-                                        }
-                                    case "UpdateProfile":
-                                        {
-                                            SendData("UpdateProfile",
-                                                RemoteUpdateProfile(GetUserId(Encoding.Unicode.GetString(res.Content[0])),
-                                                    Encoding.Unicode.GetString(res.Content[1]),
-                                                    Encoding.Unicode.GetString(res.Content[2]))
-                                                    ? "Succeed"
-                                                    : "Failed", res.Client.ConnId);
-                                            break;
-                                        }
+                                        case "RequestFileList":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                var x = SearchFiles(Environment.CurrentDirectory + "\\Problem\\" +
+                                                                    Encoding.Unicode.GetString(res.Content[0]));
+                                                var y = "";
+                                                for (var i = 0; i < x.Count; i++)
+                                                {
+                                                    if (i != x.Count - 1)
+                                                    {
+                                                        y += x[i] + Divpar;
+                                                    }
+                                                    else
+                                                    {
+                                                        y += x[i];
+                                                    }
+                                                }
+                                                SendData("FileList",
+                                                    Encoding.Unicode.GetString(res.Content[0]) + Divpar + y,
+                                                    res.Client.ConnId);
+                                                break;
+                                            }
+                                        case "RequestFile":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
+                                                {
+                                                    UpdateMainPageState(
+                                                        $"{DateTime.Now} 用户 {res.Client.UserName} 请求文件：{Encoding.Unicode.GetString(res.Content[0])}");
+                                                    SendData("File",
+                                                        res.Content[0]
+                                                            .Concat(Encoding.Unicode.GetBytes(Divpar)
+                                                                .Concat(File.ReadAllBytes(
+                                                                    Encoding.Unicode.GetString(res.Content[0])))),
+                                                        res.Client.ConnId);
+                                                }
+                                                break;
+                                            }
+                                        case "SubmitCode":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
+                                                {
+                                                    UpdateMainPageState(
+                                                        $"{DateTime.Now} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                                    Task.Run(() =>
+                                                    {
+                                                        var j = new Judge(
+                                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                            u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
+                                                        var x = JsonConvert.SerializeObject(j);
+                                                        SendData("JudgeResult", x, res.Client.ConnId);
+                                                    });
+                                                }
+                                                break;
+                                            }
+                                        case "Messaging":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now} 用户 {res.Client.UserName} 发来了消息");
+                                                var x = new Messaging();
+                                                x.SetMessage(Encoding.Unicode.GetString(res.Content[0]), res.Client.ConnId);
+                                                x.Show();
+                                                break;
+                                            }
+                                        case "RequestProblemList":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                var x = JsonConvert.SerializeObject(QueryProblems());
+                                                SendData("ProblemList", x, res.Client.ConnId);
+                                                break;
+                                            }
+                                        case "RequestProfile":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                var x = JsonConvert.SerializeObject(
+                                                    GetUser(Encoding.Unicode.GetString(res.Content[0])));
+                                                SendData("Profile", x, res.Client.ConnId);
+                                                break;
+                                            }
+                                        case "ChangePassword":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                SendData("ChangePassword",
+                                                    RemoteChangePassword(Encoding.Unicode.GetString(res.Content[0]),
+                                                        Encoding.Unicode.GetString(res.Content[1]),
+                                                        Encoding.Unicode.GetString(res.Content[2]))
+                                                        ? "Succeed"
+                                                        : "Failed", res.Client.ConnId);
+                                                break;
+                                            }
+                                        case "UpdateProfile":
+                                            {
+                                                SendData("UpdateProfile",
+                                                    RemoteUpdateProfile(
+                                                        GetUserId(Encoding.Unicode.GetString(res.Content[0])),
+                                                        Encoding.Unicode.GetString(res.Content[1]),
+                                                        Encoding.Unicode.GetString(res.Content[2]))
+                                                        ? "Succeed"
+                                                        : "Failed", res.Client.ConnId);
+                                                break;
+                                            }
+                                    }
                                 }
-                            }
-                            catch
-                            {
-                                continue;
+                                catch
+                                {
+                                    continue;
+                                }
                             }
                         }
                     }

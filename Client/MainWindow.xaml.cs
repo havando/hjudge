@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Windows;
 using Newtonsoft.Json;
@@ -50,8 +52,24 @@ namespace Client
             Configuration.Init();
             if (string.IsNullOrEmpty(Configuration.Configurations.Ip))
             {
-                MessageBox.Show("尚未配置服务端地址", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(1);
+                var hostIp = Dns.GetHostAddresses(Dns.GetHostName());
+                var flag = false;
+                foreach (var t in hostIp)
+                {
+                    if (t.ToString().Contains(":"))
+                    {
+                        continue;
+                    }
+                    Configuration.Configurations.Ip = t.ToString();
+                    Configuration.Configurations.Port = 23333;
+                    flag = true;
+                    break;
+                }
+                if (!flag)
+                {
+                    MessageBox.Show("尚未配置服务端地址", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
+                }
             }
             else
             {
@@ -93,6 +111,14 @@ namespace Client
                 }
                 switch (header)
                 {
+                    case "Connection":
+                        {
+                            Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                LoginButton.IsEnabled = true;
+                            }));
+                            break;
+                        }
                     case "Login":
                         {
                             if (content == "Succeed")
@@ -105,8 +131,8 @@ namespace Client
                                         JudgeResult.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
+                                    Connection.SendData("RequestProfile", _userName);
                                 }));
-                                Connection.SendData("RequestProfile", _userName);
                             }
                             else
                             {
@@ -125,9 +151,12 @@ namespace Client
                         }
                     case "Messaging":
                         {
-                            var x = new Messaging();
-                            x.SetMessge(content);
-                            x.Show();
+                            Dispatcher.BeginInvoke((Action)(() =>
+                           {
+                               var x = new Messaging();
+                               x.SetMessge(content);
+                               x.Show();
+                           }));
                             break;
                         }
                     case "FileList":
@@ -144,7 +173,13 @@ namespace Client
                         }
                     case "Profile":
                         {
-                            var x = (UserInfo)JsonConvert.DeserializeObject(content);
+                            var x = JsonConvert.DeserializeObject<UserInfo>(content);
+                            Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                WelcomeLabel.Content = $"你好，{x.UserName}";
+                                Identity.Content = $"身份：{x.Type2}";
+                                UserIcon.Source = ByteImageConverter.ByteToImage(!string.IsNullOrEmpty(x.Icon) ? Convert.FromBase64String(x.Icon) : Convert.FromBase64String(Properties.Resources.default_user_icon_string));
+                            }));
                             break;
                         }
                     case "UpdateProfile":
@@ -173,6 +208,11 @@ namespace Client
             {
                 //ignored
             }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Connection.SendData("Logout", string.Empty);
         }
     }
 }

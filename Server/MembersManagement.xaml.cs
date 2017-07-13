@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -101,7 +102,8 @@ namespace Server
                     UserId = 0,
                     UserName = UserName.Text,
                     Type2 = UserIdentity.Text,
-                    Password = "ec278a38901287b2771a13739520384d43e4b078f78affe702def108774cce24"
+                    Password = "ec278a38901287b2771a13739520384d43e4b078f78affe702def108774cce24",
+                    RegisterDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
                 });
             }
             else

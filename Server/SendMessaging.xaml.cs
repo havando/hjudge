@@ -40,13 +40,10 @@ namespace Server
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var x = from c in _myClientInfo where c.IsChecked select c;
-            Task.Run(() =>
+            foreach (var i in x)
             {
-                foreach (var i in x)
-                {
-                    Connection.SendMsg($"发送时间：{DateTime.Now}\r\n内容：\r\n{Msg.Text}", i.ConnId);
-                }
-            });
+                Connection.SendMsg($"发送时间：{DateTime.Now}\r\n内容：\r\n{Msg.Text}", i.ConnId);
+            }
         }
 
         private void ListView_Click(object sender, RoutedEventArgs e)

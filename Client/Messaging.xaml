@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="Messaging" Height="370.394" Width="642.297" Icon="Resources/Messaging.png" ResizeMode="CanMinimize">
+        Title="消息" Height="370.394" Width="642.297" Icon="Resources/Messaging.png" ResizeMode="CanMinimize">
     <Grid Margin="0,0,-6,-5">
         <TextBox Name="Contents"  HorizontalAlignment="Left" Height="283" Margin="10,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="609"/>
         <Label Content="消息内容：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>

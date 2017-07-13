@@ -22,6 +22,9 @@ namespace Client
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
         private static bool _isConnecting;
+        private static bool _hasBytesToDeal;
+        private static bool _isConnected;
+        private static bool _hasOperationsToDeal;
         private static Action<string> _updateMainPage;
         public static bool Init(string ip, ushort port, Action<string> updateMainPage)
         {
@@ -29,22 +32,22 @@ namespace Client
             HClient.OnConnect += sender =>
             {
                 updateMainPage.Invoke($"Connection{Divpar}Connected");
-                StayConnection();
-                return HandleResult.Ok;
-            };
-            HClient.OnClose += (sender, operation, code) =>
-            {
-                updateMainPage.Invoke($"Connection{Divpar}Closed");
+                _isConnected = true;
                 return HandleResult.Ok;
             };
             HClient.OnReceive += HClientOnOnReceive;
-            if (!HClient.Connect(ip, port))
+            Task.Run(() =>
             {
-                return false;
-            }
-
+                do
+                {
+                    HClient.Connect(ip, port);
+                    Thread.Sleep(1000);
+                } while (!_isConnected);
+                StayConnection();
+            });
             DealingBytes();
             DealingOperations();
+
             return true;
         }
 
@@ -62,6 +65,7 @@ namespace Client
                     _isUsing = true;
                     Recv.AddRange(recv);
                     _isUsing = false;
+                    _hasBytesToDeal = true;
                 }
             }
             catch
@@ -94,13 +98,27 @@ namespace Client
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-            HClient.Send(temp, temp.Length);
+            bool isSucceed;
+            var cnt = 0;
+            do
+            {
+                isSucceed = HClient.Send(temp, temp.Length);
+                cnt++;
+                Thread.Sleep(50);
+            } while (!isSucceed && cnt <= 3);
         }
 
         public static void SendData(string operation, string sendString)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-            HClient.Send(temp, temp.Length);
+            bool isSucceed;
+            var cnt = 0;
+            do
+            {
+                isSucceed = HClient.Send(temp, temp.Length);
+                cnt++;
+                Thread.Sleep(50);
+            } while (!isSucceed && cnt <= 3);
         }
 
         public static void SendMsg(string sendString, IntPtr connId)
@@ -168,48 +186,53 @@ namespace Client
             {
                 while (!Environment.HasShutdownStarted)
                 {
-                    WaitingForUnusing();
-                    _isUsing = true;
-                    var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
-                    if (temp.Count != 0)
+                    if (_hasBytesToDeal)
                     {
-                        Recv.Clear();
-                        Recv.AddRange(temp[temp.Count - 1]);
-                    }
-                    _isUsing = false;
-                    temp.RemoveAt(temp.Count - 1);
-                    if (temp.Count == 0)
-                    {
-                        continue;
-                    }
-                    foreach (var i in temp)
-                    {
-                        var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
-                        if (temp2.Count == 0)
+                        _hasBytesToDeal = false;
+                        WaitingForUnusing();
+                        _isUsing = true;
+                        var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
+                        if (temp.Count != 0)
+                        {
+                            Recv.Clear();
+                            Recv.AddRange(temp[temp.Count - 1]);
+                        }
+                        _isUsing = false;
+                        temp.RemoveAt(temp.Count - 1);
+                        if (temp.Count == 0)
                         {
                             continue;
                         }
-                        var operation = Encoding.Unicode.GetString(temp2[0]);
-                        switch (operation)
+                        foreach (var i in temp)
                         {
-                            case "&":
-                                {
-                                    _isConnecting = true;
-                                    break;
-                                }
-                            default:
-                                {
-                                    temp2.RemoveAt(0);
-                                    Operations.Enqueue(new ObjOperation
+                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
+                            if (temp2.Count == 0)
+                            {
+                                continue;
+                            }
+                            var operation = Encoding.Unicode.GetString(temp2[0]);
+                            switch (operation)
+                            {
+                                case "&":
                                     {
-                                        Operation = operation,
-                                        Content = temp2
-                                    });
-                                    break;
-                                }
+                                        _isConnecting = true;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        temp2.RemoveAt(0);
+                                        Operations.Enqueue(new ObjOperation
+                                        {
+                                            Operation = operation,
+                                            Content = temp2
+                                        });
+                                        _hasOperationsToDeal = true;
+                                        break;
+                                    }
+                            }
                         }
+                        Thread.Sleep(10);
                     }
-                    Thread.Sleep(10);
                 }
             });
         }
@@ -220,94 +243,105 @@ namespace Client
             {
                 while (!Environment.HasShutdownStarted)
                 {
-                    if (Operations.TryDequeue(out var res))
+                    if (_hasOperationsToDeal)
                     {
-                        try
+                        _hasOperationsToDeal = false;
+                        if (Operations.TryDequeue(out var res))
                         {
-                            switch (res.Operation)
+                            try
                             {
-                                case "Login":
+                                switch (res.Operation)
+                                {
+                                    case "Login":
                                     {
                                         var x = Encoding.Unicode.GetString(res.Content[0]);
                                         switch (x)
                                         {
                                             case "Succeed":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Succeed");
-                                                    break;
-                                                }
+                                            {
+                                                _updateMainPage.Invoke($"Login{Divpar}Succeed");
+                                                break;
+                                            }
                                             case "Incorrect":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Incorrect");
-                                                    break;
-                                                }
+                                            {
+                                                _updateMainPage.Invoke($"Login{Divpar}Incorrect");
+                                                break;
+                                            }
                                             case "Unknown":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Unknown");
-                                                    break;
-                                                }
+                                            {
+                                                _updateMainPage.Invoke($"Login{Divpar}Unknown");
+                                                break;
+                                            }
                                         }
                                         break;
                                     }
-                                case "Logout":
+                                    case "Logout":
                                     {
                                         _updateMainPage.Invoke($"Logout{Divpar}Succeed");
                                         break;
                                     }
-                                case "Messaging":
+                                    case "Messaging":
                                     {
-                                        _updateMainPage.Invoke($"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        _updateMainPage.Invoke(
+                                            $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "FileList":
+                                    case "FileList":
                                     {
-                                        _updateMainPage.Invoke($"FileList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        _updateMainPage.Invoke(
+                                            $"FileList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "File":
+                                    case "File":
                                     {
                                         var fileName = Encoding.Unicode.GetString(res.Content[0]);
                                         fileName = fileName.Substring(
                                             fileName.Length -
                                             (fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal)),
                                             fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal));
-                                        File.WriteAllBytes($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}", res.Content[1]);
+                                        File.WriteAllBytes(
+                                            $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                            res.Content[1]);
                                         Process.Start("explorer.exe",
                                             $"/select, {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
                                         break;
                                     }
-                                case "JudgeResult":
+                                    case "JudgeResult":
                                     {
-                                        _updateMainPage.Invoke($"JudgeResult{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        _updateMainPage.Invoke(
+                                            $"JudgeResult{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "ProblemList":
+                                    case "ProblemList":
                                     {
-                                        _updateMainPage.Invoke($"ProblemList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        _updateMainPage.Invoke(
+                                            $"ProblemList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "Profile":
+                                    case "Profile":
                                     {
-                                        _updateMainPage.Invoke($"Profile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        _updateMainPage.Invoke(
+                                            $"Profile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "ChangePassword":
+                                    case "ChangePassword":
                                     {
                                         _updateMainPage.Invoke(
                                             $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "UpdateProfile":
+                                    case "UpdateProfile":
                                     {
                                         _updateMainPage.Invoke(
                                             $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
+                                }
                             }
-                        }
-                        catch
-                        {
-                            continue;
+                            catch
+                            {
+                                continue;
+                            }
                         }
                     }
                     Thread.Sleep(10);
@@ -319,12 +353,19 @@ namespace Client
         {
             Task.Run(() =>
             {
-                while (Environment.HasShutdownStarted)
+                while (!Environment.HasShutdownStarted)
                 {
                     _isConnecting = false;
-                    var x = Encoding.Unicode.GetBytes("@");
-                    HClient.Send(x, x.Length);
-                    Thread.Sleep(10000);
+                    var x = Encoding.Unicode.GetBytes($"@{Divpar}{Divtot}");
+                    bool isSucceed;
+                    var cnt = 0;
+                    do
+                    {
+                        isSucceed = HClient.Send(x, x.Length);
+                        cnt++;
+                        Thread.Sleep(50);
+                    } while (!isSucceed && cnt <= 3);
+                    Thread.Sleep(5000);
                     if (_isConnecting) { continue; }
                     MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                     Environment.Exit(1);

@@ -19,18 +19,19 @@ namespace Client
     /// </summary>
     public partial class Messaging : Window
     {
-        private string _msg;
 
         public Messaging()
         {
             InitializeComponent();
-            Contents.Text = _msg;
         }
 
         public void SetMessge(string msg)
         {
-            _msg = msg;
+            Dispatcher.Invoke(() =>
+            {
+                Contents.Text = msg;
+            });
         }
     }
-    
+
 }

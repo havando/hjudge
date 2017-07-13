@@ -11,10 +11,10 @@
             <TabItem Header="选手主页">
                 <Grid>
                     <Grid Name="ContentGrid">
-                        <Image HorizontalAlignment="Left" Height="100" Margin="33,26,0,0" VerticalAlignment="Top" Width="100"/>
+                        <Image Name="UserIcon" HorizontalAlignment="Left" Height="100" Margin="33,26,0,0" VerticalAlignment="Top" Width="100"/>
                         <Label Name="WelcomeLabel"  Content="你好，" HorizontalAlignment="Left" Margin="163,42,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <Label Name="Identity"  Content="身份：" HorizontalAlignment="Left" Margin="163,76,0,0" VerticalAlignment="Top" FontSize="14"/>
-
+                        <Button Content="注销" HorizontalAlignment="Left" Margin="629,277,0,0" VerticalAlignment="Top" Width="58" Height="32" Click="Button_Click_1"/>
                     </Grid>
                     <Grid Name="LoginGrid"  HorizontalAlignment="Left" Height="222" Margin="61,372,0,-276" VerticalAlignment="Top" Width="571">
                         <Label Content="欢迎使用，请登录客户端" HorizontalAlignment="Left" Margin="187,26,0,0" VerticalAlignment="Top" FontSize="18"/>
@@ -22,7 +22,7 @@
                         <Label Content="密码：" HorizontalAlignment="Left" Margin="66,126,0,0" VerticalAlignment="Top"/>
                         <TextBox Name="UserName"  HorizontalAlignment="Left" Height="26" Margin="129,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="308"/>
                         <PasswordBox Name="Password"  HorizontalAlignment="Left" Height="26" Margin="129,126,0,0" VerticalAlignment="Top" Width="308"/>
-                        <Button Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0" VerticalAlignment="Top" Width="66" Height="57" Click="Button_Click"/>
+                        <Button Name="LoginButton" Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0" VerticalAlignment="Top" Width="66" Height="57" Click="Button_Click" IsEnabled="False"/>
                     </Grid>
                 </Grid>
             </TabItem>
