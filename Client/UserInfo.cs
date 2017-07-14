@@ -11,6 +11,8 @@ namespace Client
         public bool? IsChanged { get; set; }
         public int Type { get; set; }
         public string Password { get; set; }
+        public int Coins { get; set; }
+        public int Experience { get; set; }
 
         private string _userName;
 

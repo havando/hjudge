@@ -142,6 +142,7 @@ namespace Client
                         }
                     case "Logout":
                         {
+                            _userName = "";
                             Dispatcher.BeginInvoke((Action)(() =>
                             {
                                 CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility = JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
@@ -179,6 +180,108 @@ namespace Client
                                 WelcomeLabel.Content = $"你好，{x.UserName}";
                                 Identity.Content = $"身份：{x.Type2}";
                                 UserIcon.Source = ByteImageConverter.ByteToImage(!string.IsNullOrEmpty(x.Icon) ? Convert.FromBase64String(x.Icon) : Convert.FromBase64String(Properties.Resources.default_user_icon_string));
+                                Coins.Content = x.Coins;
+                                Experience.Content = x.Experience;
+                                if (x.Experience >= 1048576)
+                                {
+                                    Level.Content = "最强王者";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level6));
+                                }
+                                else if (x.Experience >= 524288)
+                                {
+                                    Level.Content = "璀璨钻石 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+                                }
+                                else if (x.Experience >= 262144)
+                                {
+                                    Level.Content = "璀璨钻石 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+                                }
+                                else if (x.Experience >= 131072)
+                                {
+                                    Level.Content = "璀璨钻石 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+                                }
+                                else if (x.Experience >= 65536)
+                                {
+                                    Level.Content = "华贵铂金 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+                                }
+                                else if (x.Experience >= 32768)
+                                {
+                                    Level.Content = "华贵铂金 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+                                }
+                                else if (x.Experience >= 16384)
+                                {
+                                    Level.Content = "华贵铂金 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+                                }
+                                else if (x.Experience >= 8192)
+                                {
+                                    Level.Content = "荣耀黄金 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+                                }
+                                else if (x.Experience >= 4096)
+                                {
+                                    Level.Content = "荣耀黄金 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+                                }
+                                else if (x.Experience >= 2048)
+                                {
+                                    Level.Content = "荣耀黄金 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+                                }
+                                else if (x.Experience >= 1024)
+                                {
+                                    Level.Content = "不屈白银 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+                                }
+                                else if (x.Experience >= 512)
+                                {
+                                    Level.Content = "不屈白银 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+                                }
+                                else if (x.Experience >= 256)
+                                {
+                                    Level.Content = "不屈白银 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+                                }
+                                else if (x.Experience >= 128)
+                                {
+                                    Level.Content = "英勇黄铜 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+                                }
+                                else if (x.Experience >= 64)
+                                {
+                                    Level.Content = "英勇黄铜 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+                                }
+                                else if (x.Experience >= 32)
+                                {
+                                    Level.Content = "英勇黄铜 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+                                }
+                                else if (x.Experience >= 16)
+                                {
+                                    Level.Content = "一只辣鸡 Lev.3";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+                                }
+                                else if (x.Experience >= 8)
+                                {
+                                    Level.Content = "一只辣鸡 Lev.2";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+                                }
+                                else if (x.Experience >= 4)
+                                {
+                                    Level.Content = "一只辣鸡 Lev.1";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+                                }
+                                else
+                                {
+                                    Level.Content = "蒟蒻来袭";
+                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.nolevel));
+                                }
                             }));
                             break;
                         }
@@ -213,6 +316,24 @@ namespace Client
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             Connection.SendData("Logout", string.Empty);
+        }
+
+        private void Expander_Expanded(object sender, RoutedEventArgs e)
+        {
+            BonusGrid.Visibility = Visibility.Hidden;
+        }
+
+        private void Expander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            BonusGrid.Visibility = Visibility.Visible;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_userName))
+            {
+                Connection.SendData("Logout", string.Empty);
+            }
         }
     }
 }

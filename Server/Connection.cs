@@ -69,7 +69,9 @@ namespace Server
                     sqlTable.Append("Password ntext,");
                     sqlTable.Append("Type int,");
                     sqlTable.Append("Icon ntext,");
-                    sqlTable.Append("Achievement ntext )");
+                    sqlTable.Append("Achievement ntext,");
+                    sqlTable.Append("Coins int,");
+                    sqlTable.Append("Experience int)");
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();
@@ -91,7 +93,7 @@ namespace Server
                 } //CreateTable
                 using (var cmd = new SQLiteCommand(sqLite))
                 {
-                    cmd.CommandText = "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement) VALUES (@1,@2,@3,@4,@5,@6)";
+                    cmd.CommandText = "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
@@ -99,7 +101,9 @@ namespace Server
                         new SQLiteParameter("@3", DbType.String),
                         new SQLiteParameter("@4", DbType.Int32),
                         new SQLiteParameter("@5", DbType.String),
-                        new SQLiteParameter("@6", DbType.String)
+                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@7", DbType.Int32),
+                        new SQLiteParameter("@8", DbType.Int32)
                     };
                     parameters[0].Value = "hjudgeBOSS";
                     parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
@@ -107,6 +111,8 @@ namespace Server
                     parameters[3].Value = 1;
                     parameters[4].Value = "";
                     parameters[5].Value = "";
+                    parameters[6].Value = 0;
+                    parameters[7].Value = 0;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 } //InsertBOSSAccount
@@ -481,7 +487,7 @@ namespace Server
                             continue;
                         }
                         cmd.CommandText =
-                            "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement) VALUES (@1,@2,@3,@4,@5,@6)";
+                            "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
                         SQLiteParameter[] parameters =
                         {
                             new SQLiteParameter("@1", DbType.String),
@@ -489,7 +495,9 @@ namespace Server
                             new SQLiteParameter("@3", DbType.String),
                             new SQLiteParameter("@4", DbType.Int32),
                             new SQLiteParameter("@5", DbType.String),
-                            new SQLiteParameter("@6", DbType.String)
+                            new SQLiteParameter("@6", DbType.String),
+                            new SQLiteParameter("@7", DbType.Int32),
+                            new SQLiteParameter("@8", DbType.Int32)
                         };
                         parameters[0].Value = t.UserName;
                         parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
@@ -497,6 +505,8 @@ namespace Server
                         parameters[3].Value = t.Type;
                         parameters[4].Value = "";
                         parameters[5].Value = "";
+                        parameters[6].Value = 0;
+                        parameters[7].Value = 0;
                         cmd.Parameters.AddRange(parameters);
                         cmd.ExecuteNonQuery();
                     }
@@ -676,8 +686,13 @@ namespace Server
                         {
                             UserId = reader.GetInt32(0),
                             UserName = reader.GetString(1),
+                            RegisterDate = reader.GetString(2),
                             Password = reader.GetString(3),
-                            Type = reader.GetInt32(4)
+                            Type = reader.GetInt32(4),
+                            Icon = reader.GetString(5),
+                            Achievement = reader.GetString(6),
+                            Coins = reader.GetInt32(7),
+                            Experience = reader.GetInt32(8)
                         };
                     }
                 }
@@ -706,8 +721,13 @@ namespace Server
                         {
                             UserId = reader.GetInt32(0),
                             UserName = reader.GetString(1),
+                            RegisterDate = reader.GetString(2),
                             Password = reader.GetString(3),
-                            Type = reader.GetInt32(4)
+                            Type = reader.GetInt32(4),
+                            Icon = reader.GetString(5),
+                            Achievement = reader.GetString(6),
+                            Coins = reader.GetInt32(7),
+                            Experience = reader.GetInt32(8)
                         };
                     }
                 }

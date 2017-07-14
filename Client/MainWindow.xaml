@@ -5,16 +5,39 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="hjudge - Client" Height="401.601" Width="738.233" Icon="Resources/Client.png" Loaded="Window_Loaded" ResizeMode="CanMinimize">
+        Title="hjudge - Client" Height="401.601" Width="738.233" Icon="Resources/Client.png" Loaded="Window_Loaded" ResizeMode="CanMinimize" Closing="Window_Closing">
     <Grid>
         <TabControl HorizontalAlignment="Left" Height="346" Margin="10,10,0,0" VerticalAlignment="Top" Width="703">
             <TabItem Header="选手主页">
                 <Grid>
                     <Grid Name="ContentGrid">
-                        <Image Name="UserIcon" HorizontalAlignment="Left" Height="100" Margin="33,26,0,0" VerticalAlignment="Top" Width="100"/>
+                        <Image Name="UserIcon" HorizontalAlignment="Left" Height="100" Margin="33,26,0,0" VerticalAlignment="Top" Width="100" Cursor="Hand"/>
                         <Label Name="WelcomeLabel"  Content="你好，" HorizontalAlignment="Left" Margin="163,42,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <Label Name="Identity"  Content="身份：" HorizontalAlignment="Left" Margin="163,76,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <Button Content="注销" HorizontalAlignment="Left" Margin="629,277,0,0" VerticalAlignment="Top" Width="58" Height="32" Click="Button_Click_1"/>
+                        <Expander Header="修改密码" HorizontalAlignment="Left" Height="148" Margin="33,161,0,0" VerticalAlignment="Top" Width="283" Expanded="Expander_Expanded" Collapsed="Expander_Collapsed">
+                            <Grid Background="White">
+                                <PasswordBox Name="OldPassword" HorizontalAlignment="Left" Margin="80,10,0,0" VerticalAlignment="Top" Width="187" Height="25"/>
+                                <Label Content="旧密码：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                <PasswordBox Name="NewPassword" HorizontalAlignment="Left" Margin="80,40,0,0" VerticalAlignment="Top" Width="187" Height="25"/>
+                                <Label Content="新密码：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top"/>
+                                <PasswordBox Name="ConfirmPassword" HorizontalAlignment="Left" Margin="80,70,0,0" VerticalAlignment="Top" Width="187" Height="25"/>
+                                <Label Content="确认密码：" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
+                                <Button Content="确定" HorizontalAlignment="Left" Margin="212,99,0,0" VerticalAlignment="Top" Width="55" Height="26"/>
+                            </Grid>
+                        </Expander>
+                        <Label Content="点击头像可修改" HorizontalAlignment="Left" Margin="35,131,0,0" VerticalAlignment="Top"/>
+                        <Label Content="已获取成就：" HorizontalAlignment="Left" Margin="346,26,0,0" VerticalAlignment="Top"/>
+                        <ListBox HorizontalAlignment="Left" Height="216" Margin="346,56,0,0" VerticalAlignment="Top" Width="341"/>
+                        <Grid Name="BonusGrid" HorizontalAlignment="Left" Height="121" Margin="35,188,0,0" VerticalAlignment="Top" Width="281">
+                            <Label Content="金币：" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
+                            <Label Content="经验：" HorizontalAlignment="Left" Margin="10,42,0,0" VerticalAlignment="Top"/>
+                            <Label Name="Coins" Content="0" HorizontalAlignment="Left" Margin="61,12,0,0" VerticalAlignment="Top" Width="120"/>
+                            <Label Name="Experience" Content="0" HorizontalAlignment="Left" Margin="61,42,0,0" VerticalAlignment="Top" Width="120"/>
+                            <Label Content="等级：" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top"/>
+                            <Label Name="Level" Content="-" HorizontalAlignment="Left" Margin="61,72,0,0" VerticalAlignment="Top" Width="120"/>
+                            <Image Name="LevelImage" HorizontalAlignment="Left" Height="85" Margin="186,12,0,0" VerticalAlignment="Top" Width="85"/>
+                        </Grid>
                     </Grid>
                     <Grid Name="LoginGrid"  HorizontalAlignment="Left" Height="222" Margin="61,372,0,-276" VerticalAlignment="Top" Width="571">
                         <Label Content="欢迎使用，请登录客户端" HorizontalAlignment="Left" Margin="187,26,0,0" VerticalAlignment="Top" FontSize="18"/>
@@ -27,19 +50,69 @@
                 </Grid>
             </TabItem>
             <TabItem Name="CodeSubmit"  Header="代码提交">
-                <Grid/>
+                <Grid>
+                    <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="241" Margin="188,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="499" FontFamily="Consolas"/>
+                    <ComboBox Name="ProblemList"  HorizontalAlignment="Left" Margin="61,10,0,0" VerticalAlignment="Top" Width="554" Height="25"/>
+                    <Label Content="题目：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                    <Button Content="快速定位" HorizontalAlignment="Left" Margin="620,10,0,0" VerticalAlignment="Top" Width="67" Height="25"/>
+                    <Label Content="输入文件名：" HorizontalAlignment="Left" Margin="10,288,0,0" VerticalAlignment="Top"/>
+                    <Label Content="输出文件名：" HorizontalAlignment="Left" Margin="240,288,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="InputFileName" HorizontalAlignment="Left" Height="25" Margin="92,288,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="143" IsReadOnly="True"/>
+                    <TextBox Name="OutFileName" HorizontalAlignment="Left" Height="25" Margin="322,288,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="143" IsReadOnly="True"/>
+                    <Button Content="提交代码" HorizontalAlignment="Left" Margin="620,288,0,0" VerticalAlignment="Top" Width="67" Height="25"/>
+                    <Label Content="200 金币兑换题目数据" HorizontalAlignment="Left" Margin="478,288,0,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF"/>
+                    <Label Content="题目信息：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top"/>
+                    <Label Content="代码：" HorizontalAlignment="Left" Margin="137,40,0,0" VerticalAlignment="Top"/>
+                    <ListBox Name="ProblemInfomationList" HorizontalAlignment="Left" Height="218" Margin="10,65,0,0" VerticalAlignment="Top" Width="173"/>
+                </Grid>
             </TabItem>
             <TabItem Name="Messaging" Header="发送消息">
-                <Grid/>
+                <Grid>
+                    <Label Content="消息内容：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="MessageContent" HorizontalAlignment="Left" Height="239" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="677"/>
+                    <Button Content="发送消息" HorizontalAlignment="Left" Margin="621,284,0,0" VerticalAlignment="Top" Width="66" Height="25"/>
+                </Grid>
             </TabItem>
             <TabItem Name="Messages" Header="消息记录">
-                <Grid/>
+                <Grid>
+                    <ListView Name="MessageList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Label Content="Tips：双击查看详情" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                </Grid>
             </TabItem>
             <TabItem Name="JudgeResult" Header="评测记录">
-                <Grid/>
+                <Grid>
+                    <ListView Name="JudgeList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Label Content="Tips：双击查看详情" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                </Grid>
             </TabItem>
             <TabItem Name="GetFiles" Header="获取文件">
-                <Grid/>
+                <Grid>
+                    <ListView Name="FileList" HorizontalAlignment="Left" Height="239" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Label Content="Tips：双击下载文件或打开文件夹" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                    <Button Content="向上一级" HorizontalAlignment="Left" Margin="554,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
+                    <Button Content="刷新列表" HorizontalAlignment="Left" Margin="623,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
+                    <Button Content="回根目录" HorizontalAlignment="Left" Margin="485,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
+                    <Label Content="当前路径：" HorizontalAlignment="Left" Margin="10,254,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="CurrentLocation" HorizontalAlignment="Left" Height="25" Margin="80,254,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="607" IsReadOnly="True"/>
+                </Grid>
             </TabItem>
         </TabControl>
 
