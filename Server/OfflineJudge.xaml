@@ -30,9 +30,9 @@
                     <Label Content="评测进度：" HorizontalAlignment="Left" Margin="225,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>
                     <Button Name="JudgeButton"  Content="开始" HorizontalAlignment="Left" Margin="701,10,0,0" VerticalAlignment="Top" Width="46" Height="26" Click="JudgeButton_Click"/>
                     <Label Content="评测选手：" HorizontalAlignment="Left" Margin="257,72,0,0" VerticalAlignment="Top"/>
-                    <Label Name="CurrentMember"  Content="" HorizontalAlignment="Left" Margin="332,72,0,0" VerticalAlignment="Top" Width="364"/>
+                    <Label Name="CurrentMember" HorizontalAlignment="Left" Margin="332,72,0,0" VerticalAlignment="Top" Width="364"/>
                     <Label Content="评测题目：" HorizontalAlignment="Left" Margin="257,103,0,0" VerticalAlignment="Top"/>
-                    <Label Name="CurrentProblem"  Content="" HorizontalAlignment="Left" Margin="332,103,0,0" VerticalAlignment="Top" Width="364"/>
+                    <Label Name="CurrentProblem" HorizontalAlignment="Left" Margin="332,103,0,0" VerticalAlignment="Top" Width="364"/>
                     <Label Content="评测状态：" HorizontalAlignment="Left" Margin="257,134,0,0" VerticalAlignment="Top"/>
                     <Label Name="CurrentState"  Content="尚未评测" HorizontalAlignment="Left" Margin="332,134,0,0" VerticalAlignment="Top" Width="364"/>
                     <Label Content="评测日志：" HorizontalAlignment="Left" Margin="225,165,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>

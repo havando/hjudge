@@ -36,7 +36,7 @@ namespace Server
         {
             Connection.ClearJudgeLog();
             _curJudgeInfo.Clear();
-            Code.Text = JudgeDetails.Text = "";
+            Code.Text = JudgeDetails.Text = string.Empty;
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)

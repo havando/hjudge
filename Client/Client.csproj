@@ -72,6 +72,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
+    <Compile Include="Data.cs" />
+    <Compile Include="Problem.cs" />
     <Compile Include="UserInfo.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

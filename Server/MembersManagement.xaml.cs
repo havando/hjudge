@@ -59,7 +59,7 @@ namespace Server
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            UserName.Text = "";
+            UserName.Text = string.Empty;
             UserEdit.Visibility = Visibility.Hidden;
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = true;
@@ -118,7 +118,7 @@ namespace Server
                 }
             }
             UserEdit.Visibility = Visibility.Hidden;
-            UserName.Text = "";
+            UserName.Text = string.Empty;
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = true;
         }
@@ -150,7 +150,7 @@ namespace Server
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             var failed = Connection.SaveUser(_toDelete);
-            var t = "";
+            var t = string.Empty;
             for (var i = 0; i < failed.Count; i++)
             {
                 if (i != failed.Count - 1)

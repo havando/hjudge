@@ -24,7 +24,7 @@ namespace Server
             InitializeComponent();
         }
 
-        private string _msg = "";
+        private string _msg = string.Empty;
         private IntPtr _id = IntPtr.Zero;
         public void SetMessage(string msg, IntPtr id)
         {

@@ -22,7 +22,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox Name="Msg"  HorizontalAlignment="Left" Height="300" Margin="284,41,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="385"/>
+        <TextBox Name="Msg"  HorizontalAlignment="Left" Height="300" Margin="284,41,0,0" TextWrapping="Wrap"  VerticalScrollBarVisibility="Auto" AcceptsTab="True" AcceptsReturn="True" VerticalAlignment="Top" Width="385"/>
         <Label Content="消息内容：" HorizontalAlignment="Left" Margin="284,10,0,0" VerticalAlignment="Top"/>
         <Button Content="取消" HorizontalAlignment="Left" Margin="674,272,0,0" VerticalAlignment="Top" Width="60" Height="32" Click="Button_Click"/>
         <Button Content="发送" HorizontalAlignment="Left" Margin="674,309,0,0" VerticalAlignment="Top" Width="60" Height="32" Click="Button_Click_1"/>

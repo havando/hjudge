@@ -121,7 +121,7 @@ namespace Client
             } while (!isSucceed && cnt <= 3);
         }
 
-        public static void SendMsg(string sendString, IntPtr connId)
+        public static void SendMsg(string sendString)
         {
             SendData("Messaging", sendString);
         }
@@ -253,89 +253,99 @@ namespace Client
                                 switch (res.Operation)
                                 {
                                     case "Login":
-                                    {
-                                        var x = Encoding.Unicode.GetString(res.Content[0]);
-                                        switch (x)
                                         {
-                                            case "Succeed":
+                                            var x = Encoding.Unicode.GetString(res.Content[0]);
+                                            switch (x)
                                             {
-                                                _updateMainPage.Invoke($"Login{Divpar}Succeed");
-                                                break;
+                                                case "Succeed":
+                                                    {
+                                                        _updateMainPage.Invoke($"Login{Divpar}Succeed");
+                                                        break;
+                                                    }
+                                                case "Incorrect":
+                                                    {
+                                                        _updateMainPage.Invoke($"Login{Divpar}Incorrect");
+                                                        break;
+                                                    }
+                                                case "Unknown":
+                                                    {
+                                                        _updateMainPage.Invoke($"Login{Divpar}Unknown");
+                                                        break;
+                                                    }
                                             }
-                                            case "Incorrect":
-                                            {
-                                                _updateMainPage.Invoke($"Login{Divpar}Incorrect");
-                                                break;
-                                            }
-                                            case "Unknown":
-                                            {
-                                                _updateMainPage.Invoke($"Login{Divpar}Unknown");
-                                                break;
-                                            }
+                                            break;
                                         }
-                                        break;
-                                    }
                                     case "Logout":
-                                    {
-                                        _updateMainPage.Invoke($"Logout{Divpar}Succeed");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke($"Logout{Divpar}Succeed");
+                                            break;
+                                        }
+                                    case "ProblemDataSet":
+                                        {
+                                            var problemId = Encoding.Unicode.GetString(res.Content[0]);
+                                            var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
+                                            File.WriteAllBytes($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}.zip",
+                                                res.Content[1]);
+                                            Process.Start("explorer.exe",
+                                                $"/select, {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
+                                            break;
+                                        }
                                     case "Messaging":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "FileList":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"FileList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"FileList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "File":
-                                    {
-                                        var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                        fileName = fileName.Substring(
-                                            fileName.Length -
-                                            (fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal)),
-                                            fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal));
-                                        File.WriteAllBytes(
-                                            $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                            res.Content[1]);
-                                        Process.Start("explorer.exe",
-                                            $"/select, {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
-                                        break;
-                                    }
+                                        {
+                                            var fileName = Encoding.Unicode.GetString(res.Content[0]);
+                                            fileName = fileName.Substring(
+                                                fileName.Length -
+                                                (fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal)),
+                                                fileName.Length - fileName.LastIndexOf("\\", StringComparison.Ordinal));
+                                            File.WriteAllBytes(
+                                                $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                                res.Content[1]);
+                                            Process.Start("explorer.exe",
+                                                $"/select, {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
+                                            break;
+                                        }
                                     case "JudgeResult":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"JudgeResult{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"JudgeResult{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "ProblemList":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"ProblemList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"ProblemList{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "Profile":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"Profile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"Profile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "ChangePassword":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                     case "UpdateProfile":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
+                                        {
+                                            _updateMainPage.Invoke(
+                                                $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                            break;
+                                        }
                                 }
                             }
                             catch

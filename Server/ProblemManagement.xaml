@@ -32,7 +32,7 @@
                     <TextBox Name="InputFileName" HorizontalAlignment="Left" Height="23" Margin="97,168,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="88"/>
                     <TextBox Name="OutputFileName" HorizontalAlignment="Left" Height="23" Margin="285,168,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="88"/>
                     <TextBox Name="CompileCommand" HorizontalAlignment="Left" Height="23" Margin="85,199,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="288"/>
-                    <Label Name="AddDate" Content="" HorizontalAlignment="Left" Margin="85,41,0,0" VerticalAlignment="Top" Width="167"/>
+                    <Label Name="AddDate" HorizontalAlignment="Left" Margin="85,41,0,0" VerticalAlignment="Top" Width="167"/>
                     <Slider Name="Level" HorizontalAlignment="Left" Margin="85,72,0,0" VerticalAlignment="Top" Width="260" Height="29" SmallChange="1" Minimum="1" Value="1" TickPlacement="Both" ValueChanged="Level_ValueChanged" Ticks="1 2 3 4 5 6 7 8 9 10" IsSnapToTickEnabled="True"/>
                     <Label Name="LevelShow" Content="1" HorizontalAlignment="Left" Margin="345,75,0,0" VerticalAlignment="Top" Width="28" HorizontalContentAlignment="Right"/>
                     <Label Content="数据组数：" HorizontalAlignment="Left" Margin="257,41,0,0" VerticalAlignment="Top"/>

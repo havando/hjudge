@@ -8,7 +8,7 @@
         Title="成员管理" Height="296.853" Width="581.555" Icon="Resources/default_user_icon.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
     <Grid>
         <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label Name="Identity" Content="" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top"/>
+        <Label Name="Identity" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top"/>
         <ListView Name="ListView" HorizontalAlignment="Left" Height="204" Margin="10,41,0,0" VerticalAlignment="Top" Width="469" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
             <ListView.View>
                 <GridView>

@@ -5,7 +5,6 @@ namespace Server
     public class Problem : INotifyPropertyChanged
     {
         public int ProblemId { get; set; }
-
         public string ProblemName
         {
             get => _problemName;

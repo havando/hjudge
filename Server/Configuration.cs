@@ -14,8 +14,8 @@ namespace Server
             Configurations = new Config();
             if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\Config.xml"))
             {
-                Configurations.Compiler = "";
-                Configurations.EnvironmentValues = "";
+                Configurations.Compiler = string.Empty;
+                Configurations.EnvironmentValues = string.Empty;
                 File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());

@@ -44,6 +44,7 @@ namespace Server
             {
                 Connection.SendMsg($"发送时间：{DateTime.Now}\r\n内容：\r\n{Msg.Text}", i.ConnId);
             }
+            Msg.Text = string.Empty;
         }
 
         private void ListView_Click(object sender, RoutedEventArgs e)

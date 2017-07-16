@@ -107,8 +107,8 @@ namespace Server
 
         private string StringArrCastToString(IReadOnlyList<string> p)
         {
-            if (p == null) return "";
-            var m = "";
+            if (p == null) return string.Empty;
+            var m = string.Empty;
             for (var i = 0; i < p.Count; i++)
             {
                 if (i != p.Count - 1)
@@ -177,11 +177,13 @@ namespace Server
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            _problems.Add(new Problem()
+            _problems.Add(new Problem
             {
                 ProblemId = Connection.NewProblem()
             });
             ListView.SelectedIndex = ListView.Items.Count - 1;
+            InputFileName.Text = "${name}.in";
+            OutputFileName.Text = "${name}.out";
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)

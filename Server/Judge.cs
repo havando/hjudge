@@ -23,7 +23,7 @@ namespace Server
         public static string GetEngName(string origin)
         {
             var re = new Regex("[A-Z]|[a-z]|[0-9]");
-            return re.Matches(origin).Cast<object>().Aggregate("", (current, t) => current + t);
+            return re.Matches(origin).Cast<object>().Aggregate(string.Empty, (current, t) => current + t);
         }
 
         private string GetRealString(string origin)
@@ -279,7 +279,7 @@ namespace Server
                                 else
                                 {
                                     var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
-                                    p = Regex.Replace(p, @"\s", "");
+                                    p = Regex.Replace(p, @"\s", string.Empty);
                                     var gs = Convert.ToSingle(p);
                                     JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score * gs;
                                     if (Math.Abs(gs - 1) > 0.000001)
@@ -321,7 +321,7 @@ namespace Server
                             }
                             catch
                             {
-                                s1 = "";
+                                s1 = string.Empty;
                             }
                             string s2;
                             try
@@ -330,17 +330,17 @@ namespace Server
                             }
                             catch
                             {
-                                s2 = "";
+                                s2 = string.Empty;
                             }
-                            if (s1 == null) s1 = "";
-                            if (s2 == null) s2 = "";
+                            if (s1 == null) s1 = string.Empty;
+                            if (s2 == null) s2 = string.Empty;
                             s1 = s1.TrimEnd(' ');
                             s2 = s2.TrimEnd(' ');
                             if (s1 == s2) continue;
                             iswrong = true;
                             JudgeResult.Result[_cur] = "Wrong Answer";
                             JudgeResult.Score[_cur] = 0;
-                            if (Regex.Replace(s1, @"\s", "") == Regex.Replace(s2, @"\s", ""))
+                            if (Regex.Replace(s1, @"\s", string.Empty) == Regex.Replace(s2, @"\s", string.Empty))
                             {
                                 JudgeResult.Result[_cur] = "Presentation Error";
                             }

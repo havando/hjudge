@@ -91,7 +91,7 @@ namespace Server
             Connection.Init(UpdateListBoxContent);
             Configuration.Init();
             CurrentAddress.Content = "当前主机地址：" + Connection.Address;
-            UserHelper.SetCurrentUser(0, "", "", "", 0, "", "");
+            UserHelper.SetCurrentUser(0, string.Empty, string.Empty, string.Empty, 0, string.Empty, string.Empty);
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();
 
@@ -133,8 +133,8 @@ namespace Server
             LoginButton.IsEnabled = true;
             if (res != 0) return;
             UpdateListBoxContent($"{DateTime.Now} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端");
-            UserName.Text = "";
-            Password.Password = "";
+            UserName.Text = string.Empty;
+            Password.Password = string.Empty;
             LoginGrid.Visibility = Visibility.Hidden;
             ContentGrid.Visibility = Visibility.Visible;
             var hiddenDaV = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
