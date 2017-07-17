@@ -73,8 +73,16 @@
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="JudgeDetails.xaml.cs">
+      <DependentUpon>JudgeDetails.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="JudgeInfo.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="UserInfo.cs" />
+    <Page Include="JudgeDetails.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

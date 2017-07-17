@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Client
+﻿namespace Client
 {
     public class Problem
     {

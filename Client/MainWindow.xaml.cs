@@ -20,9 +20,10 @@ namespace Client
     {
         private const string Divpar = "<h~|~j>";
         private string _userName;
-        private int _coins = 0, _experience = 0;
+        private int _coins = 0, _experience = 0, _currentGetJudgeRecordIndex = 0;
 
         public readonly ObservableCollection<Problem> Problems = new ObservableCollection<Problem>();
+        public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
 
         public string SelectedString { get; set; }
 
@@ -61,6 +62,7 @@ namespace Client
             }
             InitializeComponent();
             MyProblemList.ItemsSource = Problems;
+            JudgeList.ItemsSource = JudgeInfos;
 
             Configuration.Init();
             if (string.IsNullOrEmpty(Configuration.Configurations.Ip))
@@ -149,12 +151,15 @@ namespace Client
                                 Dispatcher.BeginInvoke((Action)(() =>
                                 {
                                     _userName = UserName.Text;
-                                    Password.Password = "";
+                                    Password.Password = string.Empty;
+                                    _coins = _experience = _currentGetJudgeRecordIndex = 0;
                                     CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                                         JudgeResult.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Connection.SendData("RequestProfile", _userName);
+                                    Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
+                                    _currentGetJudgeRecordIndex = 20;
                                 }));
                             }
                             else
@@ -177,6 +182,7 @@ namespace Client
                                 WelcomeLabel.Content = "你好，";
                                 Identity.Content = "身份：";
                                 CodeBox.Text = string.Empty;
+                                _coins = _experience = _currentGetJudgeRecordIndex = 0;
                             }));
                             break;
                         }
@@ -196,6 +202,10 @@ namespace Client
                         }
                     case "JudgeResult":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                JudgeInfos.Insert(0, JsonConvert.DeserializeObject<JudgeInfo>(content));
+                            }));
                             break;
                         }
                     case "ProblemList":
@@ -355,6 +365,38 @@ namespace Client
                             }
                             break;
                         }
+                    case "JudgeRecord":
+                        {
+                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
+                            if (final.Length < 3) break;
+                            _currentGetJudgeRecordIndex = Convert.ToInt32(final[0]) + Convert.ToInt32(final[1]);
+                            if (Convert.ToInt32(final[1]) != 20)
+                            {
+                                _currentGetJudgeRecordIndex = -1;
+                            }
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
+                                {
+                                    JudgeInfos.Add(i);
+                                }
+                            }));
+                            break;
+                        }
+                    case "JudgeCode":
+                        {
+                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
+                            if (final.Length < 2) break;
+                            var j = (from c in JudgeInfos where c.JudgeId == Convert.ToInt32(final[0]) select c)
+                                .FirstOrDefault();
+                            if (j == null) break;
+                            j.Code = final[1];
+                            Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                ShowJudgeDetails(j);
+                            }));
+                            break;
+                        }
                 }
 
             }
@@ -362,6 +404,21 @@ namespace Client
             {
                 //ignored
             }
+        }
+
+        private void ShowJudgeDetails(JudgeInfo jInfo)
+        {
+            var details = string.Empty;
+            if (jInfo.Result != null)
+            {
+                for (var i = 0; i < jInfo.Result.Length; i++)
+                {
+                    details +=
+                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数： {jInfo.Score[i]}\r\n";
+                }
+            }
+            var x = new JudgeDetails();
+            x.SetContent(jInfo.Code, details);
         }
 
         private void UpdateProblemList(Problem[] x)
@@ -482,6 +539,35 @@ namespace Client
             {
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
+            }
+        }
+
+        private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
+        {
+            if (_currentGetJudgeRecordIndex == -1)
+            {
+                MessageBox.Show("已经全部加载完了", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            if (_experience <= 128)
+            {
+                MessageBox.Show("经验不足，达到 128 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (_coins >= 100)
+            {
+                if (MessageBox.Show("操此作将花费您 100 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                    MessageBoxResult.Yes)
+                {
+                    _coins -= 100;
+                    Coins.Content = _coins;
+                    Connection.SendData("UpdateCoins", "-100");
+                    Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex + 1}{Divpar}20");
+                }
+            }
+            else
+            {
+                MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

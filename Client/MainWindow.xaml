@@ -90,11 +90,18 @@
                     <ListView Name="JudgeList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn/>
+                                <GridViewColumn Width="50" Header="评测 ID" DisplayMemberBinding="{Binding Path=JudgeId}"/>
+                                <GridViewColumn Width="150" Header="评测时间" DisplayMemberBinding="{Binding Path=JudgeDate}"/>
+                                <GridViewColumn Width="50" Header="题目 ID" DisplayMemberBinding="{Binding Path=ProblemId}"/>
+                                <GridViewColumn Width="150" Header="题目名称" DisplayMemberBinding="{Binding Path=ProblemName}"/>
+                                <GridViewColumn Width="150" Header="评测结果" DisplayMemberBinding="{Binding Path=ResultSummery}"/>
+                                <GridViewColumn Width="50" Header="得分" DisplayMemberBinding="{Binding Path=FullScore}"/>
+                                
                             </GridView>
                         </ListView.View>
                     </ListView>
                     <Label Content="Tips：双击查看详情" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                    <Label Content="100 金币再加载 20 条记录" HorizontalAlignment="Left" Margin="536,284,0,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_1"/>
                 </Grid>
             </TabItem>
             <TabItem Name="GetFiles" Header="获取文件">

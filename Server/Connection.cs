@@ -185,6 +185,44 @@ namespace Server
 
         #region DataBase
 
+        private static JudgeInfo[] GetJudgeRecord(int userId, int start, int count)
+        {
+            var ji = new List<JudgeInfo>();
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From Judge Where UserId=@1 order by JudgeId desc";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.Int32)
+                };
+                parameters[0].Value = userId;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        if (start-- != 0) continue;
+                        if (count-- == 0) break;
+                        ji.Add(new JudgeInfo
+                        {
+                            JudgeId = reader.GetInt32(0),
+                            UserId = reader.GetInt32(1),
+                            JudgeDate = reader.GetString(2),
+                            ProblemId = reader.GetInt32(3),
+                            Code = "-|/|\\|-",
+                            Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
+                            Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
+                            Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
+                            Result = reader.GetString(8).Split(','),
+                            Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                        });
+                    }
+                }
+            }
+            return ji.ToArray();
+        }
+
         private static bool RemoteChangePassword(string userName, string oldPassword, string newPassword)
         {
             SHA256 s = new SHA256CryptoServiceProvider();
@@ -1472,6 +1510,10 @@ namespace Server
                                             }
                                         case "UpdateProfile":
                                             {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
                                                 SendData("UpdateProfile",
                                                     RemoteUpdateProfile(
                                                         u.Info.UserId,
@@ -1483,6 +1525,10 @@ namespace Server
                                             }
                                         case "UpdateCoins":
                                             {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
                                                 SendData("UpdateCoins",
                                                     UpdateCoins(
                                                         u.Info.UserId,
@@ -1493,12 +1539,31 @@ namespace Server
                                             }
                                         case "UpdateExperience":
                                             {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
                                                 SendData("UpdateExperience",
                                                     UpdateExperience(
                                                         u.Info.UserId,
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
                                                         ? "Succeed"
                                                         : "Failed", res.Client.ConnId);
+                                                break;
+                                            }
+                                        case "RequestJudgeRecord":
+                                            {
+                                                if (u.Info.UserId == 0)
+                                                {
+                                                    break;
+                                                }
+                                                SendData("JudgeRecord",
+                                                    Encoding.Unicode.GetString(res.Content[0]) + Divpar +
+                                                    Encoding.Unicode.GetString(res.Content[1]) + Divpar +
+                                                    JsonConvert.SerializeObject(GetJudgeRecord(u.Info.UserId,
+                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])))),
+                                                    res.Client.ConnId);
                                                 break;
                                             }
                                     }

@@ -27,11 +27,13 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="232" Margin="402,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
-        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644"/>
+        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="207" Margin="402,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="348" Margin="402,272,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
         <Label Name="Refresh"  Content="刷新" HorizontalAlignment="Left" Margin="363,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1"/>
         <Label Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="324,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown"/>
         <Label Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown"/>
+        <Label Content="详情：" HorizontalAlignment="Left" Margin="402,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="代码：" HorizontalAlignment="Left" Margin="402,247,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

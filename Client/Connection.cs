@@ -346,6 +346,12 @@ namespace Client
                                                 $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                             break;
                                         }
+                                    case "JudgeRecord":
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"JudgeRecord{Divpar}{Encoding.Unicode.GetString(res.Content[0])}{Divpar}{Encoding.Unicode.GetString(res.Content[1])}{Divpar}{Encoding.Unicode.GetString(res.Content[2])}");
+                                            break;
+                                        }
                                 }
                             }
                             catch
