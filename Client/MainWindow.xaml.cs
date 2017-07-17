@@ -686,7 +686,7 @@ namespace Client
                     _coins -= 100;
                     Coins.Content = _coins;
                     Connection.SendData("UpdateCoins", "-100");
-                    Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex + 1}{Divpar}20");
+                    Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100" });
                 }
             }

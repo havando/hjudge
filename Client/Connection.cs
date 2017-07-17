@@ -326,10 +326,10 @@ namespace Client
                                     {
                                         var problemId = Encoding.Unicode.GetString(res.Content[0]);
                                         var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
-                                        File.WriteAllBytes($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}.zip",
+                                        File.WriteAllBytes($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
                                             res.Content[1]);
                                         Process.Start("explorer.exe",
-                                            $"/select, {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
+                                            $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
                                         break;
                                     }
                                 case "Messaging":
