@@ -93,7 +93,7 @@ namespace Server
                             continue;
                         }
                         cur[0]++;
-                        Dispatcher.BeginInvoke((Action)(() =>
+                        Dispatcher.BeginInvoke(new Action(() =>
                         {
                             JudgingProcess.Value = (double)cur[0] * 100 / all;
                             CurrentMember.Content = t;
@@ -116,13 +116,13 @@ namespace Server
                         var j = new Judge(m.ProblemId, 1, code);
                         p.Result.Add(j.JudgeResult);
                     }
-                    Dispatcher.BeginInvoke((Action)(() =>
+                    Dispatcher.BeginInvoke(new Action(() =>
                     {
                         _results.Add(p);
                         JudgeResult.Items.Refresh();
                     }));
                 }
-                Dispatcher.BeginInvoke((Action)(() =>
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
                     CurrentState.Content = "评测完毕";
                     JudgingProcess.Value = 100;

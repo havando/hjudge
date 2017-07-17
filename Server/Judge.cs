@@ -40,7 +40,7 @@ namespace Server
         public Judge(int problemId, int userId, string code)
         {
             _problem = Connection.GetProblem(problemId);
-            var datetime = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var datetime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
             JudgeResult.JudgeId = Connection.NewJudge();
             JudgeResult.JudgeDate = datetime;
             JudgeResult.ProblemId = _problem.ProblemId;

@@ -27,8 +27,8 @@
                             </Grid>
                         </Expander>
                         <Label Content="点击头像可修改" HorizontalAlignment="Left" Margin="35,131,0,0" VerticalAlignment="Top"/>
-                        <Label Content="已获取成就：" HorizontalAlignment="Left" Margin="346,26,0,0" VerticalAlignment="Top"/>
-                        <ListBox Name="AchienementBox" HorizontalAlignment="Left" Height="216" Margin="346,56,0,0" VerticalAlignment="Top" Width="341"/>
+                        <Label Content="动态：" HorizontalAlignment="Left" Margin="346,26,0,0" VerticalAlignment="Top"/>
+                        <ListBox Name="ActiveBox" HorizontalAlignment="Left" Height="216" Margin="346,56,0,0" VerticalAlignment="Top" Width="341"/>
                         <Grid Name="BonusGrid" HorizontalAlignment="Left" Height="121" Margin="35,188,0,0" VerticalAlignment="Top" Width="281">
                             <Label Content="金币：" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
                             <Label Content="经验：" HorizontalAlignment="Left" Margin="10,42,0,0" VerticalAlignment="Top"/>
@@ -43,8 +43,8 @@
                         <Label Content="欢迎使用，请登录客户端" HorizontalAlignment="Left" Margin="187,26,0,0" VerticalAlignment="Top" FontSize="18"/>
                         <Label Content="用户名：" HorizontalAlignment="Left" Margin="66,95,0,0" VerticalAlignment="Top"/>
                         <Label Content="密码：" HorizontalAlignment="Left" Margin="66,126,0,0" VerticalAlignment="Top"/>
-                        <TextBox Name="UserName"  HorizontalAlignment="Left" Height="26" Margin="129,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="308"/>
-                        <PasswordBox Name="Password"  HorizontalAlignment="Left" Height="26" Margin="129,126,0,0" VerticalAlignment="Top" Width="308"/>
+                        <TextBox Name="UserName"  HorizontalAlignment="Left" Height="26" Margin="129,95,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="308" KeyDown="UserName_OnKeyDown"/>
+                        <PasswordBox Name="Password"  HorizontalAlignment="Left" Height="26" Margin="129,126,0,0" VerticalAlignment="Top" Width="308" KeyDown="Password_OnKeyDown"/>
                         <Button Name="LoginButton" Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0" VerticalAlignment="Top" Width="66" Height="57" Click="Button_Click" IsEnabled="False"/>
                     </Grid>
                 </Grid>
@@ -71,23 +71,26 @@
                     <Label Content="消息内容：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="MessageContent" HorizontalAlignment="Left" Height="239" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="677" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto"/>
                     <Button Content="发送消息" HorizontalAlignment="Left" Margin="621,284,0,0" VerticalAlignment="Top" Width="66" Height="25" Click="Button_Click_4"/>
+                    <Label Content="Tips：消息费用 10 金币/次" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
                 </Grid>
             </TabItem>
             <TabItem Name="Messages" Header="消息记录">
                 <Grid>
-                    <ListView Name="MessageList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                    <ListView Name="MessageList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677" SelectionMode="Single" MouseDoubleClick="MessageList_OnMouseDoubleClick">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn/>
+                                <GridViewColumn Width="50" Header="方向" DisplayMemberBinding="{Binding Path=Direction}"/>
+                                <GridViewColumn Width="150" Header="发送时间" DisplayMemberBinding="{Binding Path=DisplayDateTime}"/>
+                                <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Path=Summery}"/>
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Label Content="Tips：双击查看详情" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                    <Label Content="Tips：双击查看详情。" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
                 </Grid>
             </TabItem>
             <TabItem Name="JudgeResult" Header="评测记录">
                 <Grid>
-                    <ListView Name="JudgeList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                    <ListView Name="JudgeList" HorizontalAlignment="Left" Height="269" Margin="10,10,0,0" VerticalAlignment="Top" Width="677" SelectionMode="Single" MouseDoubleClick="JudgeList_OnMouseDoubleClick">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Width="50" Header="评测 ID" DisplayMemberBinding="{Binding Path=JudgeId}"/>
@@ -96,27 +99,28 @@
                                 <GridViewColumn Width="150" Header="题目名称" DisplayMemberBinding="{Binding Path=ProblemName}"/>
                                 <GridViewColumn Width="150" Header="评测结果" DisplayMemberBinding="{Binding Path=ResultSummery}"/>
                                 <GridViewColumn Width="50" Header="得分" DisplayMemberBinding="{Binding Path=FullScore}"/>
-                                
+
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Label Content="Tips：双击查看详情" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                    <Label Content="Tips：双击查看详情。查看非本次登录评测记录详情需花费 20 金币。" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
                     <Label Content="100 金币再加载 20 条记录" HorizontalAlignment="Left" Margin="536,284,0,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_1"/>
                 </Grid>
             </TabItem>
             <TabItem Name="GetFiles" Header="获取文件">
                 <Grid>
-                    <ListView Name="FileList" HorizontalAlignment="Left" Height="239" Margin="10,10,0,0" VerticalAlignment="Top" Width="677">
+                    <ListView Name="FileList" HorizontalAlignment="Left" Height="239" Margin="10,10,0,0" VerticalAlignment="Top" Width="677" SelectionMode="Single" MouseDoubleClick="FileList_OnMouseDoubleClick">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn/>
+                                <GridViewColumn Width="300" Header="名称" DisplayMemberBinding="{Binding Path=Name}"/>
+                                <GridViewColumn Width="100" Header="类型" DisplayMemberBinding="{Binding Path=Type}"/>
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Label Content="Tips：双击下载文件或打开文件夹" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
-                    <Button Content="向上一级" HorizontalAlignment="Left" Margin="554,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
-                    <Button Content="刷新列表" HorizontalAlignment="Left" Margin="623,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
-                    <Button Content="回根目录" HorizontalAlignment="Left" Margin="485,284,0,0" VerticalAlignment="Top" Width="64" Height="25"/>
+                    <Label Content="Tips：双击下载文件或打开文件夹。" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
+                    <Button Content="向上一级" HorizontalAlignment="Left" Margin="554,284,0,0" VerticalAlignment="Top" Width="64" Height="25" Click="Button_Click_7"/>
+                    <Button Content="刷新列表" HorizontalAlignment="Left" Margin="623,284,0,0" VerticalAlignment="Top" Width="64" Height="25" Click="Button_Click_8"/>
+                    <Button Content="回根目录" HorizontalAlignment="Left" Margin="485,284,0,0" VerticalAlignment="Top" Width="64" Height="25" Click="Button_Click_6"/>
                     <Label Content="当前路径：" HorizontalAlignment="Left" Margin="10,254,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="CurrentLocation" HorizontalAlignment="Left" Height="25" Margin="80,254,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="607" IsReadOnly="True"/>
                 </Grid>

@@ -14,8 +14,8 @@ namespace Client
 
         public void SetContent(string code, string details)
         {
-            CodeBox.Text = code;
-            DetailsBox.Text = details;
+            CodeBox.Text = "代码：\r\n" + code;
+            DetailsBox.Text = "详情：\r\n" + details;
         }
     }
 }

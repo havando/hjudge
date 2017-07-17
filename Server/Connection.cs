@@ -27,12 +27,12 @@ namespace Server
         private static readonly List<ClientData> Recv = new List<ClientData>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         public static string Address;
-        private static readonly TcpPullServer HServer = new TcpPullServer();
+        private static readonly TcpPullServer<ClientInfo> HServer = new TcpPullServer<ClientInfo>();
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
         private static Action<string> _updateMain;
-        private static bool _hasBytesToDeal;
-        private static bool _hasOperationsToDeal;
+        private static int _id;
+        private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
 
         public static void Init(Action<string> updateMainPage)
         {
@@ -140,13 +140,18 @@ namespace Server
                     UserId = 0,
                     ConnId = id,
                     IpAddress = ip,
-                    Port = port
+                    Port = port,
+                    PkgInfo = new PkgInfo
+                    {
+                        IsHeader = true,
+                        Length = PkgHeaderSize
+                    }
                 };
+                HServer.SetExtra(id, clientInfo);
                 WaitingForUnusing();
                 _isUsing = true;
                 Recv.Add(new ClientData { Info = clientInfo });
                 _isUsing = false;
-                HServer.SetExtra(id, clientInfo);
                 return HandleResult.Ok;
             };
             HServer.OnClose += (id, operation, code) =>
@@ -185,6 +190,41 @@ namespace Server
 
         #region DataBase
 
+        private static JudgeInfo GetJudgeInfo(int judgeId)
+        {
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
+                cmd.CommandText = "SELECT * From Judge Where JudgeId=@1";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.Int32)
+                };
+                parameters[0].Value = judgeId;
+                cmd.Parameters.AddRange(parameters);
+                var reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    if (reader.Read())
+                    {
+                        return new JudgeInfo
+                        {
+                            JudgeId = reader.GetInt32(0),
+                            UserId = reader.GetInt32(1),
+                            JudgeDate = reader.GetString(2),
+                            ProblemId = reader.GetInt32(3),
+                            Code = reader.GetString(4),
+                            Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
+                            Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
+                            Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
+                            Result = reader.GetString(8).Split(','),
+                            Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                        };
+                    }
+                }
+            }
+            return new JudgeInfo();
+        }
+
         private static JudgeInfo[] GetJudgeRecord(int userId, int start, int count)
         {
             var ji = new List<JudgeInfo>();
@@ -202,7 +242,7 @@ namespace Server
                 {
                     while (reader.Read())
                     {
-                        if (start-- != 0) continue;
+                        if (start-- > 0) continue;
                         if (count-- == 0) break;
                         ji.Add(new JudgeInfo
                         {
@@ -275,6 +315,7 @@ namespace Server
 
         private static bool UpdateCoins(int userId, int delta)
         {
+            int origin;
             using (var cmd = new SQLiteCommand(_sqLite))
             {
                 cmd.CommandText = "SELECT * From User Where userId=@1";
@@ -285,7 +326,6 @@ namespace Server
                 parameters1[0].Value = userId;
                 cmd.Parameters.AddRange(parameters1);
                 var reader = cmd.ExecuteReader();
-                int origin;
                 if (reader.HasRows)
                 {
                     if (!reader.Read()) return false;
@@ -295,22 +335,26 @@ namespace Server
                 {
                     return false;
                 }
+            }
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
                 cmd.CommandText = "UPDATE User SET Coins=@1 WHERE UserId=@2";
-                SQLiteParameter[] parameters2 =
+                SQLiteParameter[] parameters =
                 {
                     new SQLiteParameter("@1", DbType.Int32),
                     new SQLiteParameter("@2", DbType.Int32)
                 };
-                cmd.Parameters.Clear();
-                parameters2[0].Value = delta + origin;
-                parameters2[1].Value = userId;
-                cmd.Parameters.AddRange(parameters2);
+                parameters[0].Value = delta + origin;
+                parameters[1].Value = userId;
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
                 return true;
             }
         }
 
         private static bool UpdateExperience(int userId, int delta)
         {
+            int origin;
             using (var cmd = new SQLiteCommand(_sqLite))
             {
                 cmd.CommandText = "SELECT * From User Where userId=@1";
@@ -321,7 +365,6 @@ namespace Server
                 parameters1[0].Value = userId;
                 cmd.Parameters.AddRange(parameters1);
                 var reader = cmd.ExecuteReader();
-                int origin;
                 if (reader.HasRows)
                 {
                     if (!reader.Read()) return false;
@@ -331,16 +374,19 @@ namespace Server
                 {
                     return false;
                 }
+            }
+            using (var cmd = new SQLiteCommand(_sqLite))
+            {
                 cmd.CommandText = "UPDATE User SET Experience=@1 WHERE UserId=@2";
-                SQLiteParameter[] parameters2 =
+                SQLiteParameter[] parameters =
                 {
                     new SQLiteParameter("@1", DbType.Int32),
                     new SQLiteParameter("@2", DbType.Int32)
                 };
-                cmd.Parameters.Clear();
-                parameters2[0].Value = delta + origin;
-                parameters2[1].Value = userId;
-                cmd.Parameters.AddRange(parameters2);
+                parameters[0].Value = delta + origin;
+                parameters[1].Value = userId;
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
                 return true;
             }
         }
@@ -780,7 +826,6 @@ namespace Server
 
         public static UserInfo GetUser(int userId)
         {
-            var a = new ObservableCollection<UserInfo>();
             using (var cmd = new SQLiteCommand(_sqLite))
             {
                 cmd.CommandText = "SELECT * From User Where UserId=@1";
@@ -815,7 +860,6 @@ namespace Server
 
         private static UserInfo GetUser(string userName)
         {
-            var a = new ObservableCollection<UserInfo>();
             using (var cmd = new SQLiteCommand(_sqLite))
             {
                 cmd.CommandText = "SELECT * From User Where UserName=@1";
@@ -1056,10 +1100,9 @@ namespace Server
 
         private static List<string> SearchFiles(string path)
         {
-            var a = new List<string>();
-            a.AddRange(Directory.GetFiles(path));
+            var a = Directory.GetDirectories(path).Select(Path.GetFileName).ToList();
             a.Add("|");
-            a.AddRange(Directory.GetDirectories(path));
+            a.AddRange(Directory.GetFiles(path).Select(Path.GetFileName).ToList());
             return a;
         }
 
@@ -1070,34 +1113,48 @@ namespace Server
                 Thread.Sleep(10);
             }
         }
-
+        private static byte[] GetSendBuffer(byte[] bodyBytes)
+        {
+            var header = new PkgHeader
+            {
+                Id = ++_id,
+                BodySize = bodyBytes.Length
+            };
+            var headerBytes = HServer.StructureToByte(header);
+            var ptr = IntPtr.Zero;
+            try
+            {
+                var bufferSize = headerBytes.Length + bodyBytes.Length;
+                ptr = Marshal.AllocHGlobal(bufferSize);
+                Marshal.Copy(headerBytes, 0, ptr, headerBytes.Length);
+                Marshal.Copy(bodyBytes, 0, ptr + headerBytes.Length, bodyBytes.Length);
+                var bytes = new byte[bufferSize];
+                Marshal.Copy(ptr, bytes, 0, bufferSize);
+                return bytes;
+            }
+            finally
+            {
+                if (ptr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+        }
         private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
         {
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-            bool isSucceed;
-            var cnt = 0;
-            do
-            {
-                isSucceed = HServer.Send(connId, temp, temp.Length);
-                cnt++;
-                Thread.Sleep(50);
-            } while (!isSucceed && cnt <= 3);
+            var final = GetSendBuffer(temp);
+            HServer.Send(connId, final, final.Length);
         }
 
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-            bool isSucceed;
-            var cnt = 0;
-            do
-            {
-                isSucceed = HServer.Send(connId, temp, temp.Length);
-                cnt++;
-                Thread.Sleep(50);
-            } while (!isSucceed && cnt <= 3);
+            var final = GetSendBuffer(temp);
+            HServer.Send(connId, final, final.Length);
         }
 
         public static void SendMsg(string sendString, IntPtr connId)
@@ -1107,33 +1164,56 @@ namespace Server
 
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
         {
-            var clientInfo = (ClientInfo)HServer.GetExtra(connId);
-            if (clientInfo == null) { return HandleResult.Error; }
-            var bufferPtr = IntPtr.Zero;
-            try
-            {
-                bufferPtr = Marshal.AllocHGlobal(length);
-                if (HServer.Fetch(connId, bufferPtr, length) == FetchResult.Ok)
-                {
-                    var recv = new byte[length];
-                    Marshal.Copy(bufferPtr, recv, 0, length);
-                    WaitingForUnusing();
-                    _isUsing = true;
-                    var i = (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault();
-                    i?.Data.AddRange(recv);
-                    _isUsing = false;
-                    _hasBytesToDeal = true;
-                }
-            }
-            catch
+            var clientInfo = HServer.GetExtra(connId);
+            if (clientInfo == null)
             {
                 return HandleResult.Error;
             }
-            finally
+            var myPkgInfo = clientInfo.PkgInfo;
+            var required = myPkgInfo.Length;
+            var remain = length;
+            while (remain >= required)
             {
-                if (bufferPtr != IntPtr.Zero)
+                var bufferPtr = IntPtr.Zero;
+                try
                 {
-                    Marshal.FreeHGlobal(bufferPtr);
+                    remain -= required;
+                    bufferPtr = Marshal.AllocHGlobal(required);
+                    if (HServer.Fetch(connId, bufferPtr, required) == FetchResult.Ok)
+                    {
+                        if (myPkgInfo.IsHeader)
+                        {
+                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            required = header.BodySize;
+                        }
+                        else
+                        {
+                            var buffer = new byte[required];
+                            Marshal.Copy(bufferPtr, buffer, 0, required);
+                            required = PkgHeaderSize;
+                            WaitingForUnusing();
+                            _isUsing = true;
+                            (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault()?.Data.AddRange(buffer);
+                            _isUsing = false;
+                        }
+                        myPkgInfo.IsHeader = !myPkgInfo.IsHeader;
+                        myPkgInfo.Length = required;
+                        if (HServer.SetExtra(connId, clientInfo) == false)
+                        {
+                            return HandleResult.Error;
+                        }
+                    }
+                }
+                catch
+                {
+                    return HandleResult.Error;
+                }
+                finally
+                {
+                    if (bufferPtr != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(bufferPtr);
+                    }
                 }
             }
             return HandleResult.Ok;
@@ -1196,66 +1276,53 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (!Environment.HasShutdownStarted)
+                while (true)
                 {
-                    if (_hasBytesToDeal)
+                    foreach (var t in Recv)
                     {
-                        _hasBytesToDeal = false;
-                        foreach (var t in Recv)
+                        if (t.Data.Count == 0)
                         {
-                            WaitingForUnusing();
-                            if (t.Data.Count == 0)
+                            continue;
+                        }
+                        WaitingForUnusing();
+                        _isUsing = true;
+                        var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
+                        if (temp.Count != 0)
+                        {
+                            t.Data.Clear();
+                            t.Data.AddRange(temp[temp.Count - 1]);
+                        }
+                        temp.RemoveAt(temp.Count - 1);
+                        _isUsing = false;
+                        foreach (var i in temp)
+                        {
+                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
+                            if (temp2.Count == 0)
                             {
                                 continue;
                             }
-                            _isUsing = true;
-                            var temp = Bytespilt(t.Data.ToArray(), Encoding.Unicode.GetBytes(Divtot));
-                            if (temp.Count != 0)
+                            var operation = Encoding.Unicode.GetString(temp2[0]);
+                            switch (operation)
                             {
-                                t.Data.Clear();
-                                t.Data.AddRange(temp[temp.Count - 1]);
-                            }
-                            _isUsing = false;
-                            temp.RemoveAt(temp.Count - 1);
-                            foreach (var i in temp)
-                            {
-                                var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
-                                if (temp2.Count == 0)
-                                {
-                                    continue;
-                                }
-                                var operation = Encoding.Unicode.GetString(temp2[0]);
-                                switch (operation)
-                                {
-                                    case "@":
+                                case "@":
+                                    {
+                                        SendData("&", string.Empty, t.Info.ConnId);
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        temp2.RemoveAt(0);
+                                        Operations.Enqueue(new ObjOperation
                                         {
-                                            var respond = Encoding.Unicode.GetBytes($"&{Divpar}{Divtot}");
-                                            bool isSucceed;
-                                            var cnt = 0;
-                                            do
-                                            {
-                                                isSucceed = HServer.Send(t.Info.ConnId, respond, respond.Length);
-                                                cnt++;
-                                                Thread.Sleep(50);
-                                            } while (!isSucceed && cnt <= 3);
-                                            break;
-                                        }
-                                    default:
-                                        {
-                                            temp2.RemoveAt(0);
-                                            Operations.Enqueue(new ObjOperation
-                                            {
-                                                Operation = operation,
-                                                Client = t.Info,
-                                                Content = temp2
-                                            });
-                                            _hasOperationsToDeal = true;
-                                            break;
-                                        }
-                                }
+                                            Operation = operation,
+                                            Client = t.Info,
+                                            Content = temp2
+                                        });
+                                        break;
+                                    }
                             }
-                            Thread.Sleep(10);
                         }
+                        Thread.Sleep(10);
                     }
                     Thread.Sleep(10);
                 }
@@ -1266,75 +1333,86 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (!Environment.HasShutdownStarted)
+                while (true)
                 {
-                    if (_hasOperationsToDeal)
+                    if (Operations.TryDequeue(out var res))
                     {
-                        _hasOperationsToDeal = false;
-                        if (Operations.TryDequeue(out var res))
+                        var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
+                            .FirstOrDefault();
+                        if (u != null)
                         {
-                            var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
-                                .FirstOrDefault();
-                            if (u != null)
+                            try
                             {
-                                try
+                                switch (res.Operation)
                                 {
-                                    switch (res.Operation)
-                                    {
-                                        case "Login":
+                                    case "Login":
+                                        {
+                                            var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
+                                                Encoding.Unicode.GetString(res.Content[1]));
+                                            switch (x)
                                             {
-                                                var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
-                                                    Encoding.Unicode.GetString(res.Content[1]));
-                                                switch (x)
-                                                {
-                                                    case 0:
-                                                        {
-                                                            u.Info.UserId =
-                                                                GetUserId(Encoding.Unicode.GetString(res.Content[0]));
-                                                            SendData("Login", "Succeed", res.Client.ConnId);
-                                                            UpdateMainPageState(
-                                                                $"{DateTime.Now} 用户 {res.Client.UserName} 登录了");
-                                                            break;
-                                                        }
-                                                    case 1:
-                                                        {
-                                                            SendData("Login", "Incorrect", res.Client.ConnId);
-                                                            break;
-                                                        }
-                                                    default:
-                                                        {
-                                                            SendData("Login", "Unknown", res.Client.ConnId);
-                                                            break;
-                                                        }
-                                                }
+                                                case 0:
+                                                    {
+                                                        WaitingForUnusing();
+                                                        _isUsing = true;
+                                                        u.Info.UserId =
+                                                            GetUserId(Encoding.Unicode.GetString(res.Content[0]));
+                                                        _isUsing = false;
+                                                        SendData("Login", "Succeed", u.Info.ConnId);
+                                                        UpdateMainPageState(
+                                                            $"{DateTime.Now} 用户 {u.Info.UserName} 登录了");
+                                                        break;
+                                                    }
+                                                case 1:
+                                                    {
+                                                        SendData("Login", "Incorrect", u.Info.ConnId);
+                                                        break;
+                                                    }
+                                                default:
+                                                    {
+                                                        SendData("Login", "Unknown", u.Info.ConnId);
+                                                        break;
+                                                    }
+                                            }
+                                            break;
+                                        }
+                                    case "Logout":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "Logout":
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now} 用户 {u.Info.UserName} 注销了");
+                                            u.Data.Clear();
+                                            u.Info.UserId = 0;
+                                            SendData("Logout", "Succeed", u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "RequestFileList":
+                                        {
+                                            if (u.Info.UserId == 0)
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now} 用户 {res.Client.UserName} 注销了");
-                                                var x = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
-                                                    .FirstOrDefault();
-                                                if (x != null)
-                                                {
-                                                    x.Data.Clear();
-                                                    x.Info.UserId = 0;
-                                                }
-                                                SendData("Logout", "Succeed", res.Client.ConnId);
                                                 break;
                                             }
-                                        case "RequestFileList":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
+                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                                if (filePath.Length > 1)
                                                 {
-                                                    break;
+                                                    if (filePath.Substring(0, 1) == "\\")
+                                                    {
+                                                        filePath = filePath.Substring(1);
+                                                    }
+                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                    {
+                                                        filePath = filePath.Substring(filePath.Length - 1);
+                                                    }
                                                 }
-                                                var x = SearchFiles(Environment.CurrentDirectory + "\\Problem\\" +
-                                                                    Encoding.Unicode.GetString(res.Content[0]));
+                                                var x = SearchFiles(
+                                                    Environment.CurrentDirectory + "\\Files" +
+                                                    (string.IsNullOrEmpty(filePath) ? string.Empty : $"\\{filePath}")
+                                                );
                                                 var y = string.Empty;
                                                 for (var i = 0; i < x.Count; i++)
                                                 {
@@ -1348,230 +1426,320 @@ namespace Server
                                                     }
                                                 }
                                                 SendData("FileList",
-                                                    Encoding.Unicode.GetString(res.Content[0]) + Divpar + y,
-                                                    res.Client.ConnId);
+                                                    filePath + Divpar + y,
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestFile":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "RequestFile":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
+                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                                if (filePath.Length > 1)
                                                 {
-                                                    break;
+                                                    if (filePath.Substring(0, 1) == "\\")
+                                                    {
+                                                        filePath = filePath.Substring(1);
+                                                    }
+                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                    {
+                                                        filePath = filePath.Substring(filePath.Length - 1);
+                                                    }
                                                 }
-                                                if (File.Exists(Encoding.Unicode.GetString(res.Content[0])))
+                                                filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
+                                                var fileName = Path.GetFileName(filePath);
+                                                if (File.Exists(filePath))
                                                 {
                                                     UpdateMainPageState(
-                                                        $"{DateTime.Now} 用户 {res.Client.UserName} 请求文件：{Encoding.Unicode.GetString(res.Content[0])}");
+                                                        $"{DateTime.Now} 用户 {u.Info.UserName} 请求文件：{filePath}");
                                                     SendData("File",
-                                                        res.Content[0]
+                                                        Encoding.Unicode.GetBytes(fileName).ToList()
                                                             .Concat(Encoding.Unicode.GetBytes(Divpar)
                                                                 .Concat(File.ReadAllBytes(
-                                                                    Encoding.Unicode.GetString(res.Content[0])))),
-                                                        res.Client.ConnId);
+                                                                    filePath))),
+                                                        u.Info.ConnId);
                                                 }
+                                            });
+                                            break;
+                                        }
+                                    case "RequestProblemDataSet":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "RequestProblemDataSet":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 UpdateMainPageState(
-                                                    $"{DateTime.Now} 用户 {res.Client.UserName} 请求题目数据：{GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))}");
-                                                Task.Run(() =>
+                                                    $"{DateTime.Now} 用户 {u.Info.UserName} 请求题目数据：{GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))}");
+                                                try
                                                 {
-                                                    try
+                                                    var problem =
+                                                        GetProblem(Convert.ToInt32(
+                                                            Encoding.Unicode.GetString(res.Content[0])));
+
+                                                    string GetEngName(string origin)
                                                     {
-                                                        var problem =
-                                                            GetProblem(Convert.ToInt32(
-                                                                Encoding.Unicode.GetString(res.Content[0])));
+                                                        var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                        return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                            (current, t) => current + t);
+                                                    }
 
-                                                        string GetEngName(string origin)
+                                                    string GetRealString(string origin, string problemName, int cur)
+                                                    {
+                                                        return origin
+                                                            .Replace("${datadir}",
+                                                                Environment.CurrentDirectory + "\\Data")
+                                                            .Replace("${name}", GetEngName(problemName))
+                                                            .Replace("${index0}", cur.ToString())
+                                                            .Replace("${index}", (cur + 1).ToString());
+                                                    }
+                                                    var ms = new MemoryStream();
+                                                    using (var zip = new ZipFile())
+                                                    {
+                                                        for (var i = 0; i < problem.DataSets.Length; i++)
                                                         {
-                                                            var re = new Regex("[A-Z]|[a-z]|[0-9]");
-                                                            return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
-                                                                (current, t) => current + t);
-                                                        }
-
-                                                        string GetRealString(string origin, string problemName, int cur)
-                                                        {
-                                                            return origin
-                                                                .Replace("${datadir}",
-                                                                    Environment.CurrentDirectory + "\\Data")
-                                                                .Replace("${name}", GetEngName(problemName))
-                                                                .Replace("${index0}", cur.ToString())
-                                                                .Replace("${index}", (cur + 1).ToString());
-                                                        }
-                                                        var ms = new MemoryStream();
-                                                        using (var zip = new ZipFile())
-                                                        {
-                                                            for (var i = 0; i < problem.DataSets.Length; i++)
+                                                            var inputName =
+                                                                GetRealString(problem.DataSets[i].InputFile,
+                                                                    problem.ProblemName, i);
+                                                            var outputName =
+                                                                GetRealString(problem.DataSets[i].OutputFile,
+                                                                    problem.ProblemName, i);
+                                                            if (File.Exists(inputName))
                                                             {
-                                                                var inputName =
-                                                                    GetRealString(problem.DataSets[i].InputFile,
-                                                                        problem.ProblemName, i);
-                                                                var outputName =
-                                                                    GetRealString(problem.DataSets[i].OutputFile,
-                                                                        problem.ProblemName, i);
-                                                                if (File.Exists(inputName))
-                                                                {
-                                                                    zip.AddFile(inputName);
-                                                                }
-                                                                if (File.Exists(outputName))
-                                                                {
-                                                                    zip.AddFile(outputName);
-                                                                }
+                                                                zip.AddFile(inputName);
                                                             }
-                                                            zip.Save(ms);
+                                                            if (File.Exists(outputName))
+                                                            {
+                                                                zip.AddFile(outputName);
+                                                            }
                                                         }
-                                                        var x = new List<byte>();
-                                                        x.AddRange(Encoding.Unicode.GetBytes(
-                                                            problem.ProblemId + Divpar));
-                                                        x.AddRange(ms.ToArray());
-                                                        SendData("ProblemDataSet", x
-                                                            , u.Info.ConnId);
+                                                        zip.Save(ms);
                                                     }
-                                                    catch
-                                                    {
-                                                        //ignored
-                                                    }
-                                                });
+                                                    var x = new List<byte>();
+                                                    x.AddRange(Encoding.Unicode.GetBytes(
+                                                        problem.ProblemId + Divpar));
+                                                    x.AddRange(ms.ToArray());
+                                                    SendData("ProblemDataSet", x
+                                                        , u.Info.ConnId);
+                                                }
+                                                catch
+                                                {
+                                                    //ignored
+                                                }
+                                            });
+                                            break;
+                                        }
+                                    case "SubmitCode":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "SubmitCode":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
                                                 {
                                                     UpdateMainPageState(
-                                                        $"{DateTime.Now} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                                        $"{DateTime.Now} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
                                                     Task.Run(() =>
                                                     {
                                                         var j = new Judge(
                                                             Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
                                                             u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
-                                                        var x = JsonConvert.SerializeObject(j);
-                                                        SendData("JudgeResult", x, res.Client.ConnId);
+                                                        var x = JsonConvert.SerializeObject(j.JudgeResult);
+                                                        SendData("JudgeResult", x, u.Info.ConnId);
                                                     });
                                                 }
+                                            });
+
+                                            break;
+                                        }
+                                    case "Messaging":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "Messaging":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 UpdateMainPageState(
-                                                    $"{DateTime.Now} 用户 {res.Client.UserName} 发来了消息");
-                                                var x = new Messaging();
-                                                x.SetMessage(Encoding.Unicode.GetString(res.Content[0]), res.Client.ConnId);
-                                                x.Show();
+                                    $"{DateTime.Now} 用户 {u.Info.UserName} 发来了消息");
+                                                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                                {
+                                                    var x = new Messaging();
+                                                    x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
+                                                        u.Info.ConnId, u.Info.UserName);
+                                                    x.Show();
+                                                }));
+                                            });
+
+                                            break;
+                                        }
+                                    case "RequestProblemList":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "RequestProblemList":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
+                                                string GetEngName(string origin)
                                                 {
-                                                    break;
+                                                    var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                    return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                        (current, t) => current + t);
                                                 }
-                                                var x = JsonConvert.SerializeObject(QueryProblems());
-                                                SendData("ProblemList", x, res.Client.ConnId);
+
+                                                string GetRealString(string origin, string problemName, int cur)
+                                                {
+                                                    return origin
+                                                        .Replace("${datadir}",
+                                                            Environment.CurrentDirectory + "\\Data")
+                                                        .Replace("${name}", GetEngName(problemName))
+                                                        .Replace("${index0}", cur.ToString())
+                                                        .Replace("${index}", (cur + 1).ToString());
+                                                }
+
+                                                var pl = QueryProblems();
+                                                foreach (var problem in pl)
+                                                {
+                                                    problem.InputFileName = GetRealString(problem.InputFileName,
+                                                        problem.ProblemName, 0);
+                                                    problem.OutputFileName = GetRealString(problem.OutputFileName,
+                                                        problem.ProblemName, 0);
+                                                }
+                                                var x = JsonConvert.SerializeObject(pl);
+                                                SendData("ProblemList", x, u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestProfile":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "RequestProfile":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 var x = JsonConvert.SerializeObject(
                                                     GetUser(Encoding.Unicode.GetString(res.Content[0])));
-                                                SendData("Profile", x, res.Client.ConnId);
+                                                SendData("Profile", x, u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "ChangePassword":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "ChangePassword":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 SendData("ChangePassword",
                                                     RemoteChangePassword(u.Info.UserName,
                                                         Encoding.Unicode.GetString(res.Content[0]),
                                                         Encoding.Unicode.GetString(res.Content[1]))
                                                         ? "Succeed"
-                                                        : "Failed", res.Client.ConnId);
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "UpdateProfile":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "UpdateProfile":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 SendData("UpdateProfile",
                                                     RemoteUpdateProfile(
                                                         u.Info.UserId,
                                                         Encoding.Unicode.GetString(res.Content[0]),
                                                         Encoding.Unicode.GetString(res.Content[1]))
                                                         ? "Succeed"
-                                                        : "Failed", res.Client.ConnId);
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "UpdateCoins":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "UpdateCoins":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 SendData("UpdateCoins",
                                                     UpdateCoins(
                                                         u.Info.UserId,
                                                     Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
                                                     ? "Succeed"
-                                                    : "Failed", res.Client.ConnId);
+                                                    : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "UpdateExperience":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "UpdateExperience":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 SendData("UpdateExperience",
                                                     UpdateExperience(
                                                         u.Info.UserId,
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
                                                         ? "Succeed"
-                                                        : "Failed", res.Client.ConnId);
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestJudgeRecord":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                        case "RequestJudgeRecord":
+                                            Task.Run(() =>
                                             {
-                                                if (u.Info.UserId == 0)
-                                                {
-                                                    break;
-                                                }
                                                 SendData("JudgeRecord",
                                                     Encoding.Unicode.GetString(res.Content[0]) + Divpar +
                                                     Encoding.Unicode.GetString(res.Content[1]) + Divpar +
                                                     JsonConvert.SerializeObject(GetJudgeRecord(u.Info.UserId,
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])))),
-                                                    res.Client.ConnId);
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestJudgeCode":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                            {
                                                 break;
                                             }
-                                    }
+                                            Task.Run(() =>
+                                            {
+                                                SendData("JudgeCode",
+                                                    JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
+                                                        Encoding.Unicode.GetString(res.Content[0])))),
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                 }
-                                catch
-                                {
-                                    continue;
-                                }
+                            }
+                            catch
+                            {
+                                continue;
                             }
                         }
                     }

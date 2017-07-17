@@ -115,6 +115,7 @@
     <Compile Include="OfflineJudge.xaml.cs">
       <DependentUpon>OfflineJudge.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Package.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="ProblemManagement.xaml.cs">
       <DependentUpon>ProblemManagement.xaml</DependentUpon>

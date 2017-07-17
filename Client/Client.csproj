@@ -73,10 +73,13 @@
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="FileInfomation.cs" />
     <Compile Include="JudgeDetails.xaml.cs">
       <DependentUpon>JudgeDetails.xaml</DependentUpon>
     </Compile>
     <Compile Include="JudgeInfo.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="Package.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="UserInfo.cs" />
     <Page Include="JudgeDetails.xaml">
@@ -143,6 +146,7 @@
     <Content Include="HPSocketCS.dll" />
     <Resource Include="Resources\Messaging.png" />
     <Resource Include="Resources\default_user_icon.png" />
+    <Resource Include="Resources\judge.png" />
     <Content Include="x64\HPSocket4C_U.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

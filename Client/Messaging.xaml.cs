@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace Client
 {
@@ -13,12 +14,13 @@ namespace Client
             InitializeComponent();
         }
 
-        public void SetMessge(string msg)
+        public void SetMessge(string msg, string sendDate)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.BeginInvoke(new Action(() =>
             {
                 Contents.Text = msg;
-            });
+                SendDate.Content = $"（发送时间：{sendDate}）";
+            }));
         }
     }
 

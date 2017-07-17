@@ -5,13 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="消息" Height="394.49" Width="783.131" Loaded="Window_Loaded" Icon="Resources/Messaging.png" ResizeMode="CanMinimize">
+        Title="消息" Height="394.49" Width="783.131" Icon="Resources/Messaging.png" ResizeMode="CanMinimize">
     <Grid>
         <Label Content="对方消息：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Label Content="回复消息：" HorizontalAlignment="Left" Margin="356,10,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="ClientMsg"  HorizontalAlignment="Left" Height="310" Margin="10,41,0,0" TextWrapping="Wrap" IsReadOnly="true" VerticalAlignment="Top" Width="340" VerticalScrollBarVisibility="Auto"/>
+        <TextBox Name="ClientMsg"  HorizontalAlignment="Left" Height="230" Margin="10,41,0,0" TextWrapping="Wrap" IsReadOnly="true" VerticalAlignment="Top" Width="340" VerticalScrollBarVisibility="Auto"/>
         <TextBox Name="MyMsg"  HorizontalAlignment="Left" Height="310" Margin="356,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="340" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto"/>
         <Button Content="发送" HorizontalAlignment="Left" Margin="701,321,0,0" VerticalAlignment="Top" Width="60" Height="30" Click="Button_Click_1"/>
         <Button Content="取消" HorizontalAlignment="Left" Margin="701,286,0,0" VerticalAlignment="Top" Width="60" Height="30" Click="Button_Click"/>
+        <Label Content="消息详情：" HorizontalAlignment="Left" Margin="10,276,0,0" VerticalAlignment="Top"/>
+        <Label Name="SendDate" Content="发送时间：" HorizontalAlignment="Left" Margin="10,306,0,0" VerticalAlignment="Top"/>
+        <Label Name="SendUser" Content="发送用户：" HorizontalAlignment="Left" Margin="10,331,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="题目管理" Height="337" Width="702.992" ResizeMode="NoResize" Icon="Resources/edit.png" ShowInTaskbar="False" Loaded="Window_Loaded">
     <Grid>
-        <ListView Name="ListView" HorizontalAlignment="Left" Height="277" Margin="10,10,0,0" VerticalAlignment="Top" Width="212" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click">
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="277" Margin="10,10,0,0" VerticalAlignment="Top" Width="212" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}"/>
@@ -45,7 +45,7 @@
                         <TextBlock>${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10</TextBlock>
                         <TextBlock>${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10</TextBlock>
                     </ComboBox>
-                    <ListBox Name="ListBox" Margin="0,24,0,0"/>
+                    <ListBox Name="ListBox" Margin="0,24,0,0" SelectionMode="Single"/>
                     <Button Content="填充" HorizontalAlignment="Left" Margin="325,0,0,0" VerticalAlignment="Top" Width="58" Height="24" Click="Button_Click"/>
                 </Grid>
             </TabItem>

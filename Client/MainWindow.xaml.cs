@@ -20,12 +20,12 @@ namespace Client
     {
         private const string Divpar = "<h~|~j>";
         private string _userName;
-        private int _coins = 0, _experience = 0, _currentGetJudgeRecordIndex = 0;
+        private int _coins, _experience, _currentGetJudgeRecordIndex;
 
         public readonly ObservableCollection<Problem> Problems = new ObservableCollection<Problem>();
         public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
-
-        public string SelectedString { get; set; }
+        public readonly ObservableCollection<Message> MessagesCollection = new ObservableCollection<Message>();
+        public readonly ObservableCollection<FileInfomation> FileInfomations = new ObservableCollection<FileInfomation>();
 
         public MainWindow()
         {
@@ -61,8 +61,11 @@ namespace Client
                 Environment.Exit(1);
             }
             InitializeComponent();
+
             MyProblemList.ItemsSource = Problems;
             JudgeList.ItemsSource = JudgeInfos;
+            MessageList.ItemsSource = MessagesCollection;
+            FileList.ItemsSource = FileInfomations;
 
             Configuration.Init();
             if (string.IsNullOrEmpty(Configuration.Configurations.Ip))
@@ -138,17 +141,45 @@ namespace Client
                 {
                     case "Connection":
                         {
-                            Dispatcher.BeginInvoke((Action)(() =>
+                            switch (content)
                             {
-                                LoginButton.IsEnabled = true;
-                            }));
+                                case "Connected":
+                                    {
+                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            LoginButton.IsEnabled = true;
+                                        }));
+                                        break;
+                                    }
+                                case "Break":
+                                    {
+                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility = JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
+                                            LoginGrid.Visibility = Visibility.Visible;
+                                            OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
+                                            ActiveBox.Items.Clear();
+                                            JudgeInfos.Clear();
+                                            MessagesCollection.Clear();
+                                            Experience.Content = Coins.Content = "0";
+                                            Level.Content = "-";
+                                            WelcomeLabel.Content = "你好，";
+                                            Identity.Content = "身份：";
+                                            CodeBox.Text = string.Empty;
+                                            _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                                            LoginButton.IsEnabled = false;
+                                            TabControl.SelectedIndex = 0;
+                                        }));
+                                        break;
+                                    }
+                            }
                             break;
                         }
                     case "Login":
                         {
                             if (content == "Succeed")
                             {
-                                Dispatcher.BeginInvoke((Action)(() =>
+                                Dispatcher.BeginInvoke(new Action(() =>
                                 {
                                     _userName = UserName.Text;
                                     Password.Password = string.Empty;
@@ -159,7 +190,9 @@ namespace Client
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Connection.SendData("RequestProfile", _userName);
                                     Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
+                                    Connection.SendData("RequestFileList", string.Empty);
                                     _currentGetJudgeRecordIndex = 20;
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录" });
                                 }));
                             }
                             else
@@ -171,40 +204,98 @@ namespace Client
                     case "Logout":
                         {
                             _userName = string.Empty;
-                            Dispatcher.BeginInvoke((Action)(() =>
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility = JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
                                 LoginGrid.Visibility = Visibility.Visible;
                                 OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
-                                AchienementBox.Items.Clear();
+                                ActiveBox.Items.Clear();
+                                JudgeInfos.Clear();
+                                MessagesCollection.Clear();
                                 Experience.Content = Coins.Content = "0";
                                 Level.Content = "-";
                                 WelcomeLabel.Content = "你好，";
                                 Identity.Content = "身份：";
                                 CodeBox.Text = string.Empty;
                                 _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                                TabControl.SelectedIndex = 0;
                             }));
                             break;
                         }
                     case "Messaging":
                         {
-                            Dispatcher.BeginInvoke((Action)(() =>
-                           {
-                               var x = new Messaging();
-                               x.SetMessge(content);
-                               x.Show();
-                           }));
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到消息" });
+                                MessagesCollection.Insert(0, new Message
+                                {
+                                    Content = content,
+                                    Direction = "接收",
+                                    MessageTime = DateTime.Now
+                                });
+                                var x = new Messaging();
+                                x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff"));
+                                x.Show();
+                            }));
                             break;
                         }
                     case "FileList":
                         {
+                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
+                            if (final.Length < 2) break;
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                FileInfomations.Clear();
+                                CurrentLocation.Text = final[0];
+                                var flag = true;
+                                for (var i = 1; i < final.Length; i++)
+                                {
+                                    if (final[i] == "|")
+                                    {
+                                        flag = !flag;
+                                        continue;
+                                    }
+                                    FileInfomations.Add(new FileInfomation
+                                    {
+                                        Type = flag ? "文件夹" : "文件",
+                                        Name = final[i]
+                                    });
+                                }
+                            }));
                             break;
                         }
                     case "JudgeResult":
                         {
+                            var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                JudgeInfos.Insert(0, JsonConvert.DeserializeObject<JudgeInfo>(content));
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
+                                if (p.ResultSummery == "Accept")
+                                {
+                                    Connection.SendData("UpdateCoins", "50");
+                                    _coins += 50;
+                                    Connection.SendData("UpdateExperience", "24");
+                                    _experience += 10;
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +50，经验 +24" });
+                                }
+                                else if (p.ResultSummery != "Compile Error")
+                                {
+                                    Connection.SendData("UpdateCoins", "10");
+                                    _coins += 10;
+                                    Connection.SendData("UpdateExperience", "12");
+                                    _experience += 12;
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +10，经验 +12" });
+                                }
+                                else
+                                {
+                                    Connection.SendData("UpdateExperience", "2");
+                                    _experience += 2;
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +2" });
+                                }
+                                JudgeInfos.Insert(0, p);
+                                Coins.Content = _coins;
+                                Experience.Content = _experience;
+                                SetLevel(_experience);
                             }));
                             break;
                         }
@@ -217,120 +308,14 @@ namespace Client
                     case "Profile":
                         {
                             var x = JsonConvert.DeserializeObject<UserInfo>(content);
-                            Dispatcher.BeginInvoke((Action)(() =>
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 WelcomeLabel.Content = $"你好，{x.UserName}";
                                 Identity.Content = $"身份：{x.Type2}";
                                 UserIcon.Source = ByteImageConverter.ByteToImage(!string.IsNullOrEmpty(x.Icon) ? Convert.FromBase64String(x.Icon) : Convert.FromBase64String(Properties.Resources.default_user_icon_string));
                                 Coins.Content = _coins = x.Coins;
                                 Experience.Content = _experience = x.Experience;
-                                foreach (var i in x.Achievement.Split('|'))
-                                {
-                                    if (!string.IsNullOrEmpty(i))
-                                    {
-                                        AchienementBox.Items.Add(new Label { Content = i });
-                                    }
-                                }
-                                if (x.Experience >= 1048576)
-                                {
-                                    Level.Content = "最强王者";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level6));
-                                }
-                                else if (x.Experience >= 524288)
-                                {
-                                    Level.Content = "璀璨钻石 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
-                                }
-                                else if (x.Experience >= 262144)
-                                {
-                                    Level.Content = "璀璨钻石 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
-                                }
-                                else if (x.Experience >= 131072)
-                                {
-                                    Level.Content = "璀璨钻石 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
-                                }
-                                else if (x.Experience >= 65536)
-                                {
-                                    Level.Content = "华贵铂金 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
-                                }
-                                else if (x.Experience >= 32768)
-                                {
-                                    Level.Content = "华贵铂金 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
-                                }
-                                else if (x.Experience >= 16384)
-                                {
-                                    Level.Content = "华贵铂金 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
-                                }
-                                else if (x.Experience >= 8192)
-                                {
-                                    Level.Content = "荣耀黄金 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
-                                }
-                                else if (x.Experience >= 4096)
-                                {
-                                    Level.Content = "荣耀黄金 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
-                                }
-                                else if (x.Experience >= 2048)
-                                {
-                                    Level.Content = "荣耀黄金 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
-                                }
-                                else if (x.Experience >= 1024)
-                                {
-                                    Level.Content = "不屈白银 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
-                                }
-                                else if (x.Experience >= 512)
-                                {
-                                    Level.Content = "不屈白银 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
-                                }
-                                else if (x.Experience >= 256)
-                                {
-                                    Level.Content = "不屈白银 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
-                                }
-                                else if (x.Experience >= 128)
-                                {
-                                    Level.Content = "英勇黄铜 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
-                                }
-                                else if (x.Experience >= 64)
-                                {
-                                    Level.Content = "英勇黄铜 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
-                                }
-                                else if (x.Experience >= 32)
-                                {
-                                    Level.Content = "英勇黄铜 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
-                                }
-                                else if (x.Experience >= 16)
-                                {
-                                    Level.Content = "一只辣鸡 Lev.3";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
-                                }
-                                else if (x.Experience >= 8)
-                                {
-                                    Level.Content = "一只辣鸡 Lev.2";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
-                                }
-                                else if (x.Experience >= 4)
-                                {
-                                    Level.Content = "一只辣鸡 Lev.1";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
-                                }
-                                else
-                                {
-                                    Level.Content = "蒟蒻来袭";
-                                    LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.nolevel));
-                                }
+                                SetLevel(x.Experience);
                             }));
                             break;
                         }
@@ -385,13 +370,12 @@ namespace Client
                         }
                     case "JudgeCode":
                         {
-                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
-                            if (final.Length < 2) break;
-                            var j = (from c in JudgeInfos where c.JudgeId == Convert.ToInt32(final[0]) select c)
+                            var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                            var j = (from c in JudgeInfos where c.JudgeId == jc.JudgeId select c)
                                 .FirstOrDefault();
                             if (j == null) break;
-                            j.Code = final[1];
-                            Dispatcher.BeginInvoke((Action)(() =>
+                            j.Code = jc.Code;
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ShowJudgeDetails(j);
                             }));
@@ -406,6 +390,110 @@ namespace Client
             }
         }
 
+        private void SetLevel(int experience)
+        {
+            if (experience >= 1048576)
+            {
+                Level.Content = "最强王者";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level6));
+            }
+            else if (experience >= 524288)
+            {
+                Level.Content = "璀璨钻石 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+            }
+            else if (experience >= 262144)
+            {
+                Level.Content = "璀璨钻石 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+            }
+            else if (experience >= 131072)
+            {
+                Level.Content = "璀璨钻石 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
+            }
+            else if (experience >= 65536)
+            {
+                Level.Content = "华贵铂金 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+            }
+            else if (experience >= 32768)
+            {
+                Level.Content = "华贵铂金 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+            }
+            else if (experience >= 16384)
+            {
+                Level.Content = "华贵铂金 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
+            }
+            else if (experience >= 8192)
+            {
+                Level.Content = "荣耀黄金 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+            }
+            else if (experience >= 4096)
+            {
+                Level.Content = "荣耀黄金 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+            }
+            else if (experience >= 2048)
+            {
+                Level.Content = "荣耀黄金 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
+            }
+            else if (experience >= 1024)
+            {
+                Level.Content = "不屈白银 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+            }
+            else if (experience >= 512)
+            {
+                Level.Content = "不屈白银 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+            }
+            else if (experience >= 256)
+            {
+                Level.Content = "不屈白银 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
+            }
+            else if (experience >= 128)
+            {
+                Level.Content = "英勇黄铜 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+            }
+            else if (experience >= 64)
+            {
+                Level.Content = "英勇黄铜 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+            }
+            else if (experience >= 32)
+            {
+                Level.Content = "英勇黄铜 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
+            }
+            else if (experience >= 16)
+            {
+                Level.Content = "一只辣鸡 Lev.3";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+            }
+            else if (experience >= 8)
+            {
+                Level.Content = "一只辣鸡 Lev.2";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+            }
+            else if (experience >= 4)
+            {
+                Level.Content = "一只辣鸡 Lev.1";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
+            }
+            else
+            {
+                Level.Content = "蒟蒻来袭";
+                LevelImage.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.nolevel));
+            }
+        }
+
         private void ShowJudgeDetails(JudgeInfo jInfo)
         {
             var details = string.Empty;
@@ -414,23 +502,24 @@ namespace Client
                 for (var i = 0; i < jInfo.Result.Length; i++)
                 {
                     details +=
-                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数： {jInfo.Score[i]}\r\n";
+                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数：{jInfo.Score[i]}\r\n";
                 }
             }
             var x = new JudgeDetails();
             x.SetContent(jInfo.Code, details);
+            x.Show();
         }
 
         private void UpdateProblemList(Problem[] x)
         {
-            Dispatcher.Invoke(() =>
+            Dispatcher.BeginInvoke(new Action(() =>
             {
                 Problems.Clear();
                 foreach (var i in x)
                 {
                     Problems.Add(i);
                 }
-            });
+            }));
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -454,6 +543,7 @@ namespace Client
             {
                 Connection.SendData("Logout", string.Empty);
             }
+            Environment.Exit(0);
         }
 
         private void UserIcon_MouseDown(object sender, MouseButtonEventArgs e)
@@ -524,8 +614,25 @@ namespace Client
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
+            if (_coins < 10)
+            {
+                MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                MessageBoxResult.Yes) return;
+            _coins -= 10;
+            Coins.Content = _coins;
+            Connection.SendData("UpdateCoins", "-10");
+            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
             if (!string.IsNullOrEmpty(MessageContent.Text))
             {
+                MessagesCollection.Insert(0, new Message
+                {
+                    Content = MessageContent.Text,
+                    Direction = "发送",
+                    MessageTime = DateTime.Now
+                });
                 Connection.SendMsg(MessageContent.Text);
                 MessageContent.Text = string.Empty;
             }
@@ -540,6 +647,23 @@ namespace Client
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
             }
+        }
+
+        private void Button_Click_6(object sender, RoutedEventArgs e)
+        {
+            Connection.SendData("RequestFileList", string.Empty);
+        }
+
+        private void Button_Click_7(object sender, RoutedEventArgs e)
+        {
+            var filePath = CurrentLocation.Text;
+            CurrentLocation.Text = filePath.Contains("\\") ? filePath.Substring(0, filePath.LastIndexOf("\\", StringComparison.Ordinal)) : string.Empty;
+            Connection.SendData("RequestFileList", CurrentLocation.Text);
+        }
+
+        private void Button_Click_8(object sender, RoutedEventArgs e)
+        {
+            Connection.SendData("RequestFileList", CurrentLocation.Text);
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
@@ -563,6 +687,7 @@ namespace Client
                     Coins.Content = _coins;
                     Connection.SendData("UpdateCoins", "-100");
                     Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex + 1}{Divpar}20");
+                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100" });
                 }
             }
             else
@@ -587,11 +712,74 @@ namespace Client
                     Coins.Content = _coins;
                     Connection.SendData("UpdateCoins", "-200");
                     Connection.SendData("RequestProblemDataSet", (MyProblemList.SelectedItem as Problem)?.ProblemId.ToString());
+                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -200" });
                 }
             }
             else
             {
                 MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void MessageList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var si = MessageList.SelectedItem as Message;
+            if (si == null) return;
+            var x = new Messaging();
+            x.SetMessge(si.Content, si.DisplayDateTime);
+            x.Show();
+        }
+
+        private void JudgeList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var si = JudgeList.SelectedItem as JudgeInfo;
+            if (si == null) return;
+            if (si.Code == "-|/|\\|-")
+            {
+                if (_coins < 20)
+                {
+                    MessageBox.Show("金币不足，无法查看", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (MessageBox.Show("操此作将花费您 20 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                    MessageBoxResult.Yes)
+                {
+                    Connection.SendData("RequestJudgeCode", si.JudgeId.ToString());
+                    _coins -= 20;
+                    Coins.Content = _coins;
+                    Connection.SendData("UpdateCoins", "-20");
+                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20" });
+                }
+            }
+            else
+            {
+                ShowJudgeDetails(si);
+            }
+        }
+
+        private void FileList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var si = FileList.SelectedItem as FileInfomation;
+            if (si == null) return;
+            Connection.SendData(si.Type == "文件" ? "RequestFile" : "RequestFileList",
+                CurrentLocation.Text + "\\" + si.Name);
+        }
+
+        private void UserName_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!LoginButton.IsEnabled) return;
+            if (e.Key == Key.Enter)
+            {
+                Button_Click(null, null);
+            }
+        }
+
+        private void Password_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!LoginButton.IsEnabled) return;
+            if (e.Key == Key.Enter)
+            {
+                Button_Click(null, null);
             }
         }
     }
