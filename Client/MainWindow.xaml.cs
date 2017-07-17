@@ -26,7 +26,7 @@ namespace Client
         public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
         public readonly ObservableCollection<Message> MessagesCollection = new ObservableCollection<Message>();
         public readonly ObservableCollection<FileInfomation> FileInfomations = new ObservableCollection<FileInfomation>();
-
+        private Random _random;
         public MainWindow()
         {
             var mutex = new Mutex(
@@ -38,6 +38,8 @@ namespace Client
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
+            var tick = DateTime.Now.Ticks;
+            _random = new Random((int) (tick & 0xffffffffL) | (int) (tick >> 32));
             try
             {
                 if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
@@ -270,34 +272,32 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
-                                var tick = DateTime.Now.Ticks;
-                                var k = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
                                 if (p.ResultSummery == "Accept")
                                 {
-                                    var delta = 24 + k.Next() % 64;
-                                    var delta2 = 50 + k.Next() % 64;
+                                    var delta = 24 + _random.Next() % 64;
+                                    var delta2 = 50 + _random.Next() % 64;
                                     Connection.SendData("UpdateExperience", delta.ToString());
                                     _experience += delta;
                                     Connection.SendData("UpdateCoins", delta2.ToString());
                                     _coins += delta2;
-                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +50，经验 +24" });
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}" });
                                 }
                                 else if (p.ResultSummery.Contains("Excceed"))
                                 {
-                                    var delta = 10 + k.Next() % 24;
-                                    var delta2 = 12 + k.Next() % 24;
+                                    var delta = 10 + _random.Next() % 24;
+                                    var delta2 = 12 + _random.Next() % 24;
                                     Connection.SendData("UpdateCoins", delta.ToString());
                                     _coins += delta;
                                     Connection.SendData("UpdateExperience", delta2.ToString());
                                     _experience += delta2;
-                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +10，经验 +12" });
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}" });
                                 }
                                 else
                                 {
-                                    var delta = 1 + k.Next() % 4;
+                                    var delta = 1 + _random.Next() % 4;
                                     Connection.SendData("UpdateExperience", delta.ToString());
                                     _experience += delta;
-                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +2" });
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}" });
                                 }
                                 JudgeInfos.Insert(0, p);
                                 Coins.Content = _coins;
