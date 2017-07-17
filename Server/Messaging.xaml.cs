@@ -31,7 +31,7 @@ namespace Server
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            Connection.SendMsg($"回复时间：{DateTime.Now}\r\n回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", _id);
+            Connection.SendMsg($"回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", _id);
             Close();
         }
     }

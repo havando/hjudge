@@ -712,7 +712,7 @@ namespace Client
                     _coins -= 200;
                     Coins.Content = _coins;
                     Connection.SendData("UpdateCoins", "-200");
-                    Connection.SendData("RequestProblemDataSet", (MyProblemList.SelectedItem as Problem)?.ProblemId.ToString());
+                    Connection.SendData("RequestProblemDataSet", ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -200" });
                 }
             }
