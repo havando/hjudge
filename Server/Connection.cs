@@ -1710,12 +1710,13 @@ namespace Server
                                             }
                                             Task.Run(() =>
                                             {
+                                                var x = GetJudgeRecord(u.Info.UserId,
+                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])));
                                                 SendData("JudgeRecord",
                                                     Encoding.Unicode.GetString(res.Content[0]) + Divpar +
-                                                    Encoding.Unicode.GetString(res.Content[1]) + Divpar +
-                                                    JsonConvert.SerializeObject(GetJudgeRecord(u.Info.UserId,
-                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])))),
+                                                     x.Length + Divpar +
+                                                    JsonConvert.SerializeObject(x),
                                                     u.Info.ConnId);
                                             });
                                             break;

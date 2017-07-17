@@ -40,9 +40,9 @@ namespace Server
         public Judge(int problemId, int userId, string code)
         {
             _problem = Connection.GetProblem(problemId);
-            var datetime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+            var datetime = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             JudgeResult.JudgeId = Connection.NewJudge();
-            JudgeResult.JudgeDate = datetime;
+            JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
             JudgeResult.ProblemId = _problem.ProblemId;
             JudgeResult.Code = code;
             JudgeResult.UserId = userId;
@@ -116,7 +116,7 @@ namespace Server
             {
                 for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                 {
-                    JudgeResult.Result[_cur] = "Unkonwn Error";
+                    JudgeResult.Result[_cur] = "Unknown Error";
                     JudgeResult.Exitcode[_cur] = 0;
                     JudgeResult.Score[_cur] = 0;
                     JudgeResult.Timeused[_cur] = 0;
