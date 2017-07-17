@@ -7,11 +7,11 @@ using System.Windows;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Server")]
-[assembly: AssemblyDescription("Server of hjudge")]
+[assembly: AssemblyTitle("ClientConfiguration")]
+[assembly: AssemblyDescription("Configuration Tool for hjudge - Client")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("hez2010")]
-[assembly: AssemblyProduct("Server")]
+[assembly: AssemblyProduct("ClientConfiguration")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("hjudge")]
 [assembly: AssemblyCulture("")]
