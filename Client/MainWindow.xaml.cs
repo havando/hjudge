@@ -270,26 +270,33 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
+                                var tick = DateTime.Now.Ticks;
+                                var k = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
                                 if (p.ResultSummery == "Accept")
                                 {
-                                    Connection.SendData("UpdateCoins", "50");
-                                    _coins += 50;
-                                    Connection.SendData("UpdateExperience", "24");
-                                    _experience += 10;
+                                    var delta = 24 + k.Next() % 64;
+                                    var delta2 = 50 + k.Next() % 64;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    Connection.SendData("UpdateCoins", delta2.ToString());
+                                    _coins += delta2;
                                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +50，经验 +24" });
                                 }
-                                else if (p.ResultSummery != "Compile Error")
+                                else if (p.ResultSummery.Contains("Excceed"))
                                 {
-                                    Connection.SendData("UpdateCoins", "10");
-                                    _coins += 10;
-                                    Connection.SendData("UpdateExperience", "12");
-                                    _experience += 12;
+                                    var delta = 10 + k.Next() % 24;
+                                    var delta2 = 12 + k.Next() % 24;
+                                    Connection.SendData("UpdateCoins", delta.ToString());
+                                    _coins += delta;
+                                    Connection.SendData("UpdateExperience", delta2.ToString());
+                                    _experience += delta2;
                                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +10，经验 +12" });
                                 }
                                 else
                                 {
-                                    Connection.SendData("UpdateExperience", "2");
-                                    _experience += 2;
+                                    var delta = 1 + k.Next() % 4;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
                                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +2" });
                                 }
                                 JudgeInfos.Insert(0, p);
@@ -712,7 +719,7 @@ namespace Client
                     _coins -= 200;
                     Coins.Content = _coins;
                     Connection.SendData("UpdateCoins", "-200");
-                    Connection.SendData("RequestProblemDataSet", ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
+                    Connection.SendData("RequestProblemDataSet", ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -200" });
                 }
             }
