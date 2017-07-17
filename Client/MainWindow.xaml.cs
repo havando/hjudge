@@ -698,6 +698,7 @@ namespace Client
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if ((MyProblemList.SelectedItem as Problem) == null) return;
             if (_experience <= 233)
             {
                 MessageBox.Show("经验不足，达到 233 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
