@@ -96,6 +96,7 @@ namespace Client
             var remain = length;
             while (remain >= required)
             {
+                Debug.WriteLine($@"{length},{required},{remain}");
                 var bufferPtr = IntPtr.Zero;
                 try
                 {
@@ -129,7 +130,6 @@ namespace Client
                 finally
                 {
                     _isReceiving = false;
-
                     _updateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                     if (bufferPtr != IntPtr.Zero)
                     {
@@ -387,6 +387,8 @@ namespace Client
                                         File.WriteAllBytes(
                                             $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
                                             x.ToArray());
+                                        x.Clear();
+                                        GC.Collect();
                                         Process.Start("explorer.exe",
                                             $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
                                         _updateMainPage($"FileReceived{Divpar}Done");

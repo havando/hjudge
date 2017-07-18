@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Server"
         x:Class="Server.MainWindow"
         mc:Ignorable="d"
-        Title="hjudge - Server" Height="328" Width="673" ResizeMode="CanMinimize" Icon="Resources/Server.ico" Closing="Window_Closing">
+        Title="hjudge - Server" Height="328" Width="673" ResizeMode="CanMinimize" Icon="Resources/Server.ico" Closing="Window_Closing" Closed="Window_Closed">
     <Grid>
         <Grid x:Name="LoginGrid" HorizontalAlignment="Left" Height="179" Margin="4,315,0,-195" VerticalAlignment="Top" Width="447">
             <Label Content="欢迎使用，请登录服务端" HorizontalAlignment="Center" Height="35.234" Margin="10,10,10,0" VerticalAlignment="Top" Width="427.398" FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>

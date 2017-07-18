@@ -559,7 +559,6 @@ namespace Client
             {
                 Connection.SendData("Logout", string.Empty);
             }
-            Environment.Exit(0);
         }
 
         private void UserIcon_MouseDown(object sender, MouseButtonEventArgs e)
@@ -785,6 +784,11 @@ namespace Client
                 ReceivingFile.Visibility = Visibility.Visible;
                 FileList.IsEnabled = false;
             }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)
