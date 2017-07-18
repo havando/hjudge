@@ -70,6 +70,8 @@ namespace Server
                 t.InputFile = GetRealString(t.InputFile);
                 t.OutputFile = GetRealString(t.OutputFile);
             }
+            _problem.InputFileName = GetRealString(_problem.InputFileName);
+            _problem.OutputFileName = GetRealString(_problem.OutputFileName);
             Connection.UpdateMainPageState(
                 $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，选手：{JudgeResult.UserName}");
             BeginJudge();
