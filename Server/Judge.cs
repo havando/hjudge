@@ -211,8 +211,15 @@ namespace Server
                     }
                     while (!_isexited)
                     {
-                        JudgeResult.Timeused[_cur] = Convert.ToInt64(Math.Ceiling(_excute.TotalProcessorTime.TotalMilliseconds));
-                        JudgeResult.Memoryused[_cur] = _excute.PeakWorkingSet64 / 1024;
+                        try
+                        {
+                            JudgeResult.Timeused[_cur] = Convert.ToInt64(_excute.TotalProcessorTime.TotalMilliseconds);
+                            JudgeResult.Memoryused[_cur] = _excute.PeakWorkingSet64 / 1024;
+                        }
+                        catch
+                        {
+                            _isexited = true;
+                        }
                         if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
                         {
                             _isfault = true;
