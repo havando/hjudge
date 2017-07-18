@@ -393,6 +393,7 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 FileList.IsEnabled = true;
+                                ReceivingFile.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -781,6 +782,7 @@ namespace Client
                 CurrentLocation.Text + "\\" + si.Name);
             if (si.Type == "文件")
             {
+                ReceivingFile.Visibility = Visibility.Visible;
                 FileList.IsEnabled = false;
             }
         }

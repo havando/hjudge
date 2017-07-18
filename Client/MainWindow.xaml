@@ -117,6 +117,7 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
+                    <Label Name="ReceivingFile" Visibility="Hidden" HorizontalAlignment="Center" Content="正在接收文件..." Margin="10,109,10,183" Background="#FFD2D2D2"/>
                     <Label Content="Tips：双击下载文件或打开文件夹。" HorizontalAlignment="Left" Margin="10,284,0,0" VerticalAlignment="Top" Foreground="Red"/>
                     <Button Content="向上一级" HorizontalAlignment="Left" Margin="554,284,0,0" VerticalAlignment="Top" Width="64" Height="25" Click="Button_Click_7"/>
                     <Button Content="刷新列表" HorizontalAlignment="Left" Margin="623,284,0,0" VerticalAlignment="Top" Width="64" Height="25" Click="Button_Click_8"/>
