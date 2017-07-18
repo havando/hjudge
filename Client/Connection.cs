@@ -96,7 +96,6 @@ namespace Client
             var remain = length;
             while (remain >= required)
             {
-                Debug.WriteLine($@"{length},{required},{remain}");
                 var bufferPtr = IntPtr.Zero;
                 try
                 {
