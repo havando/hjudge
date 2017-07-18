@@ -1328,7 +1328,6 @@ namespace Server
                                     }
                             }
                         }
-                        Thread.Sleep(10);
                     }
                     Thread.Sleep(10);
                 }

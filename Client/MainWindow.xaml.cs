@@ -39,7 +39,7 @@ namespace Client
                 Environment.Exit(1);
             }
             var tick = DateTime.Now.Ticks;
-            _random = new Random((int) (tick & 0xffffffffL) | (int) (tick >> 32));
+            _random = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
             try
             {
                 if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
@@ -385,6 +385,14 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ShowJudgeDetails(j);
+                            }));
+                            break;
+                        }
+                    case "FileReceived":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                FileList.IsEnabled = true;
                             }));
                             break;
                         }
@@ -771,6 +779,10 @@ namespace Client
             if (si == null) return;
             Connection.SendData(si.Type == "文件" ? "RequestFile" : "RequestFileList",
                 CurrentLocation.Text + "\\" + si.Name);
+            if (si.Type == "文件")
+            {
+                FileList.IsEnabled = false;
+            }
         }
 
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)

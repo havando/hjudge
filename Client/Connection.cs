@@ -129,6 +129,8 @@ namespace Client
                 finally
                 {
                     _isReceiving = false;
+
+                    _updateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                     if (bufferPtr != IntPtr.Zero)
                     {
                         Marshal.FreeHGlobal(bufferPtr);
@@ -241,6 +243,7 @@ namespace Client
                     if (Recv.Count == 0)
                     {
                         _isUsing = false;
+                        Thread.Sleep(10);
                         continue;
                     }
                     var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
@@ -280,8 +283,8 @@ namespace Client
                                     break;
                                 }
                         }
-                        Thread.Sleep(10);
                     }
+                    Thread.Sleep(10);
                 }
             });
         }
@@ -386,7 +389,7 @@ namespace Client
                                             x.ToArray());
                                         Process.Start("explorer.exe",
                                             $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-
+                                        _updateMainPage($"FileReceived{Divpar}Done");
                                         break;
                                     }
                                 case "JudgeResult":
@@ -521,6 +524,7 @@ namespace Client
                     MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                     break;
                 }
+                Thread.Sleep(3000);
                 Connect(_ip, _port);
             });
         }
