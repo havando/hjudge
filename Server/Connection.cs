@@ -30,6 +30,7 @@ namespace Server
         private static readonly TcpPullServer<ClientInfo> HServer = new TcpPullServer<ClientInfo>();
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
+        public static bool IsExited;
         private static Action<string> _updateMain;
         private static int _id;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
@@ -1110,6 +1111,7 @@ namespace Server
         {
             while (_isUsing)
             {
+                if (IsExited) break;
                 Thread.Sleep(10);
             }
         }
@@ -1284,8 +1286,10 @@ namespace Server
             {
                 while (true)
                 {
+                    if (IsExited) break;
                     foreach (var t in Recv)
                     {
+                        if (IsExited) break;
                         if (t.Data.Count == 0)
                         {
                             continue;
@@ -1340,6 +1344,7 @@ namespace Server
             {
                 while (true)
                 {
+                    if (IsExited) break;
                     if (Operations.TryDequeue(out var res))
                     {
                         var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)

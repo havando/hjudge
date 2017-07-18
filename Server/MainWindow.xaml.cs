@@ -200,7 +200,7 @@ namespace Server
             operationsButton[8].Click += (o, args) =>
             {
                 _notifyIcon.Visible = false;
-                Close();
+                Exit();
             };
             foreach (var t in operationsButton)
             {
@@ -245,7 +245,7 @@ namespace Server
             operationsButton[8].Click += (o, args) =>
             {
                 _notifyIcon.Visible = false;
-                Close();
+                Exit();
             };
             foreach (var t in operationsButton)
             {
@@ -414,8 +414,9 @@ namespace Server
             }
         }
 
-        private void Window_Closed(object sender, EventArgs e)
+        private void Exit()
         {
+            Connection.IsExited = true;
             Environment.Exit(0);
         }
     }

@@ -24,6 +24,7 @@ namespace Client
         private static bool _isConnecting;
         private static bool _isConnected;
         private static bool _isReceiving;
+        public static bool IsExited;
         private static Action<string> _updateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
         private static readonly PkgInfo PkgInfo = new PkgInfo();
@@ -55,6 +56,7 @@ namespace Client
             {
                 do
                 {
+                    if (IsExited) break;
                     HClient.Connect(ip, port);
                     Thread.Sleep(1000);
                 } while (!_isConnected);
@@ -145,6 +147,7 @@ namespace Client
         {
             while (_isUsing)
             {
+                if (IsExited) break;
                 Thread.Sleep(10);
             }
         }
@@ -237,6 +240,7 @@ namespace Client
             {
                 while (true)
                 {
+                    if (IsExited) break;
                     WaitingForUnusing();
                     _isUsing = true;
                     if (Recv.Count == 0)
@@ -255,6 +259,7 @@ namespace Client
                     temp.RemoveAt(temp.Count - 1);
                     foreach (var i in temp)
                     {
+                        if (IsExited) break;
                         var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
                         if (temp2.Count == 0)
                         {
@@ -294,6 +299,7 @@ namespace Client
             {
                 while (true)
                 {
+                    if (IsExited) break;
                     if (Operations.TryDequeue(out var res))
                     {
                         try
@@ -514,6 +520,7 @@ namespace Client
             {
                 while (true)
                 {
+                    if (IsExited) break;
                     SendData("@", string.Empty);
                     Thread.Sleep(10000);
                     while (_isReceiving)

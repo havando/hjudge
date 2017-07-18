@@ -559,6 +559,7 @@ namespace Client
             {
                 Connection.SendData("Logout", string.Empty);
             }
+            Connection.IsExited = true;
         }
 
         private void UserIcon_MouseDown(object sender, MouseButtonEventArgs e)
