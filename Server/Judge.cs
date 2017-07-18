@@ -171,6 +171,14 @@ namespace Server
                         JudgeResult.Memoryused[_cur] = 0;
                         continue;
                     }
+                    try
+                    {
+                        File.Delete(_workingdir + "\\" + _problem.OutputFileName);
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     _isfault = false;
                     _isexited = false;
                     Killwerfault();
