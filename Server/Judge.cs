@@ -213,6 +213,7 @@ namespace Server
                     {
                         try
                         {
+                            _excute.Refresh();
                             JudgeResult.Timeused[_cur] = Convert.ToInt64(_excute.TotalProcessorTime.TotalMilliseconds);
                             JudgeResult.Memoryused[_cur] = _excute.PeakWorkingSet64 / 1024;
                         }
