@@ -8,6 +8,7 @@ namespace Server
     public static class Configuration
     {
         public static Config Configurations;
+        public static bool IsHidden;
 
         public static void Init()
         {

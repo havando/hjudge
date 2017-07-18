@@ -76,6 +76,12 @@ namespace Server
             };
             _notifyIcon.Visible = true;
 
+            if (Configuration.IsHidden)
+            {
+                ShowInTaskbar = false;
+                Visibility = Visibility.Hidden;
+            }
+
             Init();
         }
 
@@ -87,7 +93,7 @@ namespace Server
             ContentGrid.Opacity = 0;
             LoginGrid.Visibility = Visibility.Visible;
             ContentGrid.Visibility = Visibility.Hidden;
-            
+
             Connection.Init(UpdateListBoxContent);
             Configuration.Init();
             CurrentAddress.Content = "当前主机地址：" + Connection.Address;
