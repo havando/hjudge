@@ -84,6 +84,7 @@ namespace Server
             {
                 //ignored
             }
+            GC.Collect();
         }
 
         private void DeleteFiles(string path)
