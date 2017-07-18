@@ -1142,19 +1142,25 @@ namespace Server
         }
         private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
         {
-            var temp = Encoding.Unicode.GetBytes(operation);
-            temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
-            temp = temp.Concat(sendBytes).ToArray();
-            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-            var final = GetSendBuffer(temp);
-            HServer.Send(connId, final, final.Length);
+            Task.Run(() =>
+            {
+                var temp = Encoding.Unicode.GetBytes(operation);
+                temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
+                temp = temp.Concat(sendBytes).ToArray();
+                temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+                var final = GetSendBuffer(temp);
+                HServer.Send(connId, final, final.Length);
+            });
         }
 
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
-            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-            var final = GetSendBuffer(temp);
-            HServer.Send(connId, final, final.Length);
+            Task.Run(() =>
+            {
+                var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
+                var final = GetSendBuffer(temp);
+                HServer.Send(connId, final, final.Length);
+            });
         }
 
         public static void SendMsg(string sendString, IntPtr connId)

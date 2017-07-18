@@ -23,6 +23,7 @@ namespace Client
         private const string Divpar = "<h~|~j>";
         private static bool _isConnecting;
         private static bool _isConnected;
+        private static bool _isReceiving;
         private static Action<string> _updateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
         private static readonly PkgInfo PkgInfo = new PkgInfo();
@@ -90,6 +91,7 @@ namespace Client
         }
         private static HandleResult HClientOnOnReceive(TcpPullClient sender, int length)
         {
+            _isReceiving = true;
             var required = PkgInfo.Length;
             var remain = length;
             while (remain >= required)
@@ -104,7 +106,6 @@ namespace Client
                         if (PkgInfo.IsHeader)
                         {
                             var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
-
                             required = header.BodySize;
                         }
                         else
@@ -127,6 +128,7 @@ namespace Client
                 }
                 finally
                 {
+                    _isReceiving = false;
                     if (bufferPtr != IntPtr.Zero)
                     {
                         Marshal.FreeHGlobal(bufferPtr);
@@ -148,19 +150,25 @@ namespace Client
 
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
-            var temp = Encoding.Unicode.GetBytes(operation);
-            temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
-            temp = temp.Concat(sendBytes).ToArray();
-            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-            var final = GetSendBuffer(temp);
-            HClient.Send(final, final.Length);
+            Task.Run(() =>
+            {
+                var temp = Encoding.Unicode.GetBytes(operation);
+                temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
+                temp = temp.Concat(sendBytes).ToArray();
+                temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+                var final = GetSendBuffer(temp);
+                HClient.Send(final, final.Length);
+            });
         }
 
         public static void SendData(string operation, string sendString)
         {
-            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-            var final = GetSendBuffer(temp);
-            HClient.Send(final, final.Length);
+            Task.Run(() =>
+            {
+                var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
+                var final = GetSendBuffer(temp);
+                HClient.Send(final, final.Length);
+            });
         }
 
         public static void SendMsg(string sendString)
@@ -468,22 +476,22 @@ namespace Client
                                     }
 
                                 case "JudgeCode":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
                                     {
-                                        if (i != res.Content.Count - 1)
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
                                         {
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            if (i != res.Content.Count - 1)
+                                            {
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            }
+                                            else
+                                            {
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                            }
                                         }
-                                        else
-                                        {
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                        }
+                                        _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
+                                        break;
                                     }
-                                    _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
-                                    break;
-                                }
                             }
                         }
                         catch
@@ -503,7 +511,11 @@ namespace Client
                 while (true)
                 {
                     SendData("@", string.Empty);
-                    Thread.Sleep(5000);
+                    Thread.Sleep(10000);
+                    while (_isReceiving)
+                    {
+                        Thread.Sleep(5000);
+                    }
                     if (_isConnecting) { _isConnecting = false; continue; }
                     _updateMainPage.Invoke($"Connection{Divpar}Break");
                     MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
