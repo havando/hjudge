@@ -73,7 +73,7 @@ namespace Server
             _problem.InputFileName = GetRealString(_problem.InputFileName);
             _problem.OutputFileName = GetRealString(_problem.OutputFileName);
             Connection.UpdateMainPageState(
-                $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，选手：{JudgeResult.UserName}");
+                $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
             BeginJudge();
             Connection.UpdateJudgeInfo(JudgeResult);
             try

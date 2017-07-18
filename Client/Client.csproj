@@ -146,7 +146,7 @@
     <Content Include="HPSocketCS.dll" />
     <Resource Include="Resources\Messaging.png" />
     <Resource Include="Resources\default_user_icon.png" />
-    <Resource Include="Resources\judge.png" />
+    <Resource Include="Resources\list.png" />
     <Content Include="x64\HPSocket4C_U.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
