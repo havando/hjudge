@@ -253,7 +253,6 @@ namespace Server
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
                         }
-                        Thread.Sleep(10);
                     }
                     if (_isfault) continue;
                     if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
