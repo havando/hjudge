@@ -1485,63 +1485,72 @@ namespace Server
                                             }
                                             Task.Run(() =>
                                             {
-                                                UpdateMainPageState(
+                                                if (!Configuration.Configurations.AllowRequestDataSet)
+                                                {
+                                                    SendData("ProblemDataSet", "Denied", u.Info.ConnId);
+
+                                                }
+                                                else
+                                                {
+                                                    UpdateMainPageState(
                                                     $"{DateTime.Now} 用户 {u.Info.UserName} 请求题目数据：{GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))}");
-                                                try
-                                                {
-                                                    var problem =
-                                                        GetProblem(Convert.ToInt32(
-                                                            Encoding.Unicode.GetString(res.Content[0])));
+                                                    try
+                                                    {
+                                                        var problem =
+                                                            GetProblem(Convert.ToInt32(
+                                                                Encoding.Unicode.GetString(res.Content[0])));
 
-                                                    string GetEngName(string origin)
-                                                    {
-                                                        var re = new Regex("[A-Z]|[a-z]|[0-9]");
-                                                        return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
-                                                            (current, t) => current + t);
-                                                    }
-
-                                                    string GetRealString(string origin, string problemName, int cur)
-                                                    {
-                                                        return origin
-                                                            .Replace("${datadir}",
-                                                                Environment.CurrentDirectory + "\\Data")
-                                                            .Replace("${name}", GetEngName(problemName))
-                                                            .Replace("${index0}", cur.ToString())
-                                                            .Replace("${index}", (cur + 1).ToString());
-                                                    }
-                                                    var ms = new MemoryStream();
-                                                    using (var zip = new ZipFile())
-                                                    {
-                                                        for (var i = 0; i < problem.DataSets.Length; i++)
+                                                        string GetEngName(string origin)
                                                         {
-                                                            var inputName =
-                                                                GetRealString(problem.DataSets[i].InputFile,
-                                                                    problem.ProblemName, i);
-                                                            var outputName =
-                                                                GetRealString(problem.DataSets[i].OutputFile,
-                                                                    problem.ProblemName, i);
-                                                            if (File.Exists(inputName))
-                                                            {
-                                                                zip.AddFile(inputName);
-                                                            }
-                                                            if (File.Exists(outputName))
-                                                            {
-                                                                zip.AddFile(outputName);
-                                                            }
+                                                            var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                            return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                                (current, t) => current + t);
                                                         }
-                                                        zip.Save(ms);
+
+                                                        string GetRealString(string origin, string problemName, int cur)
+                                                        {
+                                                            return origin
+                                                                .Replace("${datadir}",
+                                                                    Environment.CurrentDirectory + "\\Data")
+                                                                .Replace("${name}", GetEngName(problemName))
+                                                                .Replace("${index0}", cur.ToString())
+                                                                .Replace("${index}", (cur + 1).ToString());
+                                                        }
+                                                        var ms = new MemoryStream();
+                                                        using (var zip = new ZipFile())
+                                                        {
+                                                            for (var i = 0; i < problem.DataSets.Length; i++)
+                                                            {
+                                                                var inputName =
+                                                                    GetRealString(problem.DataSets[i].InputFile,
+                                                                        problem.ProblemName, i);
+                                                                var outputName =
+                                                                    GetRealString(problem.DataSets[i].OutputFile,
+                                                                        problem.ProblemName, i);
+                                                                if (File.Exists(inputName))
+                                                                {
+                                                                    zip.AddFile(inputName);
+                                                                }
+                                                                if (File.Exists(outputName))
+                                                                {
+                                                                    zip.AddFile(outputName);
+                                                                }
+                                                            }
+                                                            zip.Save(ms);
+                                                        }
+                                                        var x = new List<byte>();
+                                                        x.AddRange(Encoding.Unicode.GetBytes(
+                                                            problem.ProblemId + Divpar));
+                                                        x.AddRange(ms.ToArray());
+                                                        SendData("ProblemDataSet", x
+                                                            , u.Info.ConnId);
                                                     }
-                                                    var x = new List<byte>();
-                                                    x.AddRange(Encoding.Unicode.GetBytes(
-                                                        problem.ProblemId + Divpar));
-                                                    x.AddRange(ms.ToArray());
-                                                    SendData("ProblemDataSet", x
-                                                        , u.Info.ConnId);
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
                                                 }
-                                                catch
-                                                {
-                                                    //ignored
-                                                }
+
                                             });
                                             break;
                                         }

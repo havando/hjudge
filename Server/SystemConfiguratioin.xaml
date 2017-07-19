@@ -13,6 +13,7 @@
         <TextBox x:Name="EnvironmentValue" HorizontalAlignment="Left" Height="26" Margin="90,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="219"/>
         <Button Content="取消" HorizontalAlignment="Left" Height="26" Margin="314,18,0,0" VerticalAlignment="Top" Width="59" Click="Button_Click"/>
         <Button Content="确定" HorizontalAlignment="Left" Height="26" Margin="314,49,0,0" VerticalAlignment="Top" Width="59" Click="Button_Click_1"/>
+        <CheckBox Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="20,85,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

@@ -340,6 +340,11 @@ namespace Client
                                     }
                                 case "ProblemDataSet":
                                     {
+                                        if (Encoding.Unicode.GetString(res.Content[0]) == "Denied")
+                                        {
+                                            _updateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
+                                            break;
+                                        }
                                         var problemId = Encoding.Unicode.GetString(res.Content[0]);
                                         var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
                                         File.WriteAllBytes($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",

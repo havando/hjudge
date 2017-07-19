@@ -26,13 +26,13 @@ namespace Server
             return re.Matches(origin).Cast<object>().Aggregate(string.Empty, (current, t) => current + t);
         }
 
-        private string GetRealString(string origin)
+        private string GetRealString(string origin, int cur)
         {
             return origin.Replace("${woringdir}", _workingdir)
                 .Replace("${datadir}", Environment.CurrentDirectory + "\\Data")
                 .Replace("${name}", GetEngName(_problem.ProblemName))
-                .Replace("${index0}", _cur.ToString())
-                .Replace("${index}", (_cur + 1).ToString())
+                .Replace("${index0}", cur.ToString())
+                .Replace("${index}", (cur + 1).ToString())
                 .Replace("${file}", _workingdir + "\\test.cpp")
                 .Replace("${targetfile}", _workingdir + "\\test_hjudge.exe");
         }
@@ -58,20 +58,20 @@ namespace Server
             }
             else
             {
-                _problem.CompileCommand = GetRealString(_problem.CompileCommand);
+                _problem.CompileCommand = GetRealString(_problem.CompileCommand, 0);
             }
-            _problem.SpecialJudge = GetRealString(_problem.SpecialJudge);
+            _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0);
             for (var i = 0; i < _problem.ExtraFiles.Length; i++)
             {
-                _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i]);
+                _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i);
             }
-            foreach (var t in _problem.DataSets)
+            for (var i = 0; i < _problem.DataSets.Length; i++)
             {
-                t.InputFile = GetRealString(t.InputFile);
-                t.OutputFile = GetRealString(t.OutputFile);
+                _problem.DataSets[i].InputFile = GetRealString(_problem.DataSets[i].InputFile, i);
+                _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i);
             }
-            _problem.InputFileName = GetRealString(_problem.InputFileName);
-            _problem.OutputFileName = GetRealString(_problem.OutputFileName);
+            _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
+            _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
             Connection.UpdateMainPageState(
                 $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
             BeginJudge();
@@ -211,17 +211,19 @@ namespace Server
                     }
                     while (!_isexited)
                     {
+                        long dt = 0;
                         try
                         {
                             _excute.Refresh();
                             JudgeResult.Timeused[_cur] = Convert.ToInt64(_excute.TotalProcessorTime.TotalMilliseconds);
                             JudgeResult.Memoryused[_cur] = _excute.PeakWorkingSet64 / 1024;
+                            dt = Convert.ToInt64((DateTime.Now - _excute.StartTime).TotalMilliseconds);
                         }
                         catch
                         {
                             _isexited = true;
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt >= _problem.DataSets[_cur].TimeLimit * 5)
                         {
                             _isfault = true;
                             try
@@ -265,7 +267,7 @@ namespace Server
                     {
                         if (File.Exists(_problem.SpecialJudge))
                         {
-                            Thread.Sleep(10);
+                            Thread.Sleep(100);
                             try
                             {
                                 File.Delete(_workingdir + "\\hjudge_spj_result.dat");
@@ -324,7 +326,7 @@ namespace Server
                     }
                     else
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(100);
                         var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open);
                         var fs2 = new FileStream(_workingdir + "\\" + _problem.OutputFileName, FileMode.Open);
                         var sr1 = new StreamReader(fs1);

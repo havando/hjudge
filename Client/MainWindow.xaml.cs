@@ -274,8 +274,8 @@ namespace Client
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
                                 if (p.ResultSummery == "Accept")
                                 {
-                                    var delta = 24 + _random.Next() % 64;
-                                    var delta2 = 50 + _random.Next() % 64;
+                                    var delta = 4 + _random.Next() % 32;
+                                    var delta2 = 16 + _random.Next() % 8;
                                     Connection.SendData("UpdateExperience", delta.ToString());
                                     _experience += delta;
                                     Connection.SendData("UpdateCoins", delta2.ToString());
@@ -284,8 +284,8 @@ namespace Client
                                 }
                                 else if (p.ResultSummery.Contains("Excceed"))
                                 {
-                                    var delta = 10 + _random.Next() % 24;
-                                    var delta2 = 12 + _random.Next() % 24;
+                                    var delta = 2 + _random.Next() % 16;
+                                    var delta2 = 8 + _random.Next() % 4;
                                     Connection.SendData("UpdateCoins", delta.ToString());
                                     _coins += delta;
                                     Connection.SendData("UpdateExperience", delta2.ToString());
@@ -395,6 +395,20 @@ namespace Client
                                 FileList.IsEnabled = true;
                                 ReceivingFile.Visibility = Visibility.Hidden;
                             }));
+                            break;
+                        }
+                    case "ProblemDataSet":
+                        {
+                            if (content != "Denied") break;
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                _coins += 500;
+                                Coins.Content = _coins;
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500" });
+                                MessageBox.Show("抱歉，系统设定不允许获取题目数据，请联系管理员。金币已为您加回。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }));
+
+                            Connection.SendData("UpdateCoins", "500");
                             break;
                         }
                 }
@@ -715,21 +729,21 @@ namespace Client
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!(MyProblemList.SelectedItem is Problem)) return;
-            if (_experience <= 233)
+            if (_experience <= 2333)
             {
-                MessageBox.Show("经验不足，达到 233 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("经验不足，达到 2333 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (_coins >= 200)
+            if (_coins >= 500)
             {
-                if (MessageBox.Show("操此作将花费您 200 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                if (MessageBox.Show("操此作将花费您 500 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    _coins -= 200;
+                    _coins -= 500;
                     Coins.Content = _coins;
-                    Connection.SendData("UpdateCoins", "-200");
+                    Connection.SendData("UpdateCoins", "-500");
                     Connection.SendData("RequestProblemDataSet", ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
-                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -200" });
+                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500" });
                 }
             }
             else

@@ -4,5 +4,6 @@ namespace Server
     {
         public string Compiler { get; set; }
         public string EnvironmentValues { get; set; }
+        public bool AllowRequestDataSet { get; set; }
     }
 }

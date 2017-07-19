@@ -16,6 +16,7 @@ namespace Server
         {
             Compiler.Text = Configuration.Configurations.Compiler;
             EnvironmentValue.Text = Configuration.Configurations.EnvironmentValues;
+            AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -27,6 +28,7 @@ namespace Server
         {
             Configuration.Configurations.Compiler = Compiler.Text;
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
+            Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
             Configuration.Save();
             Close();
         }
