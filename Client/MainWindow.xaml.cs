@@ -272,7 +272,7 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
-                                if (p.ResultSummery == "Accept")
+                                if (p.ResultSummery == "Accepted")
                                 {
                                     var delta = 4 + _random.Next() % 32;
                                     var delta2 = 16 + _random.Next() % 8;
@@ -282,7 +282,7 @@ namespace Client
                                     _coins += delta2;
                                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}" });
                                 }
-                                else if (p.ResultSummery.Contains("Excceed"))
+                                else if (p.ResultSummery.Contains("Excceeded"))
                                 {
                                     var delta = 2 + _random.Next() % 16;
                                     var delta2 = 8 + _random.Next() % 4;

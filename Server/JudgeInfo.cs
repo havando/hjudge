@@ -36,14 +36,14 @@ namespace Server
                         case "Wrong Answer": error[3]++; tot++; break;
                         case "Presentation Error": error[4]++; tot++; break;
                         case "Runtime Error": error[5]++; tot++; break;
-                        case "Time Limit Excceed": error[6]++; tot++; break;
-                        case "Memory Limit Excceed": error[7]++; tot++; break;
+                        case "Time Limit Excceeded": error[6]++; tot++; break;
+                        case "Memory Limit Excceeded": error[7]++; tot++; break;
                         case "Output File Error": error[8]++; tot++; break;
                         case "Special Judger Error": error[9]++; tot++; break;
                         case "Unknown Error": error[10]++; tot++; break;
                     }
                 }
-                if (tot == error[0]) { return "Accept"; }
+                if (tot == error[0]) { return "Accepted"; }
                 var max = error[1];
                 var j = 1;
                 for (var i = 1; i < 11; i++)
@@ -60,8 +60,8 @@ namespace Server
                     case 3: return "Wrong Answer";
                     case 4: return "Presentation Error";
                     case 5: return "Runtime Error";
-                    case 6: return "Time Limit Excceed";
-                    case 7: return "Memory Limit Excceed";
+                    case 6: return "Time Limit Excceeded";
+                    case 7: return "Memory Limit Excceeded";
                     case 8: return "Output File Error";
                     case 9: return "Special Judger Error";
                     case 10: return "Unknown Error";

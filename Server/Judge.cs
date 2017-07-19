@@ -235,7 +235,7 @@ namespace Server
                             {
                                 // ignored
                             }
-                            JudgeResult.Result[_cur] = "Time Limit Excceed";
+                            JudgeResult.Result[_cur] = "Time Limit Excceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
                         }
@@ -251,7 +251,7 @@ namespace Server
                             {
                                 // ignored
                             }
-                            JudgeResult.Result[_cur] = "Memory Limit Excceed";
+                            JudgeResult.Result[_cur] = "Memory Limit Excceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
                         }
