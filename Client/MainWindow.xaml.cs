@@ -282,7 +282,7 @@ namespace Client
                                     _coins += delta2;
                                     ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}" });
                                 }
-                                else if (p.ResultSummery.Contains("Excceeded"))
+                                else if (p.ResultSummery.Contains("Exceeded"))
                                 {
                                     var delta = 2 + _random.Next() % 16;
                                     var delta2 = 8 + _random.Next() % 4;

@@ -22,6 +22,8 @@ namespace Server
         private ObservableCollection<Problem> _problems;
         private readonly ObservableCollection<JudgeResult> _results = new ObservableCollection<JudgeResult>();
 
+        private bool _stop;
+
         private string[] GetAllMembers()
         {
             var k = Directory.GetDirectories(JudgeDir.Text);
@@ -46,31 +48,40 @@ namespace Server
 
         private void JudgeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(JudgeDir.Text))
+            if (JudgeButton.Content.ToString() == "开始")
             {
-                return;
+                if (!Directory.Exists(JudgeDir.Text))
+                {
+                    return;
+                }
+                string[] members;
+                try
+                {
+                    members = GetAllMembers();
+                }
+                catch
+                {
+                    return;
+                }
+                if (members == null)
+                {
+                    return;
+                }
+                _stop = false;
+                ExportButton.IsEnabled = false;
+                JudgingLog.Items.Clear();
+                JudgeDetails.Items.Clear();
+                JudgingProcess.Value = 0;
+                CurrentState.Content = "开始评测";
+                _results.Clear();
+                JudgeButton.Content = "停止";
+                StartJudge(members, JudgeDir.Text);
             }
-            string[] members;
-            try
+            else
             {
-                members = GetAllMembers();
+                _stop = true;
+                JudgeButton.Content = "开始";
             }
-            catch
-            {
-                return;
-            }
-            if (members == null)
-            {
-                return;
-            }
-            ExportButton.IsEnabled = false;
-            JudgingLog.Items.Clear();
-            JudgeDetails.Items.Clear();
-            JudgingProcess.Value = 0;
-            CurrentState.Content = "开始评测";
-            JudgeButton.IsEnabled = false;
-            _results.Clear();
-            StartJudge(members, JudgeDir.Text);
         }
 
         private void StartJudge(IReadOnlyCollection<string> members, string dirPath)
@@ -81,6 +92,7 @@ namespace Server
                 int[] cur = { -1 };
                 foreach (var t in members)
                 {
+                    if (_stop) break;
                     var p = new JudgeResult
                     {
                         MemberName = t,
@@ -88,6 +100,7 @@ namespace Server
                     };
                     foreach (var m in _problems)
                     {
+                        if (_stop) break;
                         if (!m.IsChecked)
                         {
                             continue;
@@ -99,15 +112,13 @@ namespace Server
                             CurrentMember.Content = t;
                             CurrentProblem.Content = m.ProblemName;
                             CurrentState.Content = $"评测中... {cur[0] + 1}/{all}";
-
                             JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 评测题目：{m.ProblemName}，评测选手：{t}" });
                         }));
                         string code;
                         try
                         {
                             code = File.ReadAllText(dirPath + "\\" + t + "\\" +
-                                                    Judge.GetEngName(m.ProblemName) +
-                                                    ".cpp");
+                                                    Judge.GetEngName(m.ProblemName) + ".cpp");
                         }
                         catch
                         {
@@ -127,7 +138,7 @@ namespace Server
                     CurrentState.Content = "评测完毕";
                     JudgingProcess.Value = 100;
                     JudgeResult.Items.Refresh();
-                    JudgeButton.IsEnabled = true;
+                    JudgeButton.Content = "开始";
                     ExportButton.IsEnabled = true;
                 }));
             });

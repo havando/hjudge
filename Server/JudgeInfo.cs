@@ -36,8 +36,8 @@ namespace Server
                         case "Wrong Answer": error[3]++; tot++; break;
                         case "Presentation Error": error[4]++; tot++; break;
                         case "Runtime Error": error[5]++; tot++; break;
-                        case "Time Limit Excceeded": error[6]++; tot++; break;
-                        case "Memory Limit Excceeded": error[7]++; tot++; break;
+                        case "Time Limit Exceeded": error[6]++; tot++; break;
+                        case "Memory Limit Exceeded": error[7]++; tot++; break;
                         case "Output File Error": error[8]++; tot++; break;
                         case "Special Judger Error": error[9]++; tot++; break;
                         case "Unknown Error": error[10]++; tot++; break;
@@ -60,8 +60,8 @@ namespace Server
                     case 3: return "Wrong Answer";
                     case 4: return "Presentation Error";
                     case 5: return "Runtime Error";
-                    case 6: return "Time Limit Excceeded";
-                    case 7: return "Memory Limit Excceeded";
+                    case 6: return "Time Limit Exceeded";
+                    case 7: return "Memory Limit Exceeded";
                     case 8: return "Output File Error";
                     case 9: return "Special Judger Error";
                     case 10: return "Unknown Error";
