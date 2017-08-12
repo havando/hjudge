@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -33,6 +34,8 @@ namespace Server
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
             _curJudgeInfo = Connection.QueryJudgeLog();
+            ListView.ItemsSource = _curJudgeInfo;
+            ListView.Items.Refresh();
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,19 +78,46 @@ namespace Server
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            var a = JsonConvert.SerializeObject((from c in _curJudgeInfo where c.IsChecked select c).Select(JsonConvert.SerializeObject).ToList());
+            var a = (from c in _curJudgeInfo where c.IsChecked select c).ToList();
             var sfg = new SaveFileDialog
             {
                 Title = "保存导出数据：",
-                Filter = "Json 文件 (.json)|*.json"
+                Filter = "Excel 文件|*.xlsx"
             };
-            if (sfg.ShowDialog() == true)
+            if (!(sfg.ShowDialog() ?? false)) return;
+            if (a.Any())
             {
-                var s = sfg.OpenFile();
-                var tmp = Encoding.Unicode.GetBytes(a);
-                s.Write(tmp, 0, tmp.Length);
+                var dt = new DataTable("结果");
+                dt.Columns.Add("姓名");
+                dt.Columns.Add("题目名称");
+                dt.Columns.Add("评测时间");
+                dt.Columns.Add("最长时间 (ms)");
+                dt.Columns.Add("最大内存 (kb)");
+                dt.Columns.Add("结果");
+                dt.Columns.Add("分数");
+                dt.Columns.Add("代码");
+                foreach (var i in a)
+                {
+                    var dr = dt.NewRow();
+                    dr[0] = i.UserName;
+                    dr[1] = i.ProblemName;
+                    dr[2] = i.JudgeDate;
+                    dr[3] = i.Timeused.Max();
+                    dr[4] = i.Memoryused.Max();
+                    dr[5] = i.ResultSummery;
+                    dr[6] = i.FullScore;
+                    dr[7] = i.Code;
+                    dt.Rows.Add(dr);
+                }
+                ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
+                MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("没有要导出的数据", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void ListView_Click(object sender, RoutedEventArgs e)
         {

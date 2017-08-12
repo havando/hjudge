@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -212,13 +212,67 @@ namespace Server
             var sfg = new SaveFileDialog
             {
                 Title = "保存导出数据：",
-                Filter = "Json 文件 (.json)|*.json"
+                Filter = "Excel 文件|*.xlsx"
             };
-            if (sfg.ShowDialog() == true)
+            if (sfg.ShowDialog() ?? false)
             {
-                var s = sfg.OpenFile();
-                var tmp = Encoding.Unicode.GetBytes(a);
-                s.Write(tmp, 0, tmp.Length);
+                if (_results.Any())
+                {
+                    var dt = new List<DataTable>();
+                    var dtname = new List<string>();
+                    var dt1 = new DataTable("结果");
+                    dt1.Columns.Add("姓名");
+                    dt1.Columns.Add("总分");
+                    foreach (var i in _results[0].Result)
+                    {
+                        dt1.Columns.Add(i.ProblemName, typeof(string));
+                    }
+                    foreach (var i in _results)
+                    {
+                        var dr1 = dt1.NewRow();
+                        dr1[0] = i.MemberName;
+                        dr1[1] = i.FullScore;
+                        var k = 2;
+                        foreach (var j in i.Result)
+                        {
+                            dr1[k++] = j.FullScore;
+                        }
+                        dt1.Rows.Add(dr1);
+                    }
+                    dt.Add(dt1);
+                    dtname.Add("结果");
+                    var cnt = 0;
+                    foreach (var i in _results[0].Result)
+                    {
+                        var dti = new DataTable(i.ProblemName);
+                        dtname.Add(i.ProblemName);
+                        dti.Columns.Add("姓名");
+                        dti.Columns.Add("最长时间 (ms)");
+                        dti.Columns.Add("最大内存 (kb)");
+                        dti.Columns.Add("结果");
+                        dti.Columns.Add("分数");
+                        dti.Columns.Add("代码");
+                        foreach (var t in _results)
+                        {
+                            var dr = dti.NewRow();
+                            dr[0] = t.MemberName;
+                            dr[1] = t.Result[cnt].Timeused.Max();
+                            dr[2] = t.Result[cnt].Memoryused.Max();
+                            dr[3] = t.Result[cnt].ResultSummery;
+                            dr[4] = t.Result[cnt].FullScore;
+                            dr[5] = t.Result[cnt].Code;
+                            dti.Rows.Add(dr);
+                        }
+                        dt.Add(dti);
+                        cnt++;
+                    }
+                    ExcelUtility.CreateExcel(sfg.FileName, dt, dtname.ToArray());
+                    MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("没有要导出的数据", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             JudgeButton.IsEnabled = true;
         }

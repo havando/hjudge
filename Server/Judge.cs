@@ -380,7 +380,15 @@ namespace Server
 
         private void Exithandler(object sender, EventArgs e)
         {
-            JudgeResult.Exitcode[_cur] = _excute.ExitCode;
+            while (!_excute.HasExited) Thread.Sleep(1);
+            try
+            {
+                JudgeResult.Exitcode[_cur] = _excute.ExitCode;
+            }
+            catch
+            {
+                JudgeResult.Exitcode[_cur] = 0;
+            }
             if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
             {
                 JudgeResult.Result[_cur] = "Runtime Error";
