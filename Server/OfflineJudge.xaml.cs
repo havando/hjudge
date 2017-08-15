@@ -208,7 +208,6 @@ namespace Server
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             JudgeButton.IsEnabled = false;
-            var a = JsonConvert.SerializeObject(_results);
             var sfg = new SaveFileDialog
             {
                 Title = "保存导出数据：",
