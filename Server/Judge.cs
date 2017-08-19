@@ -16,7 +16,6 @@ namespace Server
         private bool _isfault;
         private bool _isexited;
         private int _cur;
-        private Process _excute;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
 
@@ -39,10 +38,49 @@ namespace Server
 
         public Judge(int problemId, int userId, string code)
         {
+            if (Configuration.Configurations.MutiThreading == 0)
+            {
+                var flag = false;
+                while (!flag)
+                {
+                    try
+                    {
+                        var cpuCounter = new PerformanceCounter
+                        {
+                            CategoryName = "Processor",
+                            CounterName = "% Processor Time",
+                            InstanceName = "_Total"
+                        };
+                        var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
+                        var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit).Concat(new long[] { 0 }).Max();
+                        if (cpuCounter.NextValue() <= 75 || ramCounter.NextValue() > maxMemoryNeeded + 262144)
+                        {
+                            flag = true;
+                        }
+                    }
+                    catch
+                    {
+                        if (Connection.CurJudgingCnt < 5)
+                        {
+                            flag = true;
+                        }
+                    }
+                    Thread.Sleep(10);
+                }
+            }
+            else
+            {
+                while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
+                {
+                    Thread.Sleep(10);
+                }
+            }
+            Connection.CurJudgingCnt++;
+
             _problem = Connection.GetProblem(problemId);
             var datetime = DateTime.Now.ToString("yyyyMMddHHmmssffff");
-            JudgeResult.JudgeId = Connection.NewJudge();
             JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+            JudgeResult.JudgeId = Connection.NewJudge();
             JudgeResult.ProblemId = _problem.ProblemId;
             JudgeResult.Code = code;
             JudgeResult.UserId = userId;
@@ -76,6 +114,7 @@ namespace Server
                 $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
             BeginJudge();
             Connection.UpdateJudgeInfo(JudgeResult);
+            Connection.CurJudgingCnt--;
             try
             {
                 DeleteFiles(_workingdir);
@@ -182,7 +221,7 @@ namespace Server
                     _isfault = false;
                     _isexited = false;
                     Killwerfault();
-                    _excute = new Process
+                    var excute = new Process
                     {
                         StartInfo =
                         {
@@ -195,10 +234,10 @@ namespace Server
                         },
                         EnableRaisingEvents = true
                     };
-                    _excute.Exited += Exithandler;
+                    excute.Exited += Exithandler;
                     try
                     {
-                        _excute.Start();
+                        excute.Start();
                     }
                     catch
                     {
@@ -214,13 +253,22 @@ namespace Server
                         long dt = 0;
                         try
                         {
-                            _excute.Refresh();
-                            JudgeResult.Timeused[_cur] = Convert.ToInt64(_excute.TotalProcessorTime.TotalMilliseconds);
-                            JudgeResult.Memoryused[_cur] = _excute.PeakWorkingSet64 / 1024;
-                            dt = Convert.ToInt64((DateTime.Now - _excute.StartTime).TotalMilliseconds);
+                            excute.Refresh();
+                            JudgeResult.Timeused[_cur] = Convert.ToInt64(excute.TotalProcessorTime.TotalMilliseconds);
+                            JudgeResult.Memoryused[_cur] = excute.PeakWorkingSet64 / 1024;
+                            dt = Convert.ToInt64((DateTime.Now - excute.StartTime).TotalMilliseconds);
                         }
                         catch
                         {
+                            try
+                            {
+                                excute.Kill();
+                                excute.Close();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                             _isexited = true;
                         }
                         if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt >= _problem.DataSets[_cur].TimeLimit * 5)
@@ -228,8 +276,9 @@ namespace Server
                             _isfault = true;
                             try
                             {
-                                _excute.Kill();
-                                _excute.Close();
+                                excute.Kill();
+                                excute.Close();
+                                _isexited = true;
                             }
                             catch
                             {
@@ -244,8 +293,9 @@ namespace Server
                             _isfault = true;
                             try
                             {
-                                _excute.Kill();
-                                _excute.Close();
+                                excute.Kill();
+                                excute.Close();
+                                _isexited = true;
                             }
                             catch
                             {
@@ -270,53 +320,62 @@ namespace Server
                             Thread.Sleep(100);
                             try
                             {
-                                File.Delete(_workingdir + "\\hjudge_spj_result.dat");
-                            }
-                            catch
-                            {
-                                // ignored
-                            }
-                            try
-                            {
-                                var xx = new ProcessStartInfo
+                                try
                                 {
-                                    ErrorDialog = false,
-                                    UseShellExecute = true,
-                                    CreateNoWindow = true,
-                                    FileName = _problem.SpecialJudge,
-                                    Arguments = Dn(_problem.DataSets[_cur].InputFile) + " " +
-                                                Dn(_problem.DataSets[_cur].OutputFile) + " " +
-                                                Dn(_workingdir + "\\" + _problem.OutputFileName) + " " +
-                                                Dn(_workingdir + "\\hjudge_spj_result.dat"),
-                                    WindowStyle = ProcessWindowStyle.Hidden
-                                };
-                                Process.Start(xx)?.WaitForExit();
-                                if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
+                                    File.Delete(_workingdir + "\\hjudge_spj_result.dat");
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+                                try
+                                {
+                                    var xx = new ProcessStartInfo
+                                    {
+                                        ErrorDialog = false,
+                                        UseShellExecute = true,
+                                        CreateNoWindow = true,
+                                        FileName = _problem.SpecialJudge,
+                                        Arguments = Dn(_problem.DataSets[_cur].InputFile) + " " +
+                                                    Dn(_problem.DataSets[_cur].OutputFile) + " " +
+                                                    Dn(_workingdir + "\\" + _problem.OutputFileName) + " " +
+                                                    Dn(_workingdir + "\\hjudge_spj_result.dat"),
+                                        WindowStyle = ProcessWindowStyle.Hidden
+                                    };
+                                    Process.Start(xx)?.WaitForExit();
+                                    if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
+                                    {
+                                        JudgeResult.Result[_cur] = "Special Judger Error";
+                                        JudgeResult.Score[_cur] = 0;
+                                    }
+                                    else
+                                    {
+                                        var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
+                                        p = Regex.Replace(p, @"\s", string.Empty);
+                                        var gs = Convert.ToSingle(p);
+                                        JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score * gs;
+                                        if (Math.Abs(gs - 1) > 0.000001)
+                                        {
+                                            JudgeResult.Result[_cur] = "Wrong Answer";
+                                        }
+                                        else
+                                        {
+                                            JudgeResult.Result[_cur] = "Correct";
+                                        }
+                                    }
+                                }
+                                catch
                                 {
                                     JudgeResult.Result[_cur] = "Special Judger Error";
                                     JudgeResult.Score[_cur] = 0;
                                 }
-                                else
-                                {
-                                    var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
-                                    p = Regex.Replace(p, @"\s", string.Empty);
-                                    var gs = Convert.ToSingle(p);
-                                    JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score * gs;
-                                    if (Math.Abs(gs - 1) > 0.000001)
-                                    {
-                                        JudgeResult.Result[_cur] = "Wrong Answer";
-                                    }
-                                    else
-                                    {
-                                        JudgeResult.Result[_cur] = "Correct";
-                                    }
-                                }
                             }
                             catch
                             {
-                                JudgeResult.Result[_cur] = "Special Judger Error";
+                                JudgeResult.Result[_cur] = "Unknown Error";
                                 JudgeResult.Score[_cur] = 0;
                             }
+
                         }
                         else
                         {
@@ -327,52 +386,63 @@ namespace Server
                     else
                     {
                         Thread.Sleep(100);
-                        var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open);
-                        var fs2 = new FileStream(_workingdir + "\\" + _problem.OutputFileName, FileMode.Open);
-                        var sr1 = new StreamReader(fs1);
-                        var sr2 = new StreamReader(fs2);
-                        var iswrong = false;
-                        do
+                        try
                         {
-                            string s1;
-                            try
+                            var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open, FileAccess.Read,
+                                FileShare.Read);
+                            var fs2 = new FileStream(_workingdir + "\\" + _problem.OutputFileName, FileMode.Open,
+                                FileAccess.Read,
+                                FileShare.Read);
+                            var sr1 = new StreamReader(fs1);
+                            var sr2 = new StreamReader(fs2);
+                            var iswrong = false;
+                            do
                             {
-                                s1 = sr1.ReadLine();
-                            }
-                            catch
-                            {
-                                s1 = string.Empty;
-                            }
-                            string s2;
-                            try
-                            {
-                                s2 = sr2.ReadLine();
-                            }
-                            catch
-                            {
-                                s2 = string.Empty;
-                            }
-                            if (s1 == null) s1 = string.Empty;
-                            if (s2 == null) s2 = string.Empty;
-                            s1 = s1.TrimEnd(' ');
-                            s2 = s2.TrimEnd(' ');
-                            if (s1 == s2) continue;
-                            iswrong = true;
-                            JudgeResult.Result[_cur] = "Wrong Answer";
+                                string s1;
+                                try
+                                {
+                                    s1 = sr1.ReadLine();
+                                }
+                                catch
+                                {
+                                    s1 = string.Empty;
+                                }
+                                string s2;
+                                try
+                                {
+                                    s2 = sr2.ReadLine();
+                                }
+                                catch
+                                {
+                                    s2 = string.Empty;
+                                }
+                                if (s1 == null) s1 = string.Empty;
+                                if (s2 == null) s2 = string.Empty;
+                                s1 = s1.TrimEnd(' ');
+                                s2 = s2.TrimEnd(' ');
+                                if (s1 == s2) continue;
+                                iswrong = true;
+                                JudgeResult.Result[_cur] = "Wrong Answer";
+                                JudgeResult.Score[_cur] = 0;
+                                if (Regex.Replace(s1, @"\s", string.Empty) == Regex.Replace(s2, @"\s", string.Empty))
+                                {
+                                    JudgeResult.Result[_cur] = "Presentation Error";
+                                }
+                                else break;
+                            } while (!(sr1.EndOfStream && sr2.EndOfStream));
+                            sr1.Close();
+                            sr2.Close();
+                            fs1.Close();
+                            fs2.Close();
+                            if (iswrong) continue;
+                            JudgeResult.Result[_cur] = "Correct";
+                            JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score;
+                        }
+                        catch
+                        {
+                            JudgeResult.Result[_cur] = "Unknown Answer";
                             JudgeResult.Score[_cur] = 0;
-                            if (Regex.Replace(s1, @"\s", string.Empty) == Regex.Replace(s2, @"\s", string.Empty))
-                            {
-                                JudgeResult.Result[_cur] = "Presentation Error";
-                            }
-                            else break;
-                        } while (!(sr1.EndOfStream && sr2.EndOfStream));
-                        sr1.Close();
-                        sr2.Close();
-                        fs1.Close();
-                        fs2.Close();
-                        if (iswrong) continue;
-                        JudgeResult.Result[_cur] = "Correct";
-                        JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score;
+                        }
                     }
                 }
             }
@@ -380,10 +450,14 @@ namespace Server
 
         private void Exithandler(object sender, EventArgs e)
         {
-            while (!_excute.HasExited) Thread.Sleep(1);
+            if (_isexited)
+            {
+                return;
+            }
+            var process = sender as Process;
             try
             {
-                JudgeResult.Exitcode[_cur] = _excute.ExitCode;
+                JudgeResult.Exitcode[_cur] = process?.ExitCode ?? 0;
             }
             catch
             {
@@ -397,8 +471,8 @@ namespace Server
             }
             try
             {
-                _excute.Kill();
-                _excute.Close();
+                process?.Kill();
+                process?.Close();
             }
             catch
             {

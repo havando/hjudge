@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -73,6 +74,7 @@ namespace Server
                 JudgeDetails.Items.Clear();
                 JudgingProcess.Value = 0;
                 CurrentState.Content = "开始评测";
+                CurrentState.Content = "评测中...";
                 _results.Clear();
                 JudgeButton.Content = "停止";
                 StartJudge(members, JudgeDir.Text);
@@ -90,6 +92,7 @@ namespace Server
             {
                 var all = members.Count * _problems.Count(t => t.IsChecked);
                 int[] cur = { -1 };
+                var myJudgeTask = new List<Task>();
                 foreach (var t in members)
                 {
                     if (_stop) break;
@@ -105,14 +108,9 @@ namespace Server
                         {
                             continue;
                         }
-                        cur[0]++;
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            JudgingProcess.Value = (double)cur[0] * 100 / all;
-                            CurrentMember.Content = t;
-                            CurrentProblem.Content = m.ProblemName;
-                            CurrentState.Content = $"评测中... {cur[0] + 1}/{all}";
-                            JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 评测题目：{m.ProblemName}，评测选手：{t}" });
+                            JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 开始评测，题目：{m.ProblemName}，评测选手：{t}" });
                         }));
                         string code;
                         try
@@ -124,14 +122,28 @@ namespace Server
                         {
                             continue;
                         }
-                        var j = new Judge(m.ProblemId, 1, code);
-                        p.Result.Add(j.JudgeResult);
+                        myJudgeTask.Add(Task.Run(() =>
+                            {
+                                var j = new Judge(m.ProblemId, 1, code);
+                                p.Result.Add(j.JudgeResult);
+                                Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    cur[0]++;
+                                    JudgingProcess.Value = (double)cur[0] * 100 / all;
+                                    JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}" });
+                                }));
+                            })
+                        );
                     }
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         _results.Add(p);
                         JudgeResult.Items.Refresh();
                     }));
+                }
+                foreach (var task in myJudgeTask)
+                {
+                    task?.Wait();
                 }
                 Dispatcher.BeginInvoke(new Action(() =>
                 {

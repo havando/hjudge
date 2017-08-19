@@ -5,15 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="系统设置" Height="138.527" Width="403.683" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Icon="Resources/Config.png" Loaded="Window_Loaded">
+        Title="系统设置" Height="185.027" Width="342.183" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Icon="Resources/Config.png" Loaded="Window_Loaded">
     <Grid>
         <Label Content="编译器：" HorizontalAlignment="Left" Margin="20,18,0,0" VerticalAlignment="Top"/>
         <Label Content="环境值：" HorizontalAlignment="Left" Margin="20,49,0,0" VerticalAlignment="Top"/>
         <TextBox Name="Compiler" HorizontalAlignment="Left" Height="26" Margin="90,18,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="219"/>
         <TextBox x:Name="EnvironmentValue" HorizontalAlignment="Left" Height="26" Margin="90,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="219"/>
-        <Button Content="取消" HorizontalAlignment="Left" Height="26" Margin="314,18,0,0" VerticalAlignment="Top" Width="59" Click="Button_Click"/>
-        <Button Content="确定" HorizontalAlignment="Left" Height="26" Margin="314,49,0,0" VerticalAlignment="Top" Width="59" Click="Button_Click_1"/>
-        <CheckBox Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="20,85,0,0" VerticalAlignment="Top"/>
+        <Button Content="取消" HorizontalAlignment="Left" Height="26" Margin="185,111,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
+        <Button Content="确定" HorizontalAlignment="Left" Height="26" Margin="250,111,0,0" VerticalAlignment="Top" Width="59" Click="Button_Click_1"/>
+        <CheckBox Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="20,122,0,0" VerticalAlignment="Top"/>
+        <Label Content="评测最大并发数量：" HorizontalAlignment="Left" Margin="20,79,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="MutiThreading" HorizontalAlignment="Left" Height="26" Margin="143,80,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="37"/>
+        <Label Content="*注：0 表示自动控制" HorizontalAlignment="Left" Margin="185,81,0,0" VerticalAlignment="Top" Foreground="Red"/>
 
     </Grid>
 </Window>

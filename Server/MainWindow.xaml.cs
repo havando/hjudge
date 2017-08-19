@@ -96,12 +96,23 @@ namespace Server
 
             Connection.Init(UpdateListBoxContent);
             Configuration.Init();
-            CurrentAddress.Content = "当前主机地址：" + Connection.Address;
             UserHelper.SetCurrentUser(0, string.Empty, string.Empty, string.Empty, 0, string.Empty, string.Empty);
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();
 
             UpdateListBoxContent($"{DateTime.Now} 欢迎使用 hjudge");
+
+            Task.Run(() =>
+            {
+                while (!Connection.IsExited)
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        CurrentJudgeList.Content = "当前评测线程数量：" + Connection.CurJudgingCnt;
+                    }));
+                    Thread.Sleep(500);
+                }
+            });
         }
 
         private void UpdateListBoxContent(string content)
@@ -205,7 +216,6 @@ namespace Server
             operationsButton[7].Click += async (o, args) => await Logout();
             operationsButton[8].Click += (o, args) =>
             {
-                _notifyIcon.Visible = false;
                 Exit();
             };
             foreach (var t in operationsButton)
@@ -250,7 +260,6 @@ namespace Server
             operationsButton[7].Click += async (o, args) => await Logout();
             operationsButton[8].Click += (o, args) =>
             {
-                _notifyIcon.Visible = false;
                 Exit();
             };
             foreach (var t in operationsButton)
@@ -422,6 +431,13 @@ namespace Server
 
         private void Exit()
         {
+            if (Connection.CurJudgingCnt != 0)
+            {
+                MessageBox.Show($"仍有 {Connection.CurJudgingCnt} 项评测任务正在进行，不能退出程序", "提示", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            _notifyIcon.Visible = false;
             Connection.IsExited = true;
             Environment.Exit(0);
         }

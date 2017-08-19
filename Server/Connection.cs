@@ -26,7 +26,6 @@ namespace Server
         private static bool _isUsing;
         private static readonly List<ClientData> Recv = new List<ClientData>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
-        public static string Address;
         private static readonly TcpPullServer<ClientInfo> HServer = new TcpPullServer<ClientInfo>();
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
@@ -34,6 +33,8 @@ namespace Server
         private static Action<string> _updateMain;
         private static int _id;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
+
+        public static int CurJudgingCnt = 0;
 
         public static void Init(Action<string> updateMainPage)
         {
@@ -169,16 +170,10 @@ namespace Server
 
             foreach (var t in hostIp)
             {
-                if (t.ToString().Contains(":"))
-                {
-                    continue;
-                }
-                Address = t + ":23333";
                 HServer.IpAddress = t.ToString();
                 HServer.Port = 23333;
                 if (!HServer.Start()) { continue; }
                 flag = true;
-                break;
             }
             DealingBytes();
             DealingOperations();

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace Server
 {
@@ -17,6 +18,7 @@ namespace Server
             Compiler.Text = Configuration.Configurations.Compiler;
             EnvironmentValue.Text = Configuration.Configurations.EnvironmentValues;
             AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
+            MutiThreading.Text = Configuration.Configurations.MutiThreading.ToString();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -29,6 +31,20 @@ namespace Server
             Configuration.Configurations.Compiler = Compiler.Text;
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
             Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
+            int mt;
+            try
+            {
+                mt = Convert.ToInt32(MutiThreading.Text);
+            }
+            catch
+            {
+                mt = Configuration.Configurations.MutiThreading;
+            }
+            if (mt < 0)
+            {
+                mt = Configuration.Configurations.MutiThreading;
+            }
+            Configuration.Configurations.MutiThreading = mt;
             Configuration.Save();
             Close();
         }

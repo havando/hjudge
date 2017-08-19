@@ -109,7 +109,8 @@ namespace Server
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
                     ofg.OpenFile();
-                    var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read);
+                    var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read,
+                        FileShare.Read);
                     _myInfo.Icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon));
                 }

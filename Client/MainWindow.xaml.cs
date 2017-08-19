@@ -589,7 +589,8 @@ namespace Client
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
                     ofg.OpenFile();
-                    var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read);
+                    var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read,
+                        FileShare.Read);
                     var icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(icon));
                     Connection.SendData("UpdateProfile", _userName + Divpar + icon);

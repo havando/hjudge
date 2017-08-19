@@ -18,6 +18,7 @@ namespace Server
                 Configurations.Compiler = string.Empty;
                 Configurations.EnvironmentValues = string.Empty;
                 Configurations.AllowRequestDataSet = true;
+                Configurations.MutiThreading = 0;
                 File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());
