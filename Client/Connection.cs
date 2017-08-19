@@ -238,9 +238,8 @@ namespace Client
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!IsExited)
                 {
-                    if (IsExited) break;
                     WaitingForUnusing();
                     _isUsing = true;
                     if (Recv.Count == 0)
@@ -297,9 +296,8 @@ namespace Client
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!IsExited)
                 {
-                    if (IsExited) break;
                     if (Operations.TryDequeue(out var res))
                     {
                         try
@@ -523,9 +521,8 @@ namespace Client
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!IsExited)
                 {
-                    if (IsExited) break;
                     SendData("@", string.Empty);
                     Thread.Sleep(10000);
                     while (_isReceiving)

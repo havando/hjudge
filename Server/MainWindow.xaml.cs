@@ -340,7 +340,7 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!Connection.IsExited)
                 {
                     if (UserHelper.CurrentUser.IsChanged ?? false)
                     {

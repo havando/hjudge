@@ -1279,9 +1279,8 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!IsExited)
                 {
-                    if (IsExited) break;
                     foreach (var t in Recv)
                     {
                         if (IsExited) break;
@@ -1337,9 +1336,8 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!IsExited)
                 {
-                    if (IsExited) break;
                     if (Operations.TryDequeue(out var res))
                     {
                         var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
