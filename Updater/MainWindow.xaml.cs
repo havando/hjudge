@@ -36,6 +36,7 @@ namespace Updater
                 Environment.Exit(0);
             }
             InitializeComponent();
+            TextBox.Text = version.Content;
             Product.Content = string.Format(Product.Content.ToString(), UpdateInfo.Product, version.Version);
             Task.Run(() =>
             {
