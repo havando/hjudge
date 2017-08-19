@@ -271,7 +271,7 @@ namespace Server
                             }
                             _isexited = true;
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt >= _problem.DataSets[_cur].TimeLimit * 5)
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt >= _problem.DataSets[_cur].TimeLimit * 10)
                         {
                             _isfault = true;
                             try
