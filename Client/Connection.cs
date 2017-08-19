@@ -15,7 +15,7 @@ namespace Client
 {
     public static class Connection
     {
-        private static bool _isUsing;
+        private static readonly object BytesLock = new object();
         private static readonly List<byte> Recv = new List<byte>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullClient HClient = new TcpPullClient();
@@ -114,10 +114,10 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            WaitingForUnusing();
-                            _isUsing = true;
-                            Recv.AddRange(buffer);
-                            _isUsing = false;
+                            lock (BytesLock)
+                            {
+                                Recv.AddRange(buffer);
+                            }
                             required = PkgHeaderSize;
                         }
                         PkgInfo.IsHeader = !PkgInfo.IsHeader;
@@ -142,15 +142,6 @@ namespace Client
         }
 
         #region Network
-
-        private static void WaitingForUnusing()
-        {
-            while (_isUsing)
-            {
-                if (IsExited) break;
-                Thread.Sleep(10);
-            }
-        }
 
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
@@ -240,51 +231,50 @@ namespace Client
             {
                 while (!IsExited)
                 {
-                    WaitingForUnusing();
-                    _isUsing = true;
-                    if (Recv.Count == 0)
+                    lock (BytesLock)
                     {
-                        _isUsing = false;
-                        Thread.Sleep(10);
-                        continue;
-                    }
-                    var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
-                    if (temp.Count != 0)
-                    {
-                        Recv.Clear();
-                        Recv.AddRange(temp[temp.Count - 1]);
-                    }
-                    _isUsing = false;
-                    temp.RemoveAt(temp.Count - 1);
-                    foreach (var i in temp)
-                    {
-                        if (IsExited) break;
-                        var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
-                        if (temp2.Count == 0)
+                        if (Recv.Count == 0)
                         {
+                            Thread.Sleep(10);
                             continue;
                         }
-                        var operation = Encoding.Unicode.GetString(temp2[0]);
-                        switch (operation)
+                        var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
+                        if (temp.Count != 0)
                         {
-                            case "&":
-                                {
-                                    _isConnecting = true;
-                                    break;
-                                }
-                            default:
-                                {
-                                    Task.Run(() =>
+                            Recv.Clear();
+                            Recv.AddRange(temp[temp.Count - 1]);
+                        }
+                        temp.RemoveAt(temp.Count - 1);
+                        foreach (var i in temp)
+                        {
+                            if (IsExited) break;
+                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
+                            if (temp2.Count == 0)
+                            {
+                                continue;
+                            }
+                            var operation = Encoding.Unicode.GetString(temp2[0]);
+                            switch (operation)
+                            {
+                                case "&":
                                     {
-                                        temp2.RemoveAt(0);
-                                        Operations.Enqueue(new ObjOperation
+                                        _isConnecting = true;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Task.Run(() =>
                                         {
-                                            Operation = operation,
-                                            Content = temp2
+                                            temp2.RemoveAt(0);
+                                            Operations.Enqueue(new ObjOperation
+                                            {
+                                                Operation = operation,
+                                                Content = temp2
+                                            });
                                         });
-                                    });
-                                    break;
-                                }
+                                        break;
+                                    }
+                            }
                         }
                     }
                     Thread.Sleep(10);
@@ -329,10 +319,10 @@ namespace Client
                                     }
                                 case "Logout":
                                     {
-                                        WaitingForUnusing();
-                                        _isUsing = true;
-                                        Recv.Clear();
-                                        _isUsing = false;
+                                        lock (BytesLock)
+                                        {
+                                            Recv.Clear();
+                                        }
                                         _updateMainPage.Invoke($"Logout{Divpar}Succeed");
                                         break;
                                     }

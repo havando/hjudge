@@ -22,7 +22,7 @@ namespace Server
             {
                 if (Result == null)
                 {
-                    return "Unknown Error";
+                    return "Unknown Error: Null Result";
                 }
                 var error = new int[11];
                 var tot = 0;
@@ -40,7 +40,14 @@ namespace Server
                         case "Memory Limit Exceeded": error[7]++; tot++; break;
                         case "Output File Error": error[8]++; tot++; break;
                         case "Special Judger Error": error[9]++; tot++; break;
-                        case "Unknown Error": error[10]++; tot++; break;
+                        default:
+                            {
+                                if (t.Contains("Unknown Error"))
+                                {
+                                    error[10]++; tot++;
+                                }
+                                break;
+                            }
                     }
                 }
                 if (tot == error[0]) { return "Accepted"; }
