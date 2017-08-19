@@ -89,53 +89,60 @@ namespace Server
                 Thread.Sleep(100);
             }
             Connection.IsLoadingProblem = true;
-
-            _problem = Connection.GetProblem(problemId);
-            var id = new Guid().ToString().Replace("-", string.Empty) +
-                     DateTime.Now.ToString("_yyyyMMddHHmmssffff");
-            JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
-            JudgeResult.JudgeId = Connection.NewJudge();
-            JudgeResult.ProblemId = _problem.ProblemId;
-            JudgeResult.Code = code;
-            JudgeResult.UserId = userId;
-            JudgeResult.Exitcode = new int[_problem.DataSets.Length];
-            JudgeResult.Result = new string[_problem.DataSets.Length];
-            JudgeResult.Score = new float[_problem.DataSets.Length];
-            JudgeResult.Timeused = new long[_problem.DataSets.Length];
-            JudgeResult.Memoryused = new long[_problem.DataSets.Length];
-            _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
-            if (string.IsNullOrEmpty(_problem.CompileCommand))
+            try
             {
-                _problem.CompileCommand = Dn(_workingdir + "\\test.cpp") + " -o " + Dn(_workingdir + "\\test_hjudge.exe");
+                _problem = Connection.GetProblem(problemId);
+                var id = new Guid().ToString().Replace("-", string.Empty) +
+                         DateTime.Now.ToString("_yyyyMMddHHmmssffff");
+                JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+                JudgeResult.JudgeId = Connection.NewJudge();
+                JudgeResult.ProblemId = _problem.ProblemId;
+                JudgeResult.Code = code;
+                JudgeResult.UserId = userId;
+                JudgeResult.Exitcode = new int[_problem.DataSets.Length];
+                JudgeResult.Result = new string[_problem.DataSets.Length];
+                JudgeResult.Score = new float[_problem.DataSets.Length];
+                JudgeResult.Timeused = new long[_problem.DataSets.Length];
+                JudgeResult.Memoryused = new long[_problem.DataSets.Length];
+                _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
+                if (string.IsNullOrEmpty(_problem.CompileCommand))
+                {
+                    _problem.CompileCommand = Dn(_workingdir + "\\test.cpp") + " -o " +
+                                              Dn(_workingdir + "\\test_hjudge.exe");
+                }
+                else
+                {
+                    _problem.CompileCommand = GetRealString(_problem.CompileCommand, 0);
+                }
+                _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0);
+                for (var i = 0; i < _problem.ExtraFiles.Length; i++)
+                {
+                    _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i);
+                }
+                for (var i = 0; i < _problem.DataSets.Length; i++)
+                {
+                    _problem.DataSets[i].InputFile = GetRealString(_problem.DataSets[i].InputFile, i);
+                    _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i);
+                }
+                _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
+                _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
+
+                Connection.IsLoadingProblem = false;
+
+                Connection.UpdateMainPageState(
+                    $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+
+                BeginJudge();
+
+                Connection.UpdateJudgeInfo(JudgeResult);
             }
-            else
+            catch
             {
-                _problem.CompileCommand = GetRealString(_problem.CompileCommand, 0);
+                //ignored
             }
-            _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0);
-            for (var i = 0; i < _problem.ExtraFiles.Length; i++)
-            {
-                _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i);
-            }
-            for (var i = 0; i < _problem.DataSets.Length; i++)
-            {
-                _problem.DataSets[i].InputFile = GetRealString(_problem.DataSets[i].InputFile, i);
-                _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i);
-            }
-            _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
-            _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
-
-            Connection.IsLoadingProblem = false;
-
-            Connection.UpdateMainPageState(
-                $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
-
-            BeginJudge();
-
-            Connection.UpdateJudgeInfo(JudgeResult);
             Connection.CurJudgingCnt--;
 
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
 
             try
             {
@@ -593,7 +600,7 @@ namespace Server
                     CreateNoWindow = true
                 };
                 Process.Start(a)?.WaitForExit();
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
                 return File.Exists(_workingdir + "\\test_hjudge.exe");
             }
             catch

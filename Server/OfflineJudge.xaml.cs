@@ -82,7 +82,6 @@ namespace Server
             else
             {
                 _stop = true;
-                JudgeButton.Content = "开始";
             }
         }
 
@@ -92,6 +91,7 @@ namespace Server
             {
                 var all = members.Count * _problems.Count(t => t.IsChecked);
                 int[] cur = { -1 };
+                var cnt = 0;
                 var myJudgeTask = new List<Task>();
                 foreach (var t in members)
                 {
@@ -122,6 +122,7 @@ namespace Server
                         {
                             continue;
                         }
+                        cnt++;
                         myJudgeTask.Add(Task.Run(() =>
                             {
                                 var j = new Judge(m.ProblemId, 1, code);
@@ -134,6 +135,13 @@ namespace Server
                                 }));
                             })
                         );
+                        if (cnt % (Configuration.Configurations.MutiThreading == 0
+                                ? 5
+                                : Configuration.Configurations.MutiThreading) != 0) continue;
+                        foreach (var task in myJudgeTask)
+                        {
+                            task?.Wait();
+                        }
                     }
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
