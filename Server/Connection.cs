@@ -33,6 +33,10 @@ namespace Server
         private static Action<string> _updateMain;
         private static int _id;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
+        public static bool IsComparing;
+        public static bool IsLoadingProblem;
+        public static bool IsCompiling;
+        public static bool IsCopying;
 
         public static int CurJudgingCnt = 0;
 

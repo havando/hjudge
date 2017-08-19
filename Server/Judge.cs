@@ -53,7 +53,8 @@ namespace Server
                         };
                         var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
                         var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit).Concat(new long[] { 0 }).Max();
-                        if (cpuCounter.NextValue() <= 75 || ramCounter.NextValue() > maxMemoryNeeded + 262144)
+                        if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
+                            Connection.CurJudgingCnt < 5)
                         {
                             flag = true;
                         }
@@ -65,20 +66,33 @@ namespace Server
                             flag = true;
                         }
                     }
-                    Thread.Sleep(10);
+                    Thread.Sleep(100);
                 }
             }
             else
             {
                 while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
                 {
-                    Thread.Sleep(10);
+                    Thread.Sleep(100);
                 }
             }
+
+            if (Connection.CurJudgingCnt == 0)
+            {
+                Killwerfault();
+            }
+
             Connection.CurJudgingCnt++;
 
+            while (Connection.IsLoadingProblem)
+            {
+                Thread.Sleep(100);
+            }
+            Connection.IsLoadingProblem = true;
+
             _problem = Connection.GetProblem(problemId);
-            var datetime = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var id = new Guid().ToString().Replace("-", string.Empty) +
+                     DateTime.Now.ToString("_yyyyMMddHHmmssffff");
             JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
             JudgeResult.JudgeId = Connection.NewJudge();
             JudgeResult.ProblemId = _problem.ProblemId;
@@ -89,7 +103,7 @@ namespace Server
             JudgeResult.Score = new float[_problem.DataSets.Length];
             JudgeResult.Timeused = new long[_problem.DataSets.Length];
             JudgeResult.Memoryused = new long[_problem.DataSets.Length];
-            _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + datetime;
+            _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
             if (string.IsNullOrEmpty(_problem.CompileCommand))
             {
                 _problem.CompileCommand = Dn(_workingdir + "\\test.cpp") + " -o " + Dn(_workingdir + "\\test_hjudge.exe");
@@ -110,11 +124,19 @@ namespace Server
             }
             _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
             _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
+
+            Connection.IsLoadingProblem = false;
+
             Connection.UpdateMainPageState(
                 $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+
             BeginJudge();
+
             Connection.UpdateJudgeInfo(JudgeResult);
             Connection.CurJudgingCnt--;
+
+            Thread.Sleep(1000);
+
             try
             {
                 DeleteFiles(_workingdir);
@@ -128,21 +150,33 @@ namespace Server
 
         private void DeleteFiles(string path)
         {
-            foreach (var t in Directory.GetDirectories(path))
+            try
             {
-                DeleteFiles(t);
+                foreach (var t in Directory.GetDirectories(path))
+                {
+                    DeleteFiles(t);
+                }
+                foreach (var t in Directory.GetFiles(path))
+                {
+                    File.Delete(t);
+                }
+                Directory.Delete(path);
             }
-            foreach (var t in Directory.GetFiles(path))
+            catch
             {
-                File.Delete(t);
+                //ignored
             }
-            Directory.Delete(path);
         }
 
         private void BeginJudge()
         {
             try
             {
+                while (Connection.IsCopying)
+                {
+                    Thread.Sleep(100);
+                }
+                Connection.IsCopying = true;
                 Directory.CreateDirectory(_workingdir);
                 File.WriteAllText(_workingdir + "\\test.cpp", JudgeResult.Code);
                 foreach (var t in _problem.ExtraFiles)
@@ -153,9 +187,11 @@ namespace Server
                     }
                     File.Copy(t, _workingdir + "\\" + Path.GetFileName(t), true);
                 }
+                Connection.IsCopying = false;
             }
             catch
             {
+                Connection.IsCopying = false;
                 for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                 {
                     JudgeResult.Result[_cur] = "Unknown Error";
@@ -168,10 +204,12 @@ namespace Server
             }
             if (Compile())
             {
+                Connection.IsCompiling = false;
                 Judging();
             }
             else
             {
+                Connection.IsCompiling = false;
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
                 {
                     JudgeResult.Result[i] = "Compile Error";
@@ -197,12 +235,18 @@ namespace Server
                 }
                 else
                 {
+                    while (Connection.IsCopying)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    Connection.IsCopying = true;
                     try
                     {
                         File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName, true);
                     }
                     catch
                     {
+                        Connection.IsCopying = false;
                         JudgeResult.Result[_cur] = "Unknown Error";
                         JudgeResult.Exitcode[_cur] = 0;
                         JudgeResult.Score[_cur] = 0;
@@ -218,9 +262,9 @@ namespace Server
                     {
                         //ignored
                     }
+                    Connection.IsCopying = false;
                     _isfault = false;
                     _isexited = false;
-                    Killwerfault();
                     var excute = new Process
                     {
                         StartInfo =
@@ -307,12 +351,18 @@ namespace Server
                         }
                     }
                     if (_isfault) continue;
+                    Thread.Sleep(100);
                     if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
                     {
                         JudgeResult.Result[_cur] = "Output File Error";
                         JudgeResult.Score[_cur] = 0;
                         continue;
                     }
+                    while (Connection.IsComparing)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    Connection.IsComparing = true;
                     if (!string.IsNullOrEmpty(_problem.SpecialJudge))
                     {
                         if (File.Exists(_problem.SpecialJudge))
@@ -366,12 +416,14 @@ namespace Server
                                 }
                                 catch
                                 {
+                                    Connection.IsComparing = false;
                                     JudgeResult.Result[_cur] = "Special Judger Error";
                                     JudgeResult.Score[_cur] = 0;
                                 }
                             }
                             catch
                             {
+                                Connection.IsComparing = false;
                                 JudgeResult.Result[_cur] = "Unknown Error";
                                 JudgeResult.Score[_cur] = 0;
                             }
@@ -430,20 +482,27 @@ namespace Server
                                 }
                                 else break;
                             } while (!(sr1.EndOfStream && sr2.EndOfStream));
+                            Thread.Sleep(100);
                             sr1.Close();
                             sr2.Close();
                             fs1.Close();
                             fs2.Close();
-                            if (iswrong) continue;
+                            if (iswrong)
+                            {
+                                Connection.IsComparing = false;
+                                continue;
+                            }
                             JudgeResult.Result[_cur] = "Correct";
                             JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score;
                         }
                         catch
                         {
-                            JudgeResult.Result[_cur] = "Unknown Answer";
+                            Connection.IsComparing = false;
+                            JudgeResult.Result[_cur] = "Unknown Error";
                             JudgeResult.Score[_cur] = 0;
                         }
                     }
+                    Connection.IsComparing = false;
                 }
             }
         }
@@ -485,7 +544,7 @@ namespace Server
         {
             Task.Run(() =>
             {
-                while (!_isexited)
+                while (Connection.CurJudgingCnt != 0)
                 {
                     try
                     {
@@ -517,6 +576,11 @@ namespace Server
 
         private bool Compile()
         {
+            while (Connection.IsCompiling)
+            {
+                Thread.Sleep(100);
+            }
+            Connection.IsCompiling = true;
             try
             {
                 var a = new ProcessStartInfo
@@ -529,6 +593,7 @@ namespace Server
                     CreateNoWindow = true
                 };
                 Process.Start(a)?.WaitForExit();
+                Thread.Sleep(1000);
                 return File.Exists(_workingdir + "\\test_hjudge.exe");
             }
             catch

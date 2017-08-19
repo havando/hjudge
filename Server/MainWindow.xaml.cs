@@ -110,7 +110,7 @@ namespace Server
                     {
                         CurrentJudgeList.Content = "当前评测线程数量：" + Connection.CurJudgingCnt;
                     }));
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 }
             });
         }
