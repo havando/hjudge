@@ -507,6 +507,8 @@ namespace Client
             });
         }
 
+        private static bool _hasNotify;
+
         private static void StayConnection()
         {
             Task.Run(() =>
@@ -519,9 +521,18 @@ namespace Client
                     {
                         Thread.Sleep(5000);
                     }
-                    if (_isConnecting) { _isConnecting = false; continue; }
+                    if (_isConnecting)
+                    {
+                        _isConnecting = false;
+                        _hasNotify = false;
+                        continue;
+                    }
                     _updateMainPage.Invoke($"Connection{Divpar}Break");
-                    MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (!_hasNotify)
+                    {
+                        MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _hasNotify = true;
+                    }
                     break;
                 }
                 Thread.Sleep(3000);

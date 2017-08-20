@@ -27,6 +27,7 @@ namespace Server
             Connection.ClearJudgeLog();
             _curJudgeInfo.Clear();
             Code.Text = JudgeDetails.Text = string.Empty;
+            CheckBox.IsChecked = false;
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
@@ -34,6 +35,7 @@ namespace Server
             _curJudgeInfo = Connection.QueryJudgeLog();
             ListView.ItemsSource = _curJudgeInfo;
             ListView.Items.Refresh();
+            CheckBox.IsChecked = false;
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
