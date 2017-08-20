@@ -306,17 +306,11 @@ namespace Server
                             try
                             {
                                 excute.Kill();
+                                excute.Close();
                             }
-                            finally
+                            catch
                             {
-                                try
-                                {
-                                    excute.Close();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
+                                //ignored 
                             }
                             _isexited = true;
                         }
@@ -326,17 +320,11 @@ namespace Server
                             try
                             {
                                 excute.Kill();
+                                excute.Close();
                             }
-                            finally
+                            catch
                             {
-                                try
-                                {
-                                    excute.Close();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
+                                //ignored 
                             }
                             _isexited = true;
                             JudgeResult.Result[_cur] = "Time Limit Exceeded";
@@ -349,17 +337,11 @@ namespace Server
                             try
                             {
                                 excute.Kill();
+                                excute.Close();
                             }
-                            finally
+                            catch
                             {
-                                try
-                                {
-                                    excute.Close();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
+                                //ignored 
                             }
                             _isexited = true;
                             JudgeResult.Result[_cur] = "Memory Limit Exceeded";

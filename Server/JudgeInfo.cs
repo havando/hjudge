@@ -25,7 +25,7 @@ namespace Server
             {
                 if (Result == null)
                 {
-                    return "Unknown Error: Null Result";
+                    return "Unknown Error";
                 }
                 var error = new int[11];
                 var tot = 0;
