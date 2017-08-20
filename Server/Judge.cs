@@ -306,11 +306,17 @@ namespace Server
                             try
                             {
                                 excute.Kill();
-                                excute.Close();
                             }
-                            catch
+                            finally
                             {
-                                //ignored
+                                try
+                                {
+                                    excute.Close();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
                             }
                             _isexited = true;
                         }
@@ -320,13 +326,19 @@ namespace Server
                             try
                             {
                                 excute.Kill();
-                                excute.Close();
-                                _isexited = true;
                             }
-                            catch
+                            finally
                             {
-                                // ignored
+                                try
+                                {
+                                    excute.Close();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
                             }
+                            _isexited = true;
                             JudgeResult.Result[_cur] = "Time Limit Exceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
@@ -337,13 +349,19 @@ namespace Server
                             try
                             {
                                 excute.Kill();
-                                excute.Close();
-                                _isexited = true;
                             }
-                            catch
+                            finally
                             {
-                                // ignored
+                                try
+                                {
+                                    excute.Close();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
                             }
+                            _isexited = true;
                             JudgeResult.Result[_cur] = "Memory Limit Exceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
@@ -391,7 +409,7 @@ namespace Server
                                         Thread.Sleep(100);
                                         if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                         {
-                                            JudgeResult.Result[_cur] = "Special Judger Error";
+                                            JudgeResult.Result[_cur] = "Special Judge Error";
                                             JudgeResult.Score[_cur] = 0;
                                         }
                                         else
@@ -412,7 +430,7 @@ namespace Server
                                     }
                                     catch
                                     {
-                                        JudgeResult.Result[_cur] = "Special Judger Error";
+                                        JudgeResult.Result[_cur] = "Special Judge Error";
                                         JudgeResult.Score[_cur] = 0;
                                     }
                                 }
@@ -425,7 +443,7 @@ namespace Server
                             }
                             else
                             {
-                                JudgeResult.Result[_cur] = "Special Judger Error";
+                                JudgeResult.Result[_cur] = "Special Judge Error";
                                 JudgeResult.Score[_cur] = 0;
                             }
                         }

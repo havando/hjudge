@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,7 @@ namespace Client
         public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
         public readonly ObservableCollection<Message> MessagesCollection = new ObservableCollection<Message>();
         public readonly ObservableCollection<FileInfomation> FileInfomations = new ObservableCollection<FileInfomation>();
-        private Random _random;
+        private readonly Random _random;
         public MainWindow()
         {
             var mutex = new Mutex(
@@ -38,6 +39,18 @@ namespace Client
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
+            //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
+            //{
+            //    new Process
+            //    {
+            //        StartInfo =
+            //        {
+            //            FileName = $"{Environment.CurrentDirectory}\\Updater.exe",
+            //            Arguments =
+            //                $"Client {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{Environment.CurrentDirectory}\""
+            //        }
+            //    }.Start();
+            //}
             var tick = DateTime.Now.Ticks;
             _random = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
             try

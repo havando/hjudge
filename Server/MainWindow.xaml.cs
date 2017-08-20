@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,18 @@ namespace Server
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
+            //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
+            //{
+            //    new Process
+            //    {
+            //        StartInfo =
+            //        {
+            //            FileName = $"{Environment.CurrentDirectory}\\Updater.exe",
+            //            Arguments =
+            //                $"Server {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{Environment.CurrentDirectory}\""
+            //        }
+            //    }.Start();
+            //}
             try
             {
                 if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))

@@ -119,18 +119,52 @@ namespace Server
 
         private void ListView_Click(object sender, RoutedEventArgs e)
         {
-            var clickedColumn = (e.OriginalSource as GridViewColumnHeader)?.Column;
-            if (clickedColumn == null) return;
-            var bindingProperty = (clickedColumn.DisplayMemberBinding as Binding)?.Path.Path;
-            var sdc = ListView.Items.SortDescriptions;
-            var sortDirection = ListSortDirection.Ascending;
-            if (sdc.Count > 0)
+            try
             {
-                var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
-                sdc.Clear();
+                var clickedColumn = (e.OriginalSource as GridViewColumnHeader)?.Column;
+                if (clickedColumn == null) return;
+                var bindingProperty = (clickedColumn.DisplayMemberBinding as Binding)?.Path.Path;
+                var sdc = ListView.Items.SortDescriptions;
+                var sortDirection = ListSortDirection.Ascending;
+                if (sdc.Count > 0)
+                {
+                    var sd = sdc[0];
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sdc.Clear();
+                }
+                sdc.Add(new SortDescription(bindingProperty, sortDirection));
             }
-            sdc.Add(new SortDescription(bindingProperty, sortDirection));
+            catch
+            {
+                //ignored
+            }
+        }
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var p = _curJudgeInfo.Count(i => i.IsChecked);
+            if (p == _curJudgeInfo.Count)
+            {
+                foreach (var i in _curJudgeInfo)
+                {
+                    i.IsChecked = false;
+                }
+                CheckBox.IsChecked = false;
+            }
+            else
+            {
+                foreach (var i in _curJudgeInfo)
+                {
+                    i.IsChecked = true;
+                }
+                CheckBox.IsChecked = true;
+            }
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var p = _curJudgeInfo.Count(i => i.IsChecked);
+            CheckBox.IsChecked = p == _curJudgeInfo.Count;
         }
     }
 }

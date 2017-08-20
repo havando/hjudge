@@ -5,11 +5,11 @@ using System.Windows;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("hjudge - Client")]
-[assembly: AssemblyDescription("Client of hjudge")]
+[assembly: AssemblyTitle("hjudge - UpdateInfoGenerator")]
+[assembly: AssemblyDescription("UpdateInfo Generator for hjudge")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("hez2010")]
-[assembly: AssemblyProduct("Client")]
+[assembly: AssemblyProduct("UpdateInfoGenerator")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("hjudge")]
 [assembly: AssemblyCulture("")]

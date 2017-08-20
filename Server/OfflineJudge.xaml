@@ -14,9 +14,12 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn>
+                                    <GridViewColumn.Header>
+                                        <CheckBox Name="CheckBox" Click="CheckBox_OnClick" />
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
+                                            <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 
 namespace Server
 {
-    public class JudgeInfo
+    public class JudgeInfo : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public int JudgeId { get; set; }
         public int UserId { get; set; }
         public int ProblemId { get; set; }
@@ -39,7 +42,7 @@ namespace Server
                         case "Time Limit Exceeded": error[6]++; tot++; break;
                         case "Memory Limit Exceeded": error[7]++; tot++; break;
                         case "Output File Error": error[8]++; tot++; break;
-                        case "Special Judger Error": error[9]++; tot++; break;
+                        case "Special Judge Error": error[9]++; tot++; break;
                         default:
                             {
                                 if (t.Contains("Unknown Error"))
@@ -70,14 +73,24 @@ namespace Server
                     case 6: return "Time Limit Exceeded";
                     case 7: return "Memory Limit Exceeded";
                     case 8: return "Output File Error";
-                    case 9: return "Special Judger Error";
+                    case 9: return "Special Judge Error";
                     case 10: return "Unknown Error";
                 }
                 return "Unknown Error";
             }
         }
 
-        public bool IsChecked { get; set; }
+        private bool _isChecked;
+
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set
+            {
+                _isChecked = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsChecked"));
+            }
+        }
 
         public float FullScore => Score?.Sum() ?? 0;
     }

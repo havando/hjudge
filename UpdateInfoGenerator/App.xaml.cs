@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Client
+namespace UpdateInfoGenerator
 {
     /// <summary>
     /// App.xaml 的交互逻辑
