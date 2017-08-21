@@ -53,7 +53,7 @@ namespace Server
                             }
                     }
                 }
-                if (tot == error[0]) { return "Accepted"; }
+                if (tot == error[0]) { return tot != 0 ? "Accepted" : "Judging..."; }
                 var max = error[1];
                 var j = 1;
                 for (var i = 1; i < 11; i++)

@@ -24,10 +24,14 @@ namespace Server
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Connection.ClearJudgeLog();
-            _curJudgeInfo.Clear();
-            Code.Text = JudgeDetails.Text = string.Empty;
-            CheckBox.IsChecked = false;
+            if (MessageBox.Show("你确定要清空数据吗？清空后不可恢复！", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                MessageBoxResult.Yes)
+            {
+                Connection.ClearJudgeLog();
+                _curJudgeInfo.Clear();
+                Code.Text = JudgeDetails.Text = string.Empty;
+                CheckBox.IsChecked = false;
+            }
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
@@ -79,6 +83,11 @@ namespace Server
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var a = (from c in _curJudgeInfo where c.IsChecked select c).ToList();
+            if (a.Any(i => i.ResultSummery == "Judging..."))
+            {
+                MessageBox.Show("你选择的项目中部分仍在评测，请等待评测完毕再导出", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var sfg = new SaveFileDialog
             {
                 Title = "保存导出数据：",
@@ -131,7 +140,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 sdc.Add(new SortDescription(bindingProperty, sortDirection));

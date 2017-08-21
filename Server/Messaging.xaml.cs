@@ -19,7 +19,7 @@ namespace Server
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 ClientMsg.Text = msg;
-                SendDate.Content = $"发送时间：{DateTime.Now:yyyy/MM/dd HH:mm:ss:ffff}";
+                SendDate.Content = $"发送时间：{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
                 SendUser.Content = $"发送用户：{userName}";
             }));
             _id = id;

@@ -249,7 +249,7 @@ namespace Client
                                     MessageTime = DateTime.Now
                                 });
                                 var x = new Messaging();
-                                x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff"));
+                                x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
                                 x.Show();
                             }));
                             break;

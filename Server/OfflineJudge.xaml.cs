@@ -80,6 +80,7 @@ namespace Server
             else
             {
                 _stop = true;
+                JudgeButton.IsEnabled = false;
             }
         }
 
@@ -156,6 +157,7 @@ namespace Server
                     CurrentState.Content = "评测完毕";
                     JudgingProcess.Value = 100;
                     JudgeResult.Items.Refresh();
+                    JudgeButton.IsEnabled = true;
                     JudgeButton.Content = "开始";
                     ExportButton.IsEnabled = true;
                 }));

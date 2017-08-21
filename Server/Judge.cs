@@ -102,8 +102,9 @@ namespace Server
             {
                 _problem = Connection.GetProblem(problemId);
                 var id = Guid.NewGuid().ToString().Replace("-", string.Empty);
-                JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+
                 JudgeResult.JudgeId = Connection.NewJudge();
+                JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                 JudgeResult.ProblemId = _problem.ProblemId;
                 JudgeResult.Code = code;
                 JudgeResult.UserId = userId;
@@ -112,6 +113,8 @@ namespace Server
                 JudgeResult.Score = new float[_problem.DataSets.Length];
                 JudgeResult.Timeused = new long[_problem.DataSets.Length];
                 JudgeResult.Memoryused = new long[_problem.DataSets.Length];
+                Connection.UpdateJudgeInfo(JudgeResult);
+
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
                 {
@@ -136,11 +139,14 @@ namespace Server
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now} 新评测，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+                    $"{DateTime.Now} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
                 BeginJudge();
 
                 Connection.UpdateJudgeInfo(JudgeResult);
+
+                Connection.UpdateMainPageState(
+                    $"{DateTime.Now} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
             }
             catch
             {
@@ -478,7 +484,6 @@ namespace Server
                                     }
                                     else break;
                                 } while (!(sr1.EndOfStream && sr2.EndOfStream));
-                                Thread.Sleep(100);
                                 sr1.Close();
                                 sr2.Close();
                                 fs1.Close();

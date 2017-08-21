@@ -113,7 +113,7 @@ namespace Server
                         new SQLiteParameter("@8", DbType.Int32)
                     };
                     parameters[0].Value = "hjudgeBOSS";
-                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[2].Value = "cefb1f85346dfbfa4a341e9c41db918ba25bccc4e62c3939390084361126a417";
                     parameters[3].Value = 1;
                     parameters[4].Value = string.Empty;
@@ -704,7 +704,7 @@ namespace Server
                                 new SQLiteParameter("@8", DbType.Int32)
                             };
                             parameters[0].Value = t.UserName;
-                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                             parameters[2].Value = t.Password;
                             parameters[3].Value = t.Type;
                             parameters[4].Value = string.Empty;
@@ -996,9 +996,9 @@ namespace Server
                     cmd.CommandText = "Insert into Judge (Date) VALUES (@1)";
                     SQLiteParameter[] parameters =
                     {
-                        new SQLiteParameter("@1", DbType.String)
+                        new SQLiteParameter("@1", DbType.String),
                     };
-                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                     cmd.CommandText = "select last_insert_rowid() from Judge";
@@ -1123,7 +1123,7 @@ namespace Server
                         new SQLiteParameter("@3", DbType.String)
 
                     };
-                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss:ffff");
+                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[1].Value = JsonConvert.SerializeObject(new Data[0]);
                     parameters[2].Value = JsonConvert.SerializeObject(new string[0]);
                     cmd.Parameters.AddRange(parameters);
