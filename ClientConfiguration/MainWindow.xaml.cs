@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -8,7 +7,7 @@ using System.Xml.Serialization;
 namespace ClientConfiguration
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    ///     MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -45,8 +44,8 @@ namespace ClientConfiguration
                 Ip = ip,
                 Port = port
             };
-            File.WriteAllText(Environment.CurrentDirectory + "\\Config.xml", SerializeToXmlString(configurations), Encoding.UTF8);
-
+            File.WriteAllText(Environment.CurrentDirectory + "\\Config.xml", SerializeToXmlString(configurations),
+                Encoding.UTF8);
         }
 
         private static string SerializeToXmlString(object objectToSerialize)

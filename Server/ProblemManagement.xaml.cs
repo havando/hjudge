@@ -14,7 +14,7 @@ using System.Xml;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for ProblemManagement.xaml
+    ///     Interaction logic for ProblemManagement.xaml
     /// </summary>
     public partial class ProblemManagement : Window
     {
@@ -28,9 +28,7 @@ namespace Server
         private void Level_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (LevelShow != null)
-            {
                 LevelShow.Content = Level.Value;
-            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -42,7 +40,7 @@ namespace Server
                 var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", i.ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
         }
 
@@ -58,10 +56,13 @@ namespace Server
                 }
                 while (ListBox.Items.Count < a)
                 {
-                    var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
+                    var strreader =
+                        new StringReader(
+                            Properties.Resources.DataSetControl.Replace("${index}",
+                                (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement)obj);
+                    ListBox.Items.Add((UIElement) obj);
                 }
             }
         }
@@ -79,29 +80,19 @@ namespace Server
                 }
                 var c = (ListBox.Items[i - 1] as Grid)?.FindName($"Input{i}") as TextBox;
                 if (c != null)
-                {
                     c.Text = t[0];
-                }
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Output{i}") as TextBox;
                 if (c != null)
-                {
                     c.Text = t[1];
-                }
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Time{i}") as TextBox;
                 if (c != null)
-                {
                     c.Text = t[2];
-                }
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Memory{i}") as TextBox;
                 if (c != null)
-                {
                     c.Text = t[3];
-                }
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Score{i}") as TextBox;
                 if (c != null)
-                {
                     c.Text = t[4];
-                }
             }
         }
 
@@ -110,16 +101,10 @@ namespace Server
             if (p == null) return string.Empty;
             var m = string.Empty;
             for (var i = 0; i < p.Count; i++)
-            {
                 if (i != p.Count - 1)
-                {
                     m += p[i] + "|";
-                }
                 else
-                {
                     m += p[i];
-                }
-            }
             return m;
         }
 
@@ -141,23 +126,20 @@ namespace Server
             while (ListBox.Items.Count > a)
             {
                 foreach (var t in ListBox.Items)
-                {
                     if ((t as Grid)?.Name == $"Data{ListBox.Items.Count}")
-                    {
                         (t as Grid).Children.Clear();
-                    }
-                }
                 ListBox.Items.RemoveAt(ListBox.Items.Count - 1);
             }
             while (ListBox.Items.Count < a)
             {
-                var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
+                var strreader =
+                    new StringReader(
+                        Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
-            {
                 foreach (var t in ListBox.Items)
                 {
                     if ((t as Grid)?.Name != $"Data{i + 1}") continue;
@@ -172,7 +154,6 @@ namespace Server
                     b = (t as Grid).FindName($"Score{i + 1}") as TextBox;
                     if (b != null) b.Text = problem?.DataSets?[i].Score.ToString(CultureInfo.CurrentCulture);
                 }
-            }
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -252,7 +233,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             sdc.Add(new SortDescription(bindingProperty, sortDirection));

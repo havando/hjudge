@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -9,12 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Newtonsoft.Json;
-using Path = System.IO.Path;
 
 namespace Updater
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    ///     MainWindow.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -34,9 +34,7 @@ namespace Updater
             try
             {
                 if (version.Version == UpdateInfo.CurrentVersion)
-                {
                     Environment.Exit(0);
-                }
                 InitializeComponent();
                 TextBox.Text = version.Content;
                 Product.Content = string.Format(Product.Content.ToString(), UpdateInfo.Product, version.Version);
@@ -108,9 +106,7 @@ ren ""%%a"" ""%%~na""
 start """" ""{Environment.CurrentDirectory}\{version.Program}""
 ";
                         if (File.Exists(Environment.GetEnvironmentVariable("temp") + "\\update_hjudge_bat.bat"))
-                        {
                             File.Delete(Environment.GetEnvironmentVariable("temp") + "\\update_hjudge_bat.bat");
-                        }
                         File.WriteAllBytes(Environment.GetEnvironmentVariable("temp") + "\\update_hjudge_bat.bat",
                             Encoding.GetEncoding("GBK").GetBytes(batprogram));
                         Process.Start(Environment.GetEnvironmentVariable("temp") + "\\update_hjudge_bat.bat");
@@ -126,7 +122,7 @@ start """" ""{Environment.CurrentDirectory}\{version.Program}""
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
         }
@@ -146,14 +142,10 @@ start """" ""{Environment.CurrentDirectory}\{version.Program}""
                     var bytes = new byte[1024];
                     var allInfo = new List<byte>();
                     while (responseStream.Read(bytes, 0, 1024) > 0)
-                    {
                         allInfo.AddRange(bytes);
-                    }
                     var updateinfo = Encoding.Default.GetString(allInfo.ToArray());
                     if (updateinfo.IndexOf("{", StringComparison.Ordinal) >= 0)
-                    {
                         x = JsonConvert.DeserializeObject<NewVersionInfo>(updateinfo);
-                    }
                     responseStream.Close();
                 }
             }
@@ -181,9 +173,7 @@ start """" ""{Environment.CurrentDirectory}\{version.Program}""
                     {
                         var sourceFileName = Path.GetFileName(sourceFilePath);
                         if (!Directory.Exists(dest))
-                        {
                             Directory.CreateDirectory(dest);
-                        }
                         try
                         {
                             File.Copy(sourceFilePath, Path.Combine(dest, sourceFileName), overwrite);

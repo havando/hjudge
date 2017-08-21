@@ -4,7 +4,7 @@ using System.Windows;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for SystemConfiguratioin.xaml
+    ///     Interaction logic for SystemConfiguratioin.xaml
     /// </summary>
     public partial class SystemConfiguratioin : Window
     {
@@ -41,9 +41,7 @@ namespace Server
                 mt = Configuration.Configurations.MutiThreading;
             }
             if (mt < 0)
-            {
                 mt = Configuration.Configurations.MutiThreading;
-            }
             Configuration.Configurations.MutiThreading = mt;
             Configuration.Save();
             Close();

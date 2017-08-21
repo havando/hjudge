@@ -1,6 +1,6 @@
 ﻿namespace Updater
 {
-    class NewVersionInfo
+    internal class NewVersionInfo
     {
         public string Version { get; set; }
         public string Date { get; set; }

@@ -7,8 +7,12 @@
         mc:Ignorable="d"
         Title="评测详情" Height="502.5" Width="793.167" Topmost="True" Icon="Resources/list.png" ResizeMode="CanMinimize">
     <Grid>
-        <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="267" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas"/>
-        <TextBox Name="DetailsBox" HorizontalAlignment="Left" Height="183" Margin="10,282,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+        <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="267" Margin="10,10,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
+        <TextBox Name="DetailsBox" HorizontalAlignment="Left" Height="183" Margin="10,282,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" />
 
     </Grid>
 </Window>

@@ -10,14 +10,17 @@ using Microsoft.Win32;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for ProfileManagement.xaml
+    ///     Interaction logic for ProfileManagement.xaml
     /// </summary>
     public partial class ProfileManagement : Window
     {
+        private UserInfo _myInfo;
+
         public ProfileManagement()
         {
             InitializeComponent();
         }
+
         private void Expander_Expanded(object sender, RoutedEventArgs e)
         {
             var scratchHeightDaV = new DoubleAnimation(194.618, 270.255, new Duration(TimeSpan.FromSeconds(0.25)));
@@ -30,7 +33,6 @@ namespace Server
             BeginAnimation(HeightProperty, scratchHeightDaV);
         }
 
-        private UserInfo _myInfo;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _myInfo = new UserInfo
@@ -44,7 +46,8 @@ namespace Server
                 Type = UserHelper.CurrentUser.Type
             };
             UserName.Text = _myInfo.UserName;
-            if (!string.IsNullOrEmpty(_myInfo.Icon)) { UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon)); }
+            if (!string.IsNullOrEmpty(_myInfo.Icon))
+                UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon));
             Id.Content = _myInfo.UserId;
             switch (_myInfo.Type)
             {
@@ -71,16 +74,13 @@ namespace Server
         private void OK_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(NewPassword.Password))
-            {
                 if (NewPassword.Password == ConfirmPassword.Password)
                 {
                     SHA256 s = new SHA256CryptoServiceProvider();
                     var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(NewPassword.Password));
                     var sb = new StringBuilder();
                     foreach (var t in retVal)
-                    {
                         sb.Append(t.ToString("x2"));
-                    }
                     _myInfo.Password = sb.ToString();
                 }
                 else
@@ -88,7 +88,6 @@ namespace Server
                     MessageBox.Show("两次输入的密码不一致", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-            }
             _myInfo.UserName = UserName.Text;
             Connection.UpdateUserInfo(_myInfo);
             UserHelper.SetCurrentUser(_myInfo.UserId, _myInfo.UserName, _myInfo.RegisterDate, _myInfo.Password,
@@ -105,7 +104,6 @@ namespace Server
                 Multiselect = false
             };
             if (ofg.ShowDialog() == true)
-            {
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
                     ofg.OpenFile();
@@ -114,7 +112,6 @@ namespace Server
                     _myInfo.Icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(_myInfo.Icon));
                 }
-            }
         }
     }
 }

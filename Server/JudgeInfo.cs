@@ -5,7 +5,7 @@ namespace Server
 {
     public class JudgeInfo : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        private bool _isChecked;
 
         public int JudgeId { get; set; }
         public int UserId { get; set; }
@@ -19,50 +19,74 @@ namespace Server
         public int[] Exitcode { get; set; }
         public string UserName => Connection.GetUserName(UserId);
         public string ProblemName => Connection.GetProblemName(ProblemId);
+
         public string ResultSummery
         {
             get
             {
                 if (Result == null)
-                {
                     return "Unknown Error";
-                }
                 var error = new int[11];
                 var tot = 0;
                 foreach (var t in Result)
-                {
                     switch (t)
                     {
-                        case "Correct": error[0]++; tot++; break;
-                        case "Problem Configuration Error": error[1]++; tot++; break;
-                        case "Compile Error": error[2]++; tot++; break;
-                        case "Wrong Answer": error[3]++; tot++; break;
-                        case "Presentation Error": error[4]++; tot++; break;
-                        case "Runtime Error": error[5]++; tot++; break;
-                        case "Time Limit Exceeded": error[6]++; tot++; break;
-                        case "Memory Limit Exceeded": error[7]++; tot++; break;
-                        case "Output File Error": error[8]++; tot++; break;
-                        case "Special Judge Error": error[9]++; tot++; break;
+                        case "Correct":
+                            error[0]++;
+                            tot++;
+                            break;
+                        case "Problem Configuration Error":
+                            error[1]++;
+                            tot++;
+                            break;
+                        case "Compile Error":
+                            error[2]++;
+                            tot++;
+                            break;
+                        case "Wrong Answer":
+                            error[3]++;
+                            tot++;
+                            break;
+                        case "Presentation Error":
+                            error[4]++;
+                            tot++;
+                            break;
+                        case "Runtime Error":
+                            error[5]++;
+                            tot++;
+                            break;
+                        case "Time Limit Exceeded":
+                            error[6]++;
+                            tot++;
+                            break;
+                        case "Memory Limit Exceeded":
+                            error[7]++;
+                            tot++;
+                            break;
+                        case "Output File Error":
+                            error[8]++;
+                            tot++;
+                            break;
+                        case "Special Judge Error":
+                            error[9]++;
+                            tot++;
+                            break;
                         default:
+                        {
+                            if (t.Contains("Unknown Error"))
                             {
-                                if (t.Contains("Unknown Error"))
-                                {
-                                    error[10]++; tot++;
-                                }
-                                break;
+                                error[10]++;
+                                tot++;
                             }
+                            break;
+                        }
                     }
-                }
-                if (tot == error[0]) { return tot != 0 ? "Accepted" : "Judging..."; }
+                if (tot == error[0]) return tot != 0 ? "Accepted" : "Judging...";
                 var max = error[1];
                 var j = 1;
                 for (var i = 1; i < 11; i++)
-                {
                     if (error[i] > max)
-                    {
                         j = i;
-                    }
-                }
                 switch (j)
                 {
                     case 1: return "Problem Configuration Error";
@@ -80,8 +104,6 @@ namespace Server
             }
         }
 
-        private bool _isChecked;
-
         public bool IsChecked
         {
             get => _isChecked;
@@ -93,5 +115,6 @@ namespace Server
         }
 
         public float FullScore => Score?.Sum() ?? 0;
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

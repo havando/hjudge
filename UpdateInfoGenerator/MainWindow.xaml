@@ -5,19 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UpdateInfoGenerator"
         mc:Ignorable="d"
-        Title="hjudge - UpdateInfoGenerator" Height="343.194" Width="329.583" ResizeMode="CanMinimize" Icon="Resources/Updater.png">
+        Title="hjudge - UpdateInfoGenerator" Height="343.194" Width="329.583" ResizeMode="CanMinimize"
+        Icon="Resources/Updater.png">
     <Grid>
-        <Label Content="更新内容：" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
-        <Label Content="产品：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label Content="版本号：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="VersionT" HorizontalAlignment="Left" Height="23" Margin="73,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="229"/>
-        <ComboBox Name="ComboBoxT" HorizontalAlignment="Left" Margin="73,14,0,0" VerticalAlignment="Top" Width="229" SelectedIndex="0">
-            <ComboBoxItem Content="Server"></ComboBoxItem>
-            <ComboBoxItem Content="Client"></ComboBoxItem>
-            <ComboBoxItem Content="ClientConfiguration"></ComboBoxItem>
+        <Label Content="更新内容：" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" />
+        <Label Content="产品：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
+        <Label Content="版本号：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" />
+        <TextBox Name="VersionT" HorizontalAlignment="Left" Height="23" Margin="73,42,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="229" />
+        <ComboBox Name="ComboBoxT" HorizontalAlignment="Left" Margin="73,14,0,0" VerticalAlignment="Top" Width="229"
+                  SelectedIndex="0">
+            <ComboBoxItem Content="Server" />
+            <ComboBoxItem Content="Client" />
+            <ComboBoxItem Content="ClientConfiguration" />
         </ComboBox>
-        <TextBox Name="ContentT" AcceptsTab="True" AcceptsReturn="True" HorizontalAlignment="Left" Height="165" Margin="10,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="292" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-        <Button Content="生成" HorizontalAlignment="Left" Margin="240,270,0,0" VerticalAlignment="Top" Width="62" Height="30" Click="Button_Click"/>
+        <TextBox Name="ContentT" AcceptsTab="True" AcceptsReturn="True" HorizontalAlignment="Left" Height="165"
+                 Margin="10,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="292"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
+        <Button Content="生成" HorizontalAlignment="Left" Margin="240,270,0,0" VerticalAlignment="Top" Width="62"
+                Height="30" Click="Button_Click" />
 
     </Grid>
 </Window>

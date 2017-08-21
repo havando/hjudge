@@ -5,12 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="离线评测" Height="386.847" Width="800.893" Icon="Resources/judge.png" ResizeMode="CanMinimize" Loaded="Window_Loaded">
+        Title="离线评测" Height="386.847" Width="800.893" Icon="Resources/judge.png" ResizeMode="CanMinimize"
+        Loaded="Window_Loaded">
     <Grid>
-        <TabControl HorizontalAlignment="Left" Height="324" Margin="10,10,0,0" VerticalAlignment="Top" Width="763" SelectionChanged="TabControl_SelectionChanged">
+        <TabControl HorizontalAlignment="Left" Height="324" Margin="10,10,0,0" VerticalAlignment="Top" Width="763"
+                    SelectionChanged="TabControl_SelectionChanged">
             <TabItem Header="评测状态">
                 <Grid>
-                    <ListView Name="ListView"  HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" VerticalAlignment="Top" Width="210"  GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
+                    <ListView Name="ListView" HorizontalAlignment="Left" Height="276" Margin="10,10,0,0"
+                              VerticalAlignment="Top" Width="210" GridViewColumnHeader.Click="ListView_Click"
+                              SelectionMode="Single">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn>
@@ -19,49 +23,78 @@
                                     </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
+                                            <CheckBox Click="ButtonBase_OnClick"
+                                                      IsChecked="{Binding Path=IsChecked, Mode=TwoWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}"/>
-                                <GridViewColumn Header="题目名称" Width="150" DisplayMemberBinding="{Binding Path=ProblemName}"/>
+                                <GridViewColumn Header="题目 ID" Width="50"
+                                                DisplayMemberBinding="{Binding Path=ProblemId}" />
+                                <GridViewColumn Header="题目名称" Width="150"
+                                                DisplayMemberBinding="{Binding Path=ProblemName}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Label Content="评测文件夹：" HorizontalAlignment="Left" Margin="225,10,0,0" VerticalAlignment="Top"/>
-                    <TextBox Name="JudgeDir"  HorizontalAlignment="Left" Height="23" Margin="312,12,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="384"/>
-                    <Label Content="评测进度：" HorizontalAlignment="Left" Margin="225,41,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>
-                    <Button Name="JudgeButton"  Content="开始" HorizontalAlignment="Left" Margin="701,10,0,0" VerticalAlignment="Top" Width="46" Height="26" Click="JudgeButton_Click"/>
-                    <Label Content="评测状态：" HorizontalAlignment="Left" Margin="257,69,0,0" VerticalAlignment="Top"/>
-                    <Label Name="CurrentState"  Content="尚未评测" HorizontalAlignment="Left" Margin="332,69,0,0" VerticalAlignment="Top" Width="364"/>
-                    <Label Content="评测日志：" HorizontalAlignment="Left" Margin="225,94,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.895,0.577"/>
-                    <ListBox Name="JudgingLog"  HorizontalAlignment="Left" Height="162" Margin="225,124,0,0" VerticalAlignment="Top" Width="522"/>
-                    <ProgressBar Name="JudgingProcess"  HorizontalAlignment="Left" Height="17" Margin="300,47,0,0" VerticalAlignment="Top" Width="447"/>
+                    <Label Content="评测文件夹：" HorizontalAlignment="Left" Margin="225,10,0,0" VerticalAlignment="Top" />
+                    <TextBox Name="JudgeDir" HorizontalAlignment="Left" Height="23" Margin="312,12,0,0"
+                             TextWrapping="Wrap" VerticalAlignment="Top" Width="384" />
+                    <Label Content="评测进度：" HorizontalAlignment="Left" Margin="225,41,0,0" VerticalAlignment="Top"
+                           RenderTransformOrigin="0.895,0.577" />
+                    <Button Name="JudgeButton" Content="开始" HorizontalAlignment="Left" Margin="701,10,0,0"
+                            VerticalAlignment="Top" Width="46" Height="26" Click="JudgeButton_Click" />
+                    <Label Content="评测状态：" HorizontalAlignment="Left" Margin="257,69,0,0" VerticalAlignment="Top" />
+                    <Label Name="CurrentState" Content="尚未评测" HorizontalAlignment="Left" Margin="332,69,0,0"
+                           VerticalAlignment="Top" Width="364" />
+                    <Label Content="评测日志：" HorizontalAlignment="Left" Margin="225,94,0,0" VerticalAlignment="Top"
+                           RenderTransformOrigin="0.895,0.577" />
+                    <ListBox Name="JudgingLog" HorizontalAlignment="Left" Height="162" Margin="225,124,0,0"
+                             VerticalAlignment="Top" Width="522" />
+                    <ProgressBar Name="JudgingProcess" HorizontalAlignment="Left" Height="17" Margin="300,47,0,0"
+                                 VerticalAlignment="Top" Width="447" />
                 </Grid>
             </TabItem>
             <TabItem Header="评测结果">
                 <Grid>
-                    <ListView Name="JudgeResult" HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" VerticalAlignment="Top" Width="315" SelectionChanged="JudgeResult_SelectionChanged" GridViewColumnHeader.Click="GridViewColumnHeader_Click" SelectionMode="Single">
+                    <ListView Name="JudgeResult" HorizontalAlignment="Left" Height="276" Margin="10,10,0,0"
+                              VerticalAlignment="Top" Width="315" SelectionChanged="JudgeResult_SelectionChanged"
+                              GridViewColumnHeader.Click="GridViewColumnHeader_Click" SelectionMode="Single">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="选手" Width="150" DisplayMemberBinding="{Binding Path=MemberName}"/>
-                                <GridViewColumn Header="分数" Width="100" DisplayMemberBinding="{Binding Path=FullScore}"/>
+                                <GridViewColumn Header="选手" Width="150"
+                                                DisplayMemberBinding="{Binding Path=MemberName}" />
+                                <GridViewColumn Header="分数" Width="100" DisplayMemberBinding="{Binding Path=FullScore}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <TreeView Name="JudgeDetails"  HorizontalAlignment="Left" Height="276" Margin="330,10,0,0" VerticalAlignment="Top" Width="372">
+                    <TreeView Name="JudgeDetails" HorizontalAlignment="Left" Height="276" Margin="330,10,0,0"
+                              VerticalAlignment="Top" Width="372">
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Path=Children}">
-                                <TextBox IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Text="{Binding Content}"></TextBox>
+                                <TextBox IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                         Text="{Binding Content}" />
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
-                    <Button Name="ExportButton"  Content="导出" HorizontalAlignment="Left" Height="29" Margin="707,257,0,0" VerticalAlignment="Top" Width="46" Click="Button_Click"/>
+                    <Button Name="ExportButton" Content="导出" HorizontalAlignment="Left" Height="29"
+                            Margin="707,257,0,0" VerticalAlignment="Top" Width="46" Click="Button_Click" />
                 </Grid>
             </TabItem>
             <TabItem Header="评测帮助">
                 <Grid>
-                    <TextBlock HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="737"><Run Text="评测"/><Run Text="前，请将各选手的源代码文件放在对应的文件夹下"/><Run Text="，题目名称只取英文和数字"/><Run Text="。"/><LineBreak/><Run Text="如有两个选手名为 aaa、bbb，要测试的题目名称分别为d"/><Run Text="蛤"/><Run Text="dd、e"/><Run Text="2的"/><Run Text="ee、fff，则目录结构如下："/><LineBreak/><Run Text="评测"/><Run Text="文件夹"/><Run Text="（名称任意）"/><LineBreak/><Run Text="     |----aaa"/><LineBreak/><Run Text="     |        |----ddd.cpp"/><LineBreak/><Run Text="     |        |----e2ee.cpp"/><LineBreak/><Run Text="     |        |----fff.cpp"/><LineBreak/><Run Text="     |"/><LineBreak/><Run Text="     |----bbb"/><LineBreak/><Run Text="              |----ddd.cpp"/><LineBreak/><Run Text="              |----e2ee.cpp"/><LineBreak/><Run Text="              |----fff.cpp"/></TextBlock>
+                    <TextBlock HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" TextWrapping="Wrap"
+                               VerticalAlignment="Top" Width="737">
+                        <Run Text="评测" /><Run Text="前，请将各选手的源代码文件放在对应的文件夹下" /><Run Text="，题目名称只取英文和数字" />
+                        <Run Text="。" /><LineBreak /><Run Text="如有两个选手名为 aaa、bbb，要测试的题目名称分别为d" /><Run Text="蛤" />
+                        <Run Text="dd、e" /><Run Text="2的" /><Run Text="ee、fff，则目录结构如下：" /><LineBreak />
+                        <Run Text="评测" /><Run Text="文件夹" /><Run Text="（名称任意）" /><LineBreak />
+                        <Run Text="     |----aaa" /><LineBreak /><Run Text="     |        |----ddd.cpp" /><LineBreak />
+                        <Run Text="     |        |----e2ee.cpp" /><LineBreak />
+                        <Run Text="     |        |----fff.cpp" /><LineBreak /><Run Text="     |" /><LineBreak />
+                        <Run Text="     |----bbb" /><LineBreak /><Run Text="              |----ddd.cpp" /><LineBreak />
+                        <Run Text="              |----e2ee.cpp" /><LineBreak />
+                        <Run Text="              |----fff.cpp" />
+                    </TextBlock>
                 </Grid>
             </TabItem>
         </TabControl>

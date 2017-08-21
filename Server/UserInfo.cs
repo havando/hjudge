@@ -4,6 +4,7 @@ namespace Server
 {
     public class UserInfo : INotifyPropertyChanged
     {
+        private string _userName;
         public int UserId { get; set; }
         public string RegisterDate { get; set; }
         public string Icon { get; set; }
@@ -14,10 +15,6 @@ namespace Server
         public int Coins { get; set; }
         public int Experience { get; set; }
 
-        private string _userName;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public string UserName
         {
             get => _userName;
@@ -27,6 +24,7 @@ namespace Server
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("UserName"));
             }
         }
+
         public string Type2
         {
             get
@@ -60,5 +58,7 @@ namespace Server
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Type2"));
             }
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

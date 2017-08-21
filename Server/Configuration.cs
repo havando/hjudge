@@ -19,14 +19,17 @@ namespace Server
                 Configurations.EnvironmentValues = string.Empty;
                 Configurations.AllowRequestDataSet = true;
                 Configurations.MutiThreading = 0;
-                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", SerializeToXmlString(Configurations), Encoding.UTF8);
+                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+                    SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());
             var rdr =
-                new StringReader(File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
-            Configurations = (Config)xmlDeserializer.Deserialize(rdr);
+                new StringReader(
+                    File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
+            Configurations = (Config) xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
-            Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
+                EnvironmentVariableTarget.Process);
         }
 
         private static string SerializeToXmlString(object objectToSerialize)
@@ -40,8 +43,11 @@ namespace Server
         public static void Save()
         {
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
-            Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist, EnvironmentVariableTarget.Process);
-            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8.GetString(Encoding.Default.GetBytes(SerializeToXmlString(Configurations))), Encoding.UTF8);
+            Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
+                EnvironmentVariableTarget.Process);
+            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+                Encoding.UTF8.GetString(Encoding.Default.GetBytes(SerializeToXmlString(Configurations))),
+                Encoding.UTF8);
         }
     }
 }

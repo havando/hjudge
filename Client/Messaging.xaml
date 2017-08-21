@@ -7,9 +7,10 @@
         mc:Ignorable="d"
         Title="消息" Height="370.394" Width="642.297" Icon="Resources/Messaging.png" ResizeMode="CanMinimize">
     <Grid Margin="0,0,-6,-5">
-        <TextBox Name="Contents"  HorizontalAlignment="Left" Height="283" Margin="10,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="609" VerticalScrollBarVisibility="Auto"/>
-        <Label Content="消息内容：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label Name="SendDate" Content="（发送时间：）" HorizontalAlignment="Left" Margin="85,11,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="Contents" HorizontalAlignment="Left" Height="283" Margin="10,41,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="609" VerticalScrollBarVisibility="Auto" />
+        <Label Content="消息内容：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
+        <Label Name="SendDate" Content="（发送时间：）" HorizontalAlignment="Left" Margin="85,11,0,0" VerticalAlignment="Top" />
 
     </Grid>
 </Window>

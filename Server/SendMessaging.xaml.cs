@@ -8,16 +8,17 @@ using System.Windows.Data;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for SendMessaging.xaml
+    ///     Interaction logic for SendMessaging.xaml
     /// </summary>
     public partial class SendMessaging : Window
     {
+        private readonly ObservableCollection<ClientInfo> _myClientInfo = Connection.GetAllConnectedClient();
+
         public SendMessaging()
         {
             InitializeComponent();
         }
 
-        private readonly ObservableCollection<ClientInfo> _myClientInfo = Connection.GetAllConnectedClient();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ListView.ItemsSource = _myClientInfo;
@@ -32,9 +33,7 @@ namespace Server
         {
             var x = from c in _myClientInfo where c.IsChecked select c;
             foreach (var i in x)
-            {
                 Connection.SendMsg($"{Msg.Text}", i.ConnId);
-            }
             Msg.Text = string.Empty;
         }
 
@@ -67,20 +66,15 @@ namespace Server
             if (p == _myClientInfo.Count)
             {
                 foreach (var i in _myClientInfo)
-                {
                     i.IsChecked = false;
-                }
                 CheckBox.IsChecked = false;
             }
             else
             {
                 foreach (var i in _myClientInfo)
-                {
                     i.IsChecked = true;
-                }
                 CheckBox.IsChecked = true;
             }
-
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)

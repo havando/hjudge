@@ -9,7 +9,8 @@ namespace Server
 {
     public static class ExcelUtility
     {
-        public static void CreateExcel(string destination, IEnumerable<DataTable> dataTables, string[] sheetNames = null)
+        public static void CreateExcel(string destination, IEnumerable<DataTable> dataTables,
+            string[] sheetNames = null)
         {
             using (var workbook = SpreadsheetDocument.Create(destination, SpreadsheetDocumentType.Workbook))
             {
@@ -38,24 +39,20 @@ namespace Server
                     var relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
 
                     if (sheets.Elements<Sheet>().Any())
-                    {
                         sheetId =
                             sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
-                    }
                     var sheetName = string.Empty;
                     if (sheetNames != null)
                     {
                         if (sheetNames.Length >= sheetId)
-                        {
                             sheetName = sheetNames[sheetId - 1];
-                        }
                     }
                     else
                     {
                         sheetName = table.TableName ?? sheetId.ToString();
                     }
 
-                    var sheet = new Sheet { Id = relationshipId, SheetId = sheetId, Name = sheetName };
+                    var sheet = new Sheet {Id = relationshipId, SheetId = sheetId, Name = sheetName};
                     sheets.Append(sheet);
 
                     var headerRow = new Row();
@@ -106,9 +103,7 @@ namespace Server
                 {
                     var valueWidth = table.Rows[row][col].ToString().Trim().Length;
                     if (maxWidth < valueWidth)
-                    {
                         maxWidth = valueWidth;
-                    }
                 }
                 var c = new Column();
                 columns.Append(c);

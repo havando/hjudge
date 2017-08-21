@@ -11,16 +11,16 @@ using Microsoft.Win32;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for JudgeLogs.xaml
+    ///     Interaction logic for JudgeLogs.xaml
     /// </summary>
     public partial class JudgeLogs : Window
     {
+        private ObservableCollection<JudgeInfo> _curJudgeInfo;
+
         public JudgeLogs()
         {
             InitializeComponent();
         }
-
-        private ObservableCollection<JudgeInfo> _curJudgeInfo;
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -49,13 +49,9 @@ namespace Server
             Code.Text = "代码：\r\n" + a.Code;
             var details = "详情：\r\n";
             if (a.Result != null)
-            {
                 for (var i = 0; i < a.Result.Length; i++)
-                {
                     details +=
                         $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
-                }
-            }
             JudgeDetails.Text = details;
         }
 
@@ -63,7 +59,7 @@ namespace Server
         {
             _curJudgeInfo = Connection.QueryJudgeLog();
             ListView.ItemsSource = _curJudgeInfo;
-            if (UserHelper.CurrentUser.Type >= 3) { ClearLabel.Visibility = Visibility.Hidden; }
+            if (UserHelper.CurrentUser.Type >= 3) ClearLabel.Visibility = Visibility.Hidden;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -118,7 +114,7 @@ namespace Server
                     dr[7] = i.Code;
                     dt.Rows.Add(dr);
                 }
-                ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
+                ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
                 MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
@@ -140,7 +136,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -157,17 +153,13 @@ namespace Server
             if (p == _curJudgeInfo.Count)
             {
                 foreach (var i in _curJudgeInfo)
-                {
                     i.IsChecked = false;
-                }
                 CheckBox.IsChecked = false;
             }
             else
             {
                 foreach (var i in _curJudgeInfo)
-                {
                     i.IsChecked = true;
-                }
                 CheckBox.IsChecked = true;
             }
         }

@@ -5,9 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="评测日志" Height="661.149" Width="1064.308" Loaded="Window_Loaded" Icon="Resources/list.png" SizeChanged="Window_SizeChanged">
+        Title="评测日志" Height="661.149" Width="1064.308" Loaded="Window_Loaded" Icon="Resources/list.png"
+        SizeChanged="Window_SizeChanged">
     <Grid>
-        <ListView Name="ListView"  HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387" Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="579" VerticalAlignment="Top" Width="387"
+                  Margin="10,10,0,0" SelectionChanged="ListView_SelectionChanged"
+                  GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn>
@@ -16,25 +19,32 @@
                         </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
+                                <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding Path=JudgeId}"/>
+                    <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding Path=JudgeId}" />
                     <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding Path=UserName}" />
-                    <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}"/>
-                    <GridViewColumn Header="题目名称" Width="100" DisplayMemberBinding="{Binding Path=ProblemName}"/>
-                    <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding Path=JudgeDate}"/>
-                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummery}"/>
-                    <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding Path=FullScore}"/>
+                    <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}" />
+                    <GridViewColumn Header="题目名称" Width="100" DisplayMemberBinding="{Binding Path=ProblemName}" />
+                    <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding Path=JudgeDate}" />
+                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummery}" />
+                    <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding Path=FullScore}" />
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="232" Margin="402,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas"/>
-        <Label Name="Refresh"  Content="刷新" HorizontalAlignment="Left" Margin="363,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1"/>
-        <Label Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="324,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown"/>
-        <Label Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top" Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown"/>
+        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="232" Margin="402,10,0,0"
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" />
+        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0"
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
+        <Label Name="Refresh" Content="刷新" HorizontalAlignment="Left" Margin="363,594,0,0" VerticalAlignment="Top"
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1" />
+        <Label Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="324,594,0,0" VerticalAlignment="Top"
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown" />
+        <Label Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top"
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" />
 
     </Grid>
 </Window>

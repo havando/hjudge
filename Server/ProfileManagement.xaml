@@ -5,26 +5,34 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="个人信息" Height="194.618" Width="430.879" ResizeMode="NoResize" ShowInTaskbar="False" Icon="Resources/default_user_icon.png" Loaded="Window_Loaded">
+        Title="个人信息" Height="194.618" Width="430.879" ResizeMode="NoResize" ShowInTaskbar="False"
+        Icon="Resources/default_user_icon.png" Loaded="Window_Loaded">
     <Grid>
-        <Image Name="UserIcon" HorizontalAlignment="Left" Height="80" Margin="26,16,0,0" VerticalAlignment="Top" Width="80" Source="Resources/default_user_icon.png" Cursor="Hand" MouseDown="UserIcon_MouseDown"/>
-        <Label Content="用户名：" HorizontalAlignment="Left" Margin="135,31,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="UserName" HorizontalAlignment="Left" Height="26" Margin="198,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="193"/>
-        <Label Content="身份：" HorizontalAlignment="Left" Margin="135,62,0,0" VerticalAlignment="Top"/>
-        <Label Name="Identity" Content="Identity" HorizontalAlignment="Left" Margin="198,62,0,0" VerticalAlignment="Top"/>
-        <Label Content="头像" HorizontalAlignment="Left" Margin="49,96,0,0" VerticalAlignment="Top"/>
-        <Label Content="ID：" HorizontalAlignment="Left" Margin="135,93,0,0" VerticalAlignment="Top"/>
-        <Label Name="Id" Content="Id" HorizontalAlignment="Left" Margin="198,93,0,0" VerticalAlignment="Top"/>
-        <Expander Header="修改密码" HorizontalAlignment="Left" Height="99" Margin="10,127,0,-60" VerticalAlignment="Top" Width="405" Expanded="Expander_Expanded" Collapsed="Expander_Collapsed">
+        <Image Name="UserIcon" HorizontalAlignment="Left" Height="80" Margin="26,16,0,0" VerticalAlignment="Top"
+               Width="80" Source="Resources/default_user_icon.png" Cursor="Hand" MouseDown="UserIcon_MouseDown" />
+        <Label Content="用户名：" HorizontalAlignment="Left" Margin="135,31,0,0" VerticalAlignment="Top" />
+        <TextBox Name="UserName" HorizontalAlignment="Left" Height="26" Margin="198,31,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="193" />
+        <Label Content="身份：" HorizontalAlignment="Left" Margin="135,62,0,0" VerticalAlignment="Top" />
+        <Label Name="Identity" Content="Identity" HorizontalAlignment="Left" Margin="198,62,0,0"
+               VerticalAlignment="Top" />
+        <Label Content="头像" HorizontalAlignment="Left" Margin="49,96,0,0" VerticalAlignment="Top" />
+        <Label Content="ID：" HorizontalAlignment="Left" Margin="135,93,0,0" VerticalAlignment="Top" />
+        <Label Name="Id" Content="Id" HorizontalAlignment="Left" Margin="198,93,0,0" VerticalAlignment="Top" />
+        <Expander Header="修改密码" HorizontalAlignment="Left" Height="99" Margin="10,127,0,-60" VerticalAlignment="Top"
+                  Width="405" Expanded="Expander_Expanded" Collapsed="Expander_Collapsed">
             <Grid Background="White">
-                <Label Content="新密码：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                <Label Content="确认密码：" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
-                <PasswordBox Name="NewPassword" HorizontalAlignment="Left" Height="21" Margin="85,15,0,0" VerticalAlignment="Top" Width="292"/>
-                <PasswordBox Name="ConfirmPassword" HorizontalAlignment="Left" Height="21" Margin="85,41,0,0" VerticalAlignment="Top" Width="292"/>
+                <Label Content="新密码：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
+                <Label Content="确认密码：" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" />
+                <PasswordBox Name="NewPassword" HorizontalAlignment="Left" Height="21" Margin="85,15,0,0"
+                             VerticalAlignment="Top" Width="292" />
+                <PasswordBox Name="ConfirmPassword" HorizontalAlignment="Left" Height="21" Margin="85,41,0,0"
+                             VerticalAlignment="Top" Width="292" />
             </Grid>
         </Expander>
-        <Button Content="取消" HorizontalAlignment="Left" Height="26" Margin="286,126,0,0" VerticalAlignment="Top" Width="50" Click="Cancel_Click"/>
-        <Button Content="确定" HorizontalAlignment="Left" Height="26" Margin="341,126,0,0" VerticalAlignment="Top" Width="50" Click="OK_Click"/>
+        <Button Content="取消" HorizontalAlignment="Left" Height="26" Margin="286,126,0,0" VerticalAlignment="Top"
+                Width="50" Click="Cancel_Click" />
+        <Button Content="确定" HorizontalAlignment="Left" Height="26" Margin="341,126,0,0" VerticalAlignment="Top"
+                Width="50" Click="OK_Click" />
     </Grid>
 </Window>
-

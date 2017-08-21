@@ -8,7 +8,8 @@ namespace Server
 
         public static ObservableCollection<UserInfo> UsersBelongs { get; set; }
 
-        public static void SetCurrentUser(int userId, string userName, string registerDate, string passwordHash, int type,
+        public static void SetCurrentUser(int userId, string userName, string registerDate, string passwordHash,
+            int type,
             string icon, string achievement)
         {
             CurrentUser = new UserInfo
@@ -29,6 +30,5 @@ namespace Server
         {
             UsersBelongs = Connection.GetUsersBelongs(CurrentUser.Type);
         }
-        
     }
 }

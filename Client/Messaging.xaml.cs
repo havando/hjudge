@@ -4,11 +4,10 @@ using System.Windows;
 namespace Client
 {
     /// <summary>
-    /// Interaction logic for Messaging.xaml
+    ///     Interaction logic for Messaging.xaml
     /// </summary>
     public partial class Messaging : Window
     {
-
         public Messaging()
         {
             InitializeComponent();
@@ -23,5 +22,4 @@ namespace Client
             }));
         }
     }
-
 }

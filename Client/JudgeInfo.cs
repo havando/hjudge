@@ -4,8 +4,6 @@ namespace Client
 {
     public class JudgeInfo : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public int JudgeId { get; set; }
         public int UserId { get; set; }
         public int ProblemId { get; set; }
@@ -22,5 +20,6 @@ namespace Client
         private bool _isChecked { get; set; }
         public bool IsChecked { get; set; }
         public float FullScore { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

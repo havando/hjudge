@@ -5,9 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="发送消息" Height="379.886" Width="750.426" Icon="Resources/Messaging.png" ResizeMode="NoResize" Loaded="Window_Loaded">
+        Title="发送消息" Height="379.886" Width="750.426" Icon="Resources/Messaging.png" ResizeMode="NoResize"
+        Loaded="Window_Loaded">
     <Grid>
-        <ListView Name="ListView"  HorizontalAlignment="Left" Height="331" Margin="10,10,0,0" VerticalAlignment="Top" Width="269" GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="331" Margin="10,10,0,0" VerticalAlignment="Top"
+                  Width="269" GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn>
@@ -16,19 +18,23 @@
                         </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"></CheckBox>
+                                <CheckBox Click="ButtonBase_OnClick" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding Path=UserName}"/>
-                    <GridViewColumn Header="地址" Width="150" DisplayMemberBinding="{Binding Path=Address}"/>
+                    <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding Path=UserName}" />
+                    <GridViewColumn Header="地址" Width="150" DisplayMemberBinding="{Binding Path=Address}" />
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox Name="Msg"  HorizontalAlignment="Left" Height="300" Margin="284,41,0,0" TextWrapping="Wrap"  VerticalScrollBarVisibility="Auto" AcceptsTab="True" AcceptsReturn="True" VerticalAlignment="Top" Width="385"/>
-        <Label Content="消息内容：" HorizontalAlignment="Left" Margin="284,10,0,0" VerticalAlignment="Top"/>
-        <Button Content="取消" HorizontalAlignment="Left" Margin="674,272,0,0" VerticalAlignment="Top" Width="60" Height="32" Click="Button_Click"/>
-        <Button Content="发送" HorizontalAlignment="Left" Margin="674,309,0,0" VerticalAlignment="Top" Width="60" Height="32" Click="Button_Click_1"/>
+        <TextBox Name="Msg" HorizontalAlignment="Left" Height="300" Margin="284,41,0,0" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto" AcceptsTab="True" AcceptsReturn="True" VerticalAlignment="Top"
+                 Width="385" />
+        <Label Content="消息内容：" HorizontalAlignment="Left" Margin="284,10,0,0" VerticalAlignment="Top" />
+        <Button Content="取消" HorizontalAlignment="Left" Margin="674,272,0,0" VerticalAlignment="Top" Width="60"
+                Height="32" Click="Button_Click" />
+        <Button Content="发送" HorizontalAlignment="Left" Margin="674,309,0,0" VerticalAlignment="Top" Width="60"
+                Height="32" Click="Button_Click_1" />
 
     </Grid>
 </Window>

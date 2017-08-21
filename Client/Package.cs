@@ -5,8 +5,8 @@ namespace Client
     [StructLayout(LayoutKind.Sequential)]
     public class PkgHeader
     {
-        public int Id;
         public int BodySize;
+        public int Id;
     }
 
     [StructLayout(LayoutKind.Sequential)]

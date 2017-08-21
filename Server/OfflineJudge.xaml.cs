@@ -14,28 +14,26 @@ using Microsoft.Win32;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for OfflineJudge.xaml
+    ///     Interaction logic for OfflineJudge.xaml
     /// </summary>
     public partial class OfflineJudge : Window
     {
-        private ObservableCollection<Problem> _problems;
         private readonly ObservableCollection<JudgeResult> _results = new ObservableCollection<JudgeResult>();
+        private ObservableCollection<Problem> _problems;
 
         private bool _stop;
+
+        public OfflineJudge()
+        {
+            InitializeComponent();
+        }
 
         private string[] GetAllMembers()
         {
             var k = Directory.GetDirectories(JudgeDir.Text);
             for (var i = 0; i < k.Length; i++)
-            {
                 k[i] = Path.GetFileName(k[i]);
-            }
             return k;
-        }
-
-        public OfflineJudge()
-        {
-            InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -50,9 +48,7 @@ namespace Server
             if (JudgeButton.Content.ToString() == "开始")
             {
                 if (!Directory.Exists(JudgeDir.Text))
-                {
                     return;
-                }
                 string[] members;
                 try
                 {
@@ -63,9 +59,7 @@ namespace Server
                     return;
                 }
                 if (members == null)
-                {
                     return;
-                }
                 _stop = false;
                 ExportButton.IsEnabled = false;
                 JudgingLog.Items.Clear();
@@ -89,7 +83,7 @@ namespace Server
             Task.Run(() =>
             {
                 var all = members.Count * _problems.Count(t => t.IsChecked);
-                int[] cur = { -1 };
+                int[] cur = {-1};
                 var cnt = 0;
                 var myJudgeTask = new List<Task>();
                 foreach (var t in members)
@@ -104,12 +98,13 @@ namespace Server
                     {
                         if (_stop) break;
                         if (!m.IsChecked)
-                        {
                             continue;
-                        }
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 开始评测，题目：{m.ProblemName}，评测选手：{t}" });
+                            JudgingLog.Items.Add(new Label
+                            {
+                                Content = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测，题目：{m.ProblemName}，评测选手：{t}"
+                            });
                         }));
                         string code;
                         try
@@ -129,8 +124,12 @@ namespace Server
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {
                                     cur[0]++;
-                                    JudgingProcess.Value = (double)cur[0] * 100 / all;
-                                    JudgingLog.Items.Add(new Label { Content = $"{DateTime.Now} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}" });
+                                    JudgingProcess.Value = (double) cur[0] * 100 / all;
+                                    JudgingLog.Items.Add(new Label
+                                    {
+                                        Content =
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}"
+                                    });
                                 }));
                             })
                         );
@@ -138,9 +137,7 @@ namespace Server
                                 ? 5
                                 : Configuration.Configurations.MutiThreading) != 0) continue;
                         foreach (var task in myJudgeTask)
-                        {
                             task?.Wait();
-                        }
                     }
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
@@ -149,9 +146,7 @@ namespace Server
                     }));
                 }
                 foreach (var task in myJudgeTask)
-                {
                     task?.Wait();
-                }
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     CurrentState.Content = "评测完毕";
@@ -173,9 +168,7 @@ namespace Server
         {
             var t = JudgeResult.SelectedItem as JudgeResult;
             if (t == null)
-            {
                 return;
-            }
             var f = new ObservableCollection<ResultTree>();
             for (var i = 0; i < t.Result.Count; i++)
             {
@@ -191,9 +184,9 @@ namespace Server
                         Content = $"#{j + 1}：{t.Result[i].Result[j]}，{t.Result[i].Score[j]}",
                         Children = new ObservableCollection<ResultTree>()
                     });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"时间：{t.Result[i].Timeused[j]}ms" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"内存：{t.Result[i].Memoryused[j]}kb" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"退出代码：{t.Result[i].Exitcode[j]}" });
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"时间：{t.Result[i].Timeused[j]}ms"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"内存：{t.Result[i].Memoryused[j]}kb"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"退出代码：{t.Result[i].Exitcode[j]}"});
                 }
                 f[i].Children.Add(new ResultTree
                 {
@@ -219,7 +212,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -234,7 +227,6 @@ namespace Server
                 Filter = "Excel 文件|*.xlsx"
             };
             if (sfg.ShowDialog() ?? false)
-            {
                 if (_results.Any())
                 {
                     var dt = new List<DataTable>();
@@ -243,9 +235,7 @@ namespace Server
                     dt1.Columns.Add("姓名");
                     dt1.Columns.Add("总分");
                     foreach (var i in _results[0].Result)
-                    {
                         dt1.Columns.Add(i.ProblemName, typeof(string));
-                    }
                     foreach (var i in _results)
                     {
                         var dr1 = dt1.NewRow();
@@ -253,9 +243,7 @@ namespace Server
                         dr1[1] = i.FullScore;
                         var k = 2;
                         foreach (var j in i.Result)
-                        {
                             dr1[k++] = j.FullScore;
-                        }
                         dt1.Rows.Add(dr1);
                     }
                     dt.Add(dt1);
@@ -292,7 +280,6 @@ namespace Server
                 {
                     MessageBox.Show("没有要导出的数据", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
             JudgeButton.IsEnabled = true;
         }
 
@@ -325,20 +312,15 @@ namespace Server
             if (p == _problems.Count)
             {
                 foreach (var i in _problems)
-                {
                     i.IsChecked = false;
-                }
                 CheckBox.IsChecked = false;
             }
             else
             {
                 foreach (var i in _problems)
-                {
                     i.IsChecked = true;
-                }
                 CheckBox.IsChecked = true;
             }
-
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)

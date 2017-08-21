@@ -4,16 +4,17 @@ using System.Windows;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for Messaging.xaml
+    ///     Interaction logic for Messaging.xaml
     /// </summary>
     public partial class Messaging : Window
     {
+        private IntPtr _id = IntPtr.Zero;
+
         public Messaging()
         {
             InitializeComponent();
         }
 
-        private IntPtr _id = IntPtr.Zero;
         public void SetMessage(string msg, IntPtr id, string userName)
         {
             Dispatcher.BeginInvoke(new Action(() =>
@@ -24,6 +25,7 @@ namespace Server
             }));
             _id = id;
         }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Close();

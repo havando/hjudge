@@ -3,7 +3,7 @@
 namespace Client
 {
     /// <summary>
-    /// JudgeDetails.xaml 的交互逻辑
+    ///     JudgeDetails.xaml 的交互逻辑
     /// </summary>
     public partial class JudgeDetails : Window
     {
