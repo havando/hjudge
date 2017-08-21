@@ -284,7 +284,7 @@ namespace Client
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到评测结果：{p.ResultSummery}" });
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}" });
                                 if (p.ResultSummery == "Accepted")
                                 {
                                     var delta = 4 + _random.Next() % 32;
@@ -346,6 +346,7 @@ namespace Client
                                 case "Succeed":
                                     MessageBox.Show("修改成功", "提示", MessageBoxButton.OK,
                                         MessageBoxImage.Information);
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改个人信息" });
                                     break;
                                 case "Failed":
                                     MessageBox.Show("修改失败", "提示", MessageBoxButton.OK,
@@ -362,6 +363,7 @@ namespace Client
                                 case "Succeed":
                                     MessageBox.Show("密码修改成功", "提示", MessageBoxButton.OK,
                                         MessageBoxImage.Information);
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改密码" });
                                     break;
                                 case "Failed":
                                     MessageBox.Show("密码修改失败", "提示", MessageBoxButton.OK,
@@ -658,19 +660,20 @@ namespace Client
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
-            if (_coins < 10)
-            {
-                MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
-                MessageBoxResult.Yes) return;
-            _coins -= 10;
-            Coins.Content = _coins;
-            Connection.SendData("UpdateCoins", "-10");
-            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
             if (!string.IsNullOrEmpty(MessageContent.Text))
             {
+                if (_coins < 10)
+                {
+                    MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                    MessageBoxResult.Yes) return;
+                _coins -= 10;
+                Coins.Content = _coins;
+                Connection.SendData("UpdateCoins", "-10");
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
                 MessagesCollection.Insert(0, new Message
                 {
                     Content = MessageContent.Text,
@@ -688,6 +691,7 @@ namespace Client
             if (x == null) return;
             if (!string.IsNullOrEmpty(CodeBox.Text))
             {
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}" });
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
             }
@@ -810,6 +814,7 @@ namespace Client
                 CurrentLocation.Text + "\\" + si.Name);
             if (si.Type == "文件")
             {
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 请求文件 {CurrentLocation.Text}" });
                 ReceivingFile.Visibility = Visibility.Visible;
                 FileList.IsEnabled = false;
             }

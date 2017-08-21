@@ -414,6 +414,7 @@ namespace Server
                 }
             }
         }
+
         private static bool RemoteUpdateProfile(int userId, string userName, string icon)
         {
             var k = CheckUser(userName);
@@ -1228,6 +1229,7 @@ namespace Server
                 }
             }
         }
+
         private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
         {
             Task.Run(() =>
@@ -1577,7 +1579,7 @@ namespace Server
                                                 else
                                                 {
                                                     UpdateMainPageState(
-                                                    $"{DateTime.Now} 用户 {u.Info.UserName} 请求题目数据：{GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))}");
+                                                    $"{DateTime.Now} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
                                                     try
                                                     {
                                                         var problem =

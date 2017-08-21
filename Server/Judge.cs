@@ -146,7 +146,7 @@ namespace Server
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+                    $"{DateTime.Now} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
             }
             catch
             {
