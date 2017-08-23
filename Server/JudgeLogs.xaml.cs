@@ -104,14 +104,14 @@ namespace Server
                 foreach (var i in a)
                 {
                     var dr = dt.NewRow();
-                    dr[0] = i.UserName;
-                    dr[1] = i.ProblemName;
-                    dr[2] = i.JudgeDate;
-                    dr[3] = i.Timeused.Max();
-                    dr[4] = i.Memoryused.Max();
-                    dr[5] = i.ResultSummery;
-                    dr[6] = i.FullScore;
-                    dr[7] = i.Code;
+                    dr[0] = i?.UserName ?? string.Empty;
+                    dr[1] = i?.ProblemName ?? string.Empty;
+                    dr[2] = i?.JudgeDate ?? string.Empty;
+                    dr[3] = i?.Timeused.Max() ?? 0;
+                    dr[4] = i?.Memoryused.Max() ?? 0;
+                    dr[5] = i?.ResultSummery ?? string.Empty;
+                    dr[6] = i?.FullScore ?? 0;
+                    dr[7] = i?.Code ?? string.Empty;
                     dt.Rows.Add(dr);
                 }
                 ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
