@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -69,7 +70,7 @@ namespace Server
                 CurrentState.Content = "评测中...";
                 _results.Clear();
                 JudgeButton.Content = "停止";
-                StartJudge(members, JudgeDir.Text);
+                StartJudge(members, JudgeDir.Text, RadioButton1.IsChecked ?? false);
             }
             else
             {
@@ -78,7 +79,7 @@ namespace Server
             }
         }
 
-        private void StartJudge(IReadOnlyCollection<string> members, string dirPath)
+        private void StartJudge(IReadOnlyCollection<string> members, string dirPath, bool dirPlan)
         {
             Task.Run(() =>
             {
@@ -109,7 +110,7 @@ namespace Server
                         string code;
                         try
                         {
-                            if (RadioButton1.IsChecked ?? false)
+                            if (dirPlan)
                                 code = File.ReadAllText(dirPath + "\\" + t + "\\" +
                                                         Judge.GetEngName(m.ProblemName) + ".cpp");
                             else
@@ -138,6 +139,7 @@ namespace Server
                                 }));
                             })
                         );
+                        Thread.Sleep(100);
                         if (cnt % (Configuration.Configurations.MutiThreading == 0
                                 ? 5
                                 : Configuration.Configurations.MutiThreading) != 0) continue;
