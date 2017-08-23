@@ -144,7 +144,7 @@ namespace Server
                                 ? 5
                                 : Configuration.Configurations.MutiThreading) != 0) continue;
                         foreach (var task in myJudgeTask)
-                            task?.Wait();
+                            task?.Wait(20000);
                     }
                     Dispatcher.BeginInvoke(new Action(() =>
                     {

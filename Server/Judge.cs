@@ -40,7 +40,7 @@ namespace Server
                                 };
                                 var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
                                 var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                    .Concat(new long[] {0})
+                                    .Concat(new long[] { 0 })
                                     .Max();
                                 if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
                                     Connection.CurJudgingCnt < 5)
@@ -272,6 +272,8 @@ namespace Server
                         JudgeResult.Memoryused[_cur] = 0;
                         continue;
                     }
+                    long curTime = 0;
+                    var noProcessTime = DateTime.Now;
                     while (!_isexited)
                     {
                         long dt = 0;
@@ -279,8 +281,16 @@ namespace Server
                         {
                             excute.Refresh();
                             JudgeResult.Timeused[_cur] = Convert.ToInt64(excute.TotalProcessorTime.TotalMilliseconds);
+                            if (curTime != JudgeResult.Timeused[_cur])
+                            {
+                                noProcessTime = DateTime.Now;
+                                curTime = JudgeResult.Timeused[_cur];
+                            }
+                            else
+                            {
+                                dt = Convert.ToInt64((DateTime.Now - noProcessTime).TotalMilliseconds);
+                            }
                             JudgeResult.Memoryused[_cur] = excute.PeakWorkingSet64 / 1024;
-                            dt = Convert.ToInt64((DateTime.Now - excute.StartTime).TotalMilliseconds);
                         }
                         catch
                         {
@@ -295,8 +305,7 @@ namespace Server
                             }
                             _isexited = true;
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
-                            dt >= _problem.DataSets[_cur].TimeLimit * 10)
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt > _problem.DataSets[_cur].TimeLimit * 10)
                         {
                             _isfault = true;
                             try
@@ -312,6 +321,10 @@ namespace Server
                             JudgeResult.Result[_cur] = "Time Limit Exceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
+                            if (dt > _problem.DataSets[_cur].TimeLimit * 10 && JudgeResult.Timeused[_cur] < _problem.DataSets[_cur].TimeLimit)
+                            {
+                                JudgeResult.Result[_cur] = "Output File Error";
+                            }
                         }
                         if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
                         {
