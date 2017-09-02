@@ -77,7 +77,6 @@
                                VerticalAlignment="Top" Width="349" />
                     <Label Content="套用模板格式：" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Blue" />
                     <Label Content="输入文件|输出文件|时间限制|内存限制|分数" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                    <Label Content="如果某一个域为 * 代表维持不变，例如：*|*|1000|*|5" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <Label Content="比较程序、额外文件、编译参数、套用模板适用预定宏：" HorizontalAlignment="Left" VerticalAlignment="Top"
                            Foreground="Blue" />
                     <Label Content="${file} 源代码文件" HorizontalAlignment="Left" VerticalAlignment="Top" />

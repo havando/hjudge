@@ -40,7 +40,7 @@ namespace Server
                 var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", i.ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Server
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement)obj);
+                    ListBox.Items.Add((UIElement) obj);
                 }
             }
         }
@@ -80,19 +80,19 @@ namespace Server
                 }
                 var c = (ListBox.Items[i - 1] as Grid)?.FindName($"Input{i}") as TextBox;
                 if (c != null)
-                    c.Text = t[0] == "*" ? c.Text : t[0];
+                    c.Text = t[0];
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Output{i}") as TextBox;
                 if (c != null)
-                    c.Text = t[1] == "*" ? c.Text : t[1];
+                    c.Text = t[1];
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Time{i}") as TextBox;
                 if (c != null)
-                    c.Text = t[2] == "*" ? c.Text : t[2];
+                    c.Text = t[2];
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Memory{i}") as TextBox;
                 if (c != null)
-                    c.Text = t[3] == "*" ? c.Text : t[3];
+                    c.Text = t[3];
                 c = (ListBox.Items[i - 1] as Grid)?.FindName($"Score{i}") as TextBox;
                 if (c != null)
-                    c.Text = t[4] == "*" ? c.Text : t[4];
+                    c.Text = t[4];
             }
         }
 
@@ -137,7 +137,7 @@ namespace Server
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -233,7 +233,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             sdc.Add(new SortDescription(bindingProperty, sortDirection));
