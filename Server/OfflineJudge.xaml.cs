@@ -64,11 +64,10 @@ namespace Server
                 _stop = false;
                 ExportButton.IsEnabled = false;
                 JudgingLog.Items.Clear();
-                JudgeDetails.Items.Clear();
+                _results.Clear();
                 JudgingProcess.Value = 0;
                 CurrentState.Content = "开始评测";
                 CurrentState.Content = "评测中...";
-                _results.Clear();
                 JudgeButton.Content = "停止";
                 StartJudge(members, JudgeDir.Text, RadioButton1.IsChecked ?? false);
             }
@@ -83,6 +82,7 @@ namespace Server
         {
             Task.Run(() =>
             {
+                Thread.Sleep(1000);
                 var all = members.Count * _problems.Count(t => t.IsChecked);
                 int[] cur = { -1 };
                 var cnt = 0;
@@ -236,12 +236,13 @@ namespace Server
             if (sfg.ShowDialog() ?? false)
                 if (_results.Any())
                 {
+                    var problems = (from c in _problems where c.IsChecked select c).ToList();
                     var dt = new List<DataTable>();
                     var dtname = new List<string>();
                     var dt1 = new DataTable("结果");
                     dt1.Columns.Add("姓名");
                     dt1.Columns.Add("总分");
-                    foreach (var i in _results[0].Result)
+                    foreach (var i in problems)
                         dt1.Columns.Add(i.ProblemName, typeof(string));
                     foreach (var i in _results)
                     {
@@ -249,14 +250,17 @@ namespace Server
                         dr1[0] = i.MemberName;
                         dr1[1] = i.FullScore;
                         var k = 2;
-                        foreach (var j in i.Result)
-                            dr1[k++] = j.FullScore;
+                        foreach (var j in problems)
+                        {
+                            var temp = (from c in i.Result where c.ProblemName == j.ProblemName select c)
+                                .FirstOrDefault();
+                            dr1[k++] = temp?.FullScore ?? 0;
+                        }
                         dt1.Rows.Add(dr1);
                     }
                     dt.Add(dt1);
                     dtname.Add("结果");
-                    var cnt = 0;
-                    foreach (var i in _results[0].Result)
+                    foreach (var i in problems)
                     {
                         var dti = new DataTable(i.ProblemName);
                         dtname.Add(i.ProblemName);
@@ -266,19 +270,22 @@ namespace Server
                         dti.Columns.Add("结果");
                         dti.Columns.Add("分数");
                         dti.Columns.Add("代码");
+                        dti.Columns.Add("评测 ID");
                         foreach (var t in _results)
                         {
                             var dr = dti.NewRow();
                             dr[0] = t.MemberName;
-                            dr[1] = t.Result[cnt].Timeused.Max();
-                            dr[2] = t.Result[cnt].Memoryused.Max();
-                            dr[3] = t.Result[cnt].ResultSummery;
-                            dr[4] = t.Result[cnt].FullScore;
-                            dr[5] = t.Result[cnt].Code;
+                            var temp =
+                                (from c in t.Result where c.ProblemName == i.ProblemName select c).FirstOrDefault();
+                            dr[1] = temp?.Timeused.Max() ?? 0;
+                            dr[2] = temp?.Memoryused.Max() ?? 0;
+                            dr[3] = temp?.ResultSummery ?? string.Empty;
+                            dr[4] = temp?.FullScore ?? 0;
+                            dr[5] = temp?.Code ?? string.Empty;
+                            dr[6] = temp?.JudgeId ?? 0;
                             dti.Rows.Add(dr);
                         }
                         dt.Add(dti);
-                        cnt++;
                     }
                     ExcelUtility.CreateExcel(sfg.FileName, dt, dtname.ToArray());
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);

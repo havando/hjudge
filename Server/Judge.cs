@@ -279,7 +279,7 @@ namespace Server
                         long dt = 0;
                         try
                         {
-                            excute.Refresh();
+                            excute?.Refresh();
                             JudgeResult.Timeused[_cur] = Convert.ToInt64(excute.TotalProcessorTime.TotalMilliseconds);
                             if (curTime != JudgeResult.Timeused[_cur])
                             {
@@ -296,8 +296,8 @@ namespace Server
                         {
                             try
                             {
-                                excute.Kill();
-                                excute.Close();
+                                excute?.Kill();
+                                excute?.Close();
                             }
                             catch
                             {
@@ -305,13 +305,13 @@ namespace Server
                             }
                             _isexited = true;
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt > _problem.DataSets[_cur].TimeLimit * 10)
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt > _problem.DataSets[_cur].TimeLimit * 20)
                         {
                             _isfault = true;
                             try
                             {
-                                excute.Kill();
-                                excute.Close();
+                                excute?.Kill();
+                                excute?.Close();
                             }
                             catch
                             {
@@ -321,18 +321,14 @@ namespace Server
                             JudgeResult.Result[_cur] = "Time Limit Exceeded";
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
-                            if (dt > _problem.DataSets[_cur].TimeLimit * 10 && JudgeResult.Timeused[_cur] < _problem.DataSets[_cur].TimeLimit)
-                            {
-                                JudgeResult.Result[_cur] = "Output File Error";
-                            }
                         }
                         if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
                         {
                             _isfault = true;
                             try
                             {
-                                excute.Kill();
-                                excute.Close();
+                                excute?.Kill();
+                                excute?.Close();
                             }
                             catch
                             {
@@ -345,6 +341,15 @@ namespace Server
                         }
                     }
                     if (_isfault) continue;
+                    try
+                    {
+                        excute?.Kill();
+                        excute?.Close();
+                    }
+                    catch
+                    {
+                        //ignored 
+                    }
                     Thread.Sleep(100);
                     lock (Connection.ComparingLock)
                     {
@@ -426,11 +431,11 @@ namespace Server
                             {
                                 var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open,
                                     FileAccess.Read,
-                                    FileShare.Read);
+                                    FileShare.ReadWrite);
                                 var fs2 = new FileStream(_workingdir + "\\" + _problem.OutputFileName,
                                     FileMode.OpenOrCreate,
                                     FileAccess.Read,
-                                    FileShare.Read);
+                                    FileShare.ReadWrite);
                                 var sr1 = new StreamReader(fs1);
                                 var sr2 = new StreamReader(fs2);
                                 var iswrong = false;
@@ -532,6 +537,7 @@ namespace Server
                                 item.WaitForInputIdle();
                                 item.CloseMainWindow();
                                 item.Kill();
+                                item.Close();
                             }
                     }
                     catch
