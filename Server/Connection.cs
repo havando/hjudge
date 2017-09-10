@@ -134,9 +134,6 @@ namespace Server
 
             #region Network
 
-            var hostIp = Dns.GetHostAddresses(Dns.GetHostName());
-            var flag = false;
-
             HServer.OnAccept += (id, client) =>
             {
                 var ip = string.Empty;
@@ -157,7 +154,7 @@ namespace Server
                 HServer.SetExtra(id, clientInfo);
                 lock (BytesLock)
                 {
-                    Recv.Add(new ClientData {Info = clientInfo});
+                    Recv.Add(new ClientData { Info = clientInfo });
                 }
                 return HandleResult.Ok;
             };
@@ -174,19 +171,14 @@ namespace Server
             };
             HServer.OnReceive += HServerOnOnReceive;
 
-            foreach (var t in hostIp)
+            HServer.IpAddress = Configuration.Configurations.IpAddress;
+            HServer.Port = 23333;
+            if (!HServer.Start())
             {
-                HServer.IpAddress = t.ToString();
-                HServer.Port = 23333;
-                if (!HServer.Start()) continue;
-                flag = true;
+                MessageBox.Show("服务端网络初始化失败，请检查系统设置", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             DealingBytes();
             DealingOperations();
-            if (flag) return;
-            MessageBox.Show("服务端初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-            Environment.Exit(1);
-
             #endregion
         }
 
@@ -1227,7 +1219,7 @@ namespace Server
                     {
                         if (myPkgInfo.IsHeader)
                         {
-                            var header = (PkgHeader) Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
                         }
                         else
@@ -1334,21 +1326,21 @@ namespace Server
                                 switch (operation)
                                 {
                                     case "@":
-                                    {
-                                        SendData("&", string.Empty, t.Info.ConnId);
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        temp2.RemoveAt(0);
-                                        Operations.Enqueue(new ObjOperation
                                         {
-                                            Operation = operation,
-                                            Client = t.Info,
-                                            Content = temp2
-                                        });
-                                        break;
-                                    }
+                                            SendData("&", string.Empty, t.Info.ConnId);
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            temp2.RemoveAt(0);
+                                            Operations.Enqueue(new ObjOperation
+                                            {
+                                                Operation = operation,
+                                                Client = t.Info,
+                                                Content = temp2
+                                            });
+                                            break;
+                                        }
                                 }
                             }
                         }
@@ -1374,358 +1366,358 @@ namespace Server
                                 switch (res.Operation)
                                 {
                                     case "Login":
-                                    {
-                                        var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
-                                            Encoding.Unicode.GetString(res.Content[1]));
-                                        switch (x)
                                         {
-                                            case 0:
+                                            var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
+                                                Encoding.Unicode.GetString(res.Content[1]));
+                                            switch (x)
                                             {
-                                                lock (BytesLock)
-                                                {
-                                                    u.Info.UserId =
-                                                        GetUserId(Encoding.Unicode.GetString(res.Content[0]));
-                                                }
-                                                SendData("Login", "Succeed", u.Info.ConnId);
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 登录了");
-                                                break;
-                                            }
-                                            case 1:
-                                            {
-                                                SendData("Login", "Incorrect", u.Info.ConnId);
-                                                break;
-                                            }
-                                            default:
-                                            {
-                                                SendData("Login", "Unknown", u.Info.ConnId);
-                                                break;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    case "Logout":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 注销了");
-                                        u.Data.Clear();
-                                        u.Info.UserId = 0;
-                                        SendData("Logout", "Succeed", u.Info.ConnId);
-                                        break;
-                                    }
-                                    case "RequestFileList":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
-                                        {
-                                            var filePath = Encoding.Unicode.GetString(res.Content[0]);
-                                            if (filePath.Length > 1)
-                                            {
-                                                if (filePath.Substring(0, 1) == "\\")
-                                                    filePath = filePath.Substring(1);
-                                                if (filePath.Substring(filePath.Length - 1) == "\\")
-                                                    filePath = filePath.Substring(filePath.Length - 1);
-                                            }
-                                            var x = SearchFiles(
-                                                Environment.CurrentDirectory + "\\Files" +
-                                                (string.IsNullOrEmpty(filePath) ? string.Empty : $"\\{filePath}")
-                                            );
-                                            var y = string.Empty;
-                                            for (var i = 0; i < x.Count; i++)
-                                                if (i != x.Count - 1)
-                                                    y += x[i] + Divpar;
-                                                else
-                                                    y += x[i];
-                                            SendData("FileList",
-                                                filePath + Divpar + y,
-                                                u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
-                                    case "RequestFile":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
-                                        {
-                                            var filePath = Encoding.Unicode.GetString(res.Content[0]);
-                                            if (filePath.Length > 1)
-                                            {
-                                                if (filePath.Substring(0, 1) == "\\")
-                                                    filePath = filePath.Substring(1);
-                                                if (filePath.Substring(filePath.Length - 1) == "\\")
-                                                    filePath = filePath.Substring(filePath.Length - 1);
-                                            }
-                                            filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
-                                            var fileName = Path.GetFileName(filePath);
-                                            if (File.Exists(filePath))
-                                            {
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
-                                                SendData("File",
-                                                    Encoding.Unicode.GetBytes(fileName).ToList()
-                                                        .Concat(Encoding.Unicode.GetBytes(Divpar)
-                                                            .Concat(File.ReadAllBytes(
-                                                                filePath))),
-                                                    u.Info.ConnId);
-                                            }
-                                        });
-                                        break;
-                                    }
-                                    case "RequestProblemDataSet":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
-                                        {
-                                            if (!Configuration.Configurations.AllowRequestDataSet)
-                                            {
-                                                SendData("ProblemDataSet", "Denied", u.Info.ConnId);
-                                            }
-                                            else
-                                            {
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
-                                                try
-                                                {
-                                                    var problem =
-                                                        GetProblem(Convert.ToInt32(
-                                                            Encoding.Unicode.GetString(res.Content[0])));
-
-                                                    string GetEngName(string origin)
+                                                case 0:
                                                     {
-                                                        var re = new Regex("[A-Z]|[a-z]|[0-9]");
-                                                        return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
-                                                            (current, t) => current + t);
-                                                    }
-
-                                                    string GetRealString(string origin, string problemName, int cur)
-                                                    {
-                                                        return origin
-                                                            .Replace("${datadir}",
-                                                                Environment.CurrentDirectory + "\\Data")
-                                                            .Replace("${name}", GetEngName(problemName))
-                                                            .Replace("${index0}", cur.ToString())
-                                                            .Replace("${index}", (cur + 1).ToString());
-                                                    }
-
-                                                    var ms = new MemoryStream();
-                                                    using (var zip = new ZipFile())
-                                                    {
-                                                        for (var i = 0; i < problem.DataSets.Length; i++)
+                                                        lock (BytesLock)
                                                         {
-                                                            var inputName =
-                                                                GetRealString(problem.DataSets[i].InputFile,
-                                                                    problem.ProblemName, i);
-                                                            var outputName =
-                                                                GetRealString(problem.DataSets[i].OutputFile,
-                                                                    problem.ProblemName, i);
-                                                            if (File.Exists(inputName))
-                                                                zip.AddFile(inputName);
-                                                            if (File.Exists(outputName))
-                                                                zip.AddFile(outputName);
+                                                            u.Info.UserId =
+                                                                GetUserId(Encoding.Unicode.GetString(res.Content[0]));
                                                         }
-                                                        zip.Save(ms);
+                                                        SendData("Login", "Succeed", u.Info.ConnId);
+                                                        UpdateMainPageState(
+                                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 登录了");
+                                                        break;
                                                     }
-                                                    var x = new List<byte>();
-                                                    x.AddRange(Encoding.Unicode.GetBytes(
-                                                        problem.ProblemId + Divpar));
-                                                    x.AddRange(ms.ToArray());
-                                                    SendData("ProblemDataSet", x
-                                                        , u.Info.ConnId);
-                                                }
-                                                catch
-                                                {
-                                                    //ignored
-                                                }
+                                                case 1:
+                                                    {
+                                                        SendData("Login", "Incorrect", u.Info.ConnId);
+                                                        break;
+                                                    }
+                                                default:
+                                                    {
+                                                        SendData("Login", "Unknown", u.Info.ConnId);
+                                                        break;
+                                                    }
                                             }
-                                        });
-                                        break;
-                                    }
-                                    case "SubmitCode":
-                                    {
-                                        if (u.Info.UserId == 0)
                                             break;
-                                        Task.Run(() =>
+                                        }
+                                    case "Logout":
                                         {
-                                            if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 注销了");
+                                            u.Data.Clear();
+                                            u.Info.UserId = 0;
+                                            SendData("Logout", "Succeed", u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "RequestFileList":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                                if (filePath.Length > 1)
+                                                {
+                                                    if (filePath.Substring(0, 1) == "\\")
+                                                        filePath = filePath.Substring(1);
+                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                        filePath = filePath.Substring(filePath.Length - 1);
+                                                }
+                                                var x = SearchFiles(
+                                                    Environment.CurrentDirectory + "\\Files" +
+                                                    (string.IsNullOrEmpty(filePath) ? string.Empty : $"\\{filePath}")
+                                                );
+                                                var y = string.Empty;
+                                                for (var i = 0; i < x.Count; i++)
+                                                    if (i != x.Count - 1)
+                                                        y += x[i] + Divpar;
+                                                    else
+                                                        y += x[i];
+                                                SendData("FileList",
+                                                    filePath + Divpar + y,
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestFile":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                                if (filePath.Length > 1)
+                                                {
+                                                    if (filePath.Substring(0, 1) == "\\")
+                                                        filePath = filePath.Substring(1);
+                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                        filePath = filePath.Substring(filePath.Length - 1);
+                                                }
+                                                filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
+                                                var fileName = Path.GetFileName(filePath);
+                                                if (File.Exists(filePath))
+                                                {
+                                                    UpdateMainPageState(
+                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
+                                                    SendData("File",
+                                                        Encoding.Unicode.GetBytes(fileName).ToList()
+                                                            .Concat(Encoding.Unicode.GetBytes(Divpar)
+                                                                .Concat(File.ReadAllBytes(
+                                                                    filePath))),
+                                                        u.Info.ConnId);
+                                                }
+                                            });
+                                            break;
+                                        }
+                                    case "RequestProblemDataSet":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                if (!Configuration.Configurations.AllowRequestDataSet)
+                                                {
+                                                    SendData("ProblemDataSet", "Denied", u.Info.ConnId);
+                                                }
+                                                else
+                                                {
+                                                    UpdateMainPageState(
+                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
+                                                    try
+                                                    {
+                                                        var problem =
+                                                            GetProblem(Convert.ToInt32(
+                                                                Encoding.Unicode.GetString(res.Content[0])));
+
+                                                        string GetEngName(string origin)
+                                                        {
+                                                            var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                            return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                                (current, t) => current + t);
+                                                        }
+
+                                                        string GetRealString(string origin, string problemName, int cur)
+                                                        {
+                                                            return origin
+                                                                .Replace("${datadir}",
+                                                                    Environment.CurrentDirectory + "\\Data")
+                                                                .Replace("${name}", GetEngName(problemName))
+                                                                .Replace("${index0}", cur.ToString())
+                                                                .Replace("${index}", (cur + 1).ToString());
+                                                        }
+
+                                                        var ms = new MemoryStream();
+                                                        using (var zip = new ZipFile())
+                                                        {
+                                                            for (var i = 0; i < problem.DataSets.Length; i++)
+                                                            {
+                                                                var inputName =
+                                                                    GetRealString(problem.DataSets[i].InputFile,
+                                                                        problem.ProblemName, i);
+                                                                var outputName =
+                                                                    GetRealString(problem.DataSets[i].OutputFile,
+                                                                        problem.ProblemName, i);
+                                                                if (File.Exists(inputName))
+                                                                    zip.AddFile(inputName);
+                                                                if (File.Exists(outputName))
+                                                                    zip.AddFile(outputName);
+                                                            }
+                                                            zip.Save(ms);
+                                                        }
+                                                        var x = new List<byte>();
+                                                        x.AddRange(Encoding.Unicode.GetBytes(
+                                                            problem.ProblemId + Divpar));
+                                                        x.AddRange(ms.ToArray());
+                                                        SendData("ProblemDataSet", x
+                                                            , u.Info.ConnId);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
+                                            });
+                                            break;
+                                        }
+                                    case "SubmitCode":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
+                                                {
+                                                    UpdateMainPageState(
+                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                                    Task.Run(() =>
+                                                    {
+                                                        var j = new Judge(
+                                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                            u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
+                                                        var x = JsonConvert.SerializeObject(j.JudgeResult);
+                                                        SendData("JudgeResult", x, u.Info.ConnId);
+                                                    });
+                                                }
+                                            });
+
+                                            break;
+                                        }
+                                    case "Messaging":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
                                             {
                                                 UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
-                                                Task.Run(() =>
+                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
+                                                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                                 {
-                                                    var j = new Judge(
-                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                        u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
-                                                    var x = JsonConvert.SerializeObject(j.JudgeResult);
-                                                    SendData("JudgeResult", x, u.Info.ConnId);
-                                                });
-                                            }
-                                        });
+                                                    var x = new Messaging();
+                                                    x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
+                                                        u.Info.ConnId, u.Info.UserName);
+                                                    x.Show();
+                                                }));
+                                            });
 
-                                        break;
-                                    }
-                                    case "Messaging":
-                                    {
-                                        if (u.Info.UserId == 0)
                                             break;
-                                        Task.Run(() =>
-                                        {
-                                            UpdateMainPageState(
-                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
-                                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                            {
-                                                var x = new Messaging();
-                                                x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
-                                                    u.Info.ConnId, u.Info.UserName);
-                                                x.Show();
-                                            }));
-                                        });
-
-                                        break;
-                                    }
+                                        }
                                     case "RequestProblemList":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            string GetEngName(string origin)
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
                                             {
-                                                var re = new Regex("[A-Z]|[a-z]|[0-9]");
-                                                return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
-                                                    (current, t) => current + t);
-                                            }
+                                                string GetEngName(string origin)
+                                                {
+                                                    var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                    return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                        (current, t) => current + t);
+                                                }
 
-                                            string GetRealString(string origin, string problemName, int cur)
-                                            {
-                                                return origin
-                                                    .Replace("${datadir}",
-                                                        Environment.CurrentDirectory + "\\Data")
-                                                    .Replace("${name}", GetEngName(problemName))
-                                                    .Replace("${index0}", cur.ToString())
-                                                    .Replace("${index}", (cur + 1).ToString());
-                                            }
+                                                string GetRealString(string origin, string problemName, int cur)
+                                                {
+                                                    return origin
+                                                        .Replace("${datadir}",
+                                                            Environment.CurrentDirectory + "\\Data")
+                                                        .Replace("${name}", GetEngName(problemName))
+                                                        .Replace("${index0}", cur.ToString())
+                                                        .Replace("${index}", (cur + 1).ToString());
+                                                }
 
-                                            var pl = QueryProblems();
-                                            foreach (var problem in pl)
-                                            {
-                                                problem.InputFileName = GetRealString(problem.InputFileName,
-                                                    problem.ProblemName, 0);
-                                                problem.OutputFileName = GetRealString(problem.OutputFileName,
-                                                    problem.ProblemName, 0);
-                                            }
-                                            var x = JsonConvert.SerializeObject(pl);
-                                            SendData("ProblemList", x, u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                                var pl = QueryProblems();
+                                                foreach (var problem in pl)
+                                                {
+                                                    problem.InputFileName = GetRealString(problem.InputFileName,
+                                                        problem.ProblemName, 0);
+                                                    problem.OutputFileName = GetRealString(problem.OutputFileName,
+                                                        problem.ProblemName, 0);
+                                                }
+                                                var x = JsonConvert.SerializeObject(pl);
+                                                SendData("ProblemList", x, u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "RequestProfile":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            var x = JsonConvert.SerializeObject(
-                                                GetUser(Encoding.Unicode.GetString(res.Content[0])));
-                                            SendData("Profile", x, u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                var x = JsonConvert.SerializeObject(
+                                                    GetUser(Encoding.Unicode.GetString(res.Content[0])));
+                                                SendData("Profile", x, u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "ChangePassword":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            SendData("ChangePassword",
-                                                RemoteChangePassword(u.Info.UserName,
-                                                    Encoding.Unicode.GetString(res.Content[0]),
-                                                    Encoding.Unicode.GetString(res.Content[1]))
-                                                    ? "Succeed"
-                                                    : "Failed", u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                SendData("ChangePassword",
+                                                    RemoteChangePassword(u.Info.UserName,
+                                                        Encoding.Unicode.GetString(res.Content[0]),
+                                                        Encoding.Unicode.GetString(res.Content[1]))
+                                                        ? "Succeed"
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "UpdateProfile":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            SendData("UpdateProfile",
-                                                RemoteUpdateProfile(
-                                                    u.Info.UserId,
-                                                    Encoding.Unicode.GetString(res.Content[0]),
-                                                    Encoding.Unicode.GetString(res.Content[1]))
-                                                    ? "Succeed"
-                                                    : "Failed", u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                SendData("UpdateProfile",
+                                                    RemoteUpdateProfile(
+                                                        u.Info.UserId,
+                                                        Encoding.Unicode.GetString(res.Content[0]),
+                                                        Encoding.Unicode.GetString(res.Content[1]))
+                                                        ? "Succeed"
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "UpdateCoins":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            SendData("UpdateCoins",
-                                                UpdateCoins(
-                                                    u.Info.UserId,
-                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
-                                                    ? "Succeed"
-                                                    : "Failed", u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                SendData("UpdateCoins",
+                                                    UpdateCoins(
+                                                        u.Info.UserId,
+                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
+                                                        ? "Succeed"
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "UpdateExperience":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            SendData("UpdateExperience",
-                                                UpdateExperience(
-                                                    u.Info.UserId,
-                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
-                                                    ? "Succeed"
-                                                    : "Failed", u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                SendData("UpdateExperience",
+                                                    UpdateExperience(
+                                                        u.Info.UserId,
+                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
+                                                        ? "Succeed"
+                                                        : "Failed", u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "RequestJudgeRecord":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            var x = GetJudgeRecord(u.Info.UserId,
-                                                Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])));
-                                            SendData("JudgeRecord",
-                                                Encoding.Unicode.GetString(res.Content[0]) + Divpar +
-                                                x.Length + Divpar +
-                                                JsonConvert.SerializeObject(x),
-                                                u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                var x = GetJudgeRecord(u.Info.UserId,
+                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])));
+                                                SendData("JudgeRecord",
+                                                    Encoding.Unicode.GetString(res.Content[0]) + Divpar +
+                                                    x.Length + Divpar +
+                                                    JsonConvert.SerializeObject(x),
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                     case "RequestJudgeCode":
-                                    {
-                                        if (u.Info.UserId == 0)
-                                            break;
-                                        Task.Run(() =>
                                         {
-                                            SendData("JudgeCode",
-                                                JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
-                                                    Encoding.Unicode.GetString(res.Content[0])))),
-                                                u.Info.ConnId);
-                                        });
-                                        break;
-                                    }
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                SendData("JudgeCode",
+                                                    JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
+                                                        Encoding.Unicode.GetString(res.Content[0])))),
+                                                    u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
                                 }
                             }
                             catch

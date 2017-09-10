@@ -19,6 +19,7 @@ namespace Server
             EnvironmentValue.Text = Configuration.Configurations.EnvironmentValues;
             AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
             MutiThreading.Text = Configuration.Configurations.MutiThreading.ToString();
+            Address.Text = Configuration.Configurations.IpAddress;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -31,6 +32,19 @@ namespace Server
             Configuration.Configurations.Compiler = Compiler.Text;
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
             Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
+            try
+            {
+                if (Configuration.Configurations.IpAddress != Address.Text)
+                {
+                    MessageBox.Show("检测到您更改了主机地址信息，需要重新启动本程序才能生效", "提示", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            catch
+            {
+                //ignored
+            }
+            Configuration.Configurations.IpAddress = string.IsNullOrEmpty(Address.Text) ? "127.0.0.1" : Address.Text;
             int mt;
             try
             {

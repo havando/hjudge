@@ -99,8 +99,8 @@ namespace Server
             LoginGrid.Visibility = Visibility.Visible;
             ContentGrid.Visibility = Visibility.Hidden;
 
-            Connection.Init(UpdateListBoxContent);
             Configuration.Init();
+            Connection.Init(UpdateListBoxContent);
             UserHelper.SetCurrentUser(0, string.Empty, string.Empty, string.Empty, 0, string.Empty, string.Empty);
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();

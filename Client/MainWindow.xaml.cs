@@ -647,8 +647,8 @@ namespace Client
             ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目难度：{x?.Level}"});
             ProblemInfomationList.Items.Add(new TextBlock {Text = $"数据组数：{x?.DataSets.Length}"});
             ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}"});
-            InputFileName.Text = x?.InputFileName;
-            OutFileName.Text = x?.OutputFileName;
+            InputFileName.Text = x?.InputFileName ?? string.Empty;
+            OutFileName.Text = x?.OutputFileName ?? string.Empty;
         }
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
@@ -692,8 +692,7 @@ namespace Client
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
-            var x = MyProblemList.SelectedItem as Problem;
-            if (x == null) return;
+            if (!(MyProblemList.SelectedItem is Problem x)) return;
             if (!string.IsNullOrEmpty(CodeBox.Text))
             {
                 ActiveBox.Items.Add(
@@ -781,8 +780,7 @@ namespace Client
 
         private void MessageList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var si = MessageList.SelectedItem as Message;
-            if (si == null) return;
+            if (!(MessageList.SelectedItem is Message si)) return;
             var x = new Messaging();
             x.SetMessge(si.Content, si.DisplayDateTime);
             x.Show();
@@ -790,8 +788,7 @@ namespace Client
 
         private void JudgeList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var si = JudgeList.SelectedItem as JudgeInfo;
-            if (si == null) return;
+            if (!(JudgeList.SelectedItem is JudgeInfo si)) return;
             if (si.Code == "-|/|\\|-")
             {
                 if (_coins < 20)
@@ -817,15 +814,14 @@ namespace Client
 
         private void FileList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var si = FileList.SelectedItem as FileInfomation;
-            if (si == null) return;
+            if (!(FileList.SelectedItem is FileInfomation si)) return;
             Connection.SendData(si.Type == "文件" ? "RequestFile" : "RequestFileList",
                 CurrentLocation.Text + "\\" + si.Name);
             if (si.Type == "文件")
             {
                 ActiveBox.Items.Add(new TextBlock
                 {
-                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 请求文件 {CurrentLocation.Text}"
+                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 请求文件 {si.Name}"
                 });
                 ReceivingFile.Visibility = Visibility.Visible;
                 FileList.IsEnabled = false;
