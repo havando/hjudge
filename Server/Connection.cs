@@ -753,7 +753,8 @@ namespace Server
                                 Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
                                 Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
                                 Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
+                                Type = reader.GetString(10)
                             });
                         }
                         catch

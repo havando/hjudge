@@ -93,21 +93,25 @@ namespace Server
 
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
 
-                _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0);
-
-                for (var i = 0; i < _problem.ExtraFiles.Length; i++)
-                    _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i);
-                for (var i = 0; i < _problem.DataSets.Length; i++)
-                {
-                    _problem.DataSets[i].InputFile = GetRealString(_problem.DataSets[i].InputFile, i);
-                    _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i);
-                }
-                _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
-                _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
-
                 var t = Configuration.Configurations.Compiler.FirstOrDefault(i => i.DisplayName == type);
-
                 if (t == null)
+                {
+                    for (var i = 0; i < JudgeResult.Result.Length; i++)
+                    {
+                        JudgeResult.Result[i] = "Compile Error";
+                        JudgeResult.Exitcode[i] = 0;
+                        JudgeResult.Score[i] = 0;
+                        JudgeResult.Timeused[i] = 0;
+                        JudgeResult.Memoryused[i] = 0;
+                    }
+                    Connection.UpdateJudgeInfo(JudgeResult);
+
+                    Connection.UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
+                    return;
+                }
+                var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                if (extList.Length == 0)
                 {
                     for (var i = 0; i < JudgeResult.Result.Length; i++)
                     {
@@ -125,7 +129,7 @@ namespace Server
                 }
 
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
-                    _problem.CompileCommand = GetRealString(t.DefaultArgs, 0);
+                    _problem.CompileCommand = GetRealString(t.DefaultArgs, 0, extList[0]);
                 else
                 {
                     var commList = _problem.CompileCommand.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
@@ -135,11 +139,23 @@ namespace Server
                         if (comm.Length != 2) continue;
                         if (comm[0] == type)
                         {
-                            _problem.CompileCommand = GetRealString(comm[1], 0);
+                            _problem.CompileCommand = GetRealString(comm[1], 0, extList[0]);
                             break;
                         }
                     }
                 }
+
+                _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0, extList[0]);
+
+                for (var i = 0; i < _problem.ExtraFiles.Length; i++)
+                    _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i, extList[0]);
+                for (var i = 0; i < _problem.DataSets.Length; i++)
+                {
+                    _problem.DataSets[i].InputFile = GetRealString(_problem.DataSets[i].InputFile, i, extList[0]);
+                    _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i, extList[0]);
+                }
+                _problem.InputFileName = GetRealString(_problem.InputFileName, 0, extList[0]);
+                _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
                 Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
@@ -176,14 +192,14 @@ namespace Server
             return re.Matches(origin).Cast<object>().Aggregate(string.Empty, (current, t) => current + t);
         }
 
-        private string GetRealString(string origin, int cur)
+        private string GetRealString(string origin, int cur, string extName)
         {
             return origin.Replace("${woringdir}", _workingdir)
                 .Replace("${datadir}", Environment.CurrentDirectory + "\\Data")
                 .Replace("${name}", GetEngName(_problem.ProblemName))
                 .Replace("${index0}", cur.ToString())
                 .Replace("${index}", (cur + 1).ToString())
-                .Replace("${file}", _workingdir + "\\test.cpp")
+                .Replace("${file}", _workingdir + $"\\test{extName}")
                 .Replace("${targetfile}", _workingdir + "\\test_hjudge.exe");
         }
 

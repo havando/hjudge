@@ -221,7 +221,7 @@ namespace Server
                 }
                 f[i].Children.Add(new ResultTree
                 {
-                    Content = $"代码（{t.Result[i].Type}）：",
+                    Content = $"代码（{t.Result[i].Type}）",
                     Children = new ObservableCollection<ResultTree>()
                 });
                 f[i].Children[f[i].Children.Count - 1].Children.Add(new ResultTree
