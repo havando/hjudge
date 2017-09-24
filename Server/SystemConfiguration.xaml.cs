@@ -4,32 +4,32 @@ using System.Windows;
 namespace Server
 {
     /// <summary>
-    ///     Interaction logic for SystemConfiguratioin.xaml
+    ///     Interaction logic for SystemConfiguration.xaml
     /// </summary>
-    public partial class SystemConfiguratioin : Window
+    public partial class SystemConfiguration : Window
     {
-        public SystemConfiguratioin()
+        public SystemConfiguration()
         {
             InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Compiler.Text = Configuration.Configurations.Compiler;
+            CurCompCnt.Content = $"当前数量：{Configuration.Configurations.Compiler.Count}";
             EnvironmentValue.Text = Configuration.Configurations.EnvironmentValues;
             AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
             MutiThreading.Text = Configuration.Configurations.MutiThreading.ToString();
             Address.Text = Configuration.Configurations.IpAddress;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            Close();
+            new CompilerConfiguration().ShowDialog();
+            CurCompCnt.Content = $"当前数量：{Configuration.Configurations.Compiler.Count}";
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Configuration.Configurations.Compiler = Compiler.Text;
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
             Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
             try
@@ -58,7 +58,6 @@ namespace Server
                 mt = Configuration.Configurations.MutiThreading;
             Configuration.Configurations.MutiThreading = mt;
             Configuration.Save();
-            Close();
         }
     }
 }

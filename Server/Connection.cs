@@ -65,7 +65,8 @@ namespace Server
                     sqlTable.Append("Memoryused ntext,");
                     sqlTable.Append("Exitcode ntext,");
                     sqlTable.Append("Result ntext,");
-                    sqlTable.Append("Score ntext)");
+                    sqlTable.Append("Score ntext,");
+                    sqlTable.Append("Type ntext)");
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();
@@ -216,7 +217,8 @@ namespace Server
                                 Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
                                 Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
                                 Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
+                                Type = reader.GetString(10)
                             };
                 }
             }
@@ -254,7 +256,8 @@ namespace Server
                                 Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
                                 Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
                                 Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(','))
+                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
+                                Type = reader.GetString(10)
                             });
                         }
                 }
@@ -964,7 +967,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     cmd.CommandText =
-                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8 Where JudgeId=@9";
+                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10 Where JudgeId=@9";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32),
@@ -975,7 +978,8 @@ namespace Server
                         new SQLiteParameter("@6", DbType.String),
                         new SQLiteParameter("@7", DbType.String),
                         new SQLiteParameter("@8", DbType.String),
-                        new SQLiteParameter("@9", DbType.Int32)
+                        new SQLiteParameter("@9", DbType.Int32),
+                        new SQLiteParameter("@10",DbType.String)
                     };
                     parameters[0].Value = pInfo.UserId;
                     parameters[1].Value = pInfo.ProblemId;
@@ -1008,6 +1012,7 @@ namespace Server
                     parameters[6].Value = result;
                     parameters[7].Value = score;
                     parameters[8].Value = pInfo.JudgeId;
+                    parameters[9].Value = pInfo.Type;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }
@@ -1547,13 +1552,22 @@ namespace Server
                                                 {
                                                     UpdateMainPageState(
                                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+
+                                                    var code = string.Empty;
+                                                    for (var i = 2; i < res.Content.Count; i++)
+                                                        if (i != res.Content.Count - 1)
+                                                            code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                                        else
+                                                            code += Encoding.Unicode.GetString(res.Content[i]);
+
                                                     Task.Run(() =>
                                                     {
                                                         var j = new Judge(
                                                             Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                            u.Info.UserId, Encoding.Unicode.GetString(res.Content[1]));
-                                                        var x = JsonConvert.SerializeObject(j.JudgeResult);
-                                                        SendData("JudgeResult", x, u.Info.ConnId);
+                                                            u.Info.UserId, code,
+                                                            Encoding.Unicode.GetString(res.Content[1]));
+                                                        var jr = JsonConvert.SerializeObject(j.JudgeResult);
+                                                        SendData("JudgeResult", jr, u.Info.ConnId);
                                                     });
                                                 }
                                             });
@@ -1624,6 +1638,17 @@ namespace Server
                                                 var x = JsonConvert.SerializeObject(
                                                     GetUser(Encoding.Unicode.GetString(res.Content[0])));
                                                 SendData("Profile", x, u.Info.ConnId);
+                                            });
+                                            break;
+                                        }
+                                    case "RequestCompiler":
+                                        {
+                                            if (u.Info.UserId == 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                var x = JsonConvert.SerializeObject(Configuration.Configurations.Compiler);
+                                                SendData("Compiler", x, u.Info.ConnId);
                                             });
                                             break;
                                         }

@@ -215,7 +215,7 @@ namespace Server
             operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
             operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
             operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
-            operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
+            operationsButton[6].Click += (o, args) => new SystemConfiguration().ShowDialog();
             operationsButton[7].Click += async (o, args) => await Logout();
             operationsButton[8].Click += (o, args) => { Exit(); };
             foreach (var t in operationsButton)
@@ -254,7 +254,7 @@ namespace Server
             operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
             operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
             operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
-            operationsButton[6].Click += (o, args) => new SystemConfiguratioin().ShowDialog();
+            operationsButton[6].Click += (o, args) => new SystemConfiguration().ShowDialog();
             operationsButton[7].Click += async (o, args) => await Logout();
             operationsButton[8].Click += (o, args) => { Exit(); };
             foreach (var t in operationsButton)

@@ -19,6 +19,7 @@ namespace Server
         public int[] Exitcode { get; set; }
         public string UserName => Connection.GetUserName(UserId);
         public string ProblemName => Connection.GetProblemName(ProblemId);
+        public string Type { get; set; }
 
         public string ResultSummery
         {

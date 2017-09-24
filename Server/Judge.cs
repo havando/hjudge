@@ -19,7 +19,7 @@ namespace Server
 
         private bool _isfault;
 
-        public Judge(int problemId, int userId, string code)
+        public Judge(int problemId, int userId, string code, string type)
         {
             try
             {
@@ -88,15 +88,13 @@ namespace Server
                 JudgeResult.Score = new float[_problem.DataSets.Length];
                 JudgeResult.Timeused = new long[_problem.DataSets.Length];
                 JudgeResult.Memoryused = new long[_problem.DataSets.Length];
+                JudgeResult.Type = type;
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
-                if (string.IsNullOrEmpty(_problem.CompileCommand))
-                    _problem.CompileCommand = Dn(_workingdir + "\\test.cpp") + " -o " +
-                                              Dn(_workingdir + "\\test_hjudge.exe");
-                else
-                    _problem.CompileCommand = GetRealString(_problem.CompileCommand, 0);
+
                 _problem.SpecialJudge = GetRealString(_problem.SpecialJudge, 0);
+
                 for (var i = 0; i < _problem.ExtraFiles.Length; i++)
                     _problem.ExtraFiles[i] = GetRealString(_problem.ExtraFiles[i], i);
                 for (var i = 0; i < _problem.DataSets.Length; i++)
@@ -106,6 +104,42 @@ namespace Server
                 }
                 _problem.InputFileName = GetRealString(_problem.InputFileName, 0);
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0);
+
+                var t = Configuration.Configurations.Compiler.FirstOrDefault(i => i.DisplayName == type);
+
+                if (t == null)
+                {
+                    for (var i = 0; i < JudgeResult.Result.Length; i++)
+                    {
+                        JudgeResult.Result[i] = "Compile Error";
+                        JudgeResult.Exitcode[i] = 0;
+                        JudgeResult.Score[i] = 0;
+                        JudgeResult.Timeused[i] = 0;
+                        JudgeResult.Memoryused[i] = 0;
+                    }
+                    Connection.UpdateJudgeInfo(JudgeResult);
+
+                    Connection.UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(_problem.CompileCommand))
+                    _problem.CompileCommand = GetRealString(t.DefaultArgs, 0);
+                else
+                {
+                    var commList = _problem.CompileCommand.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var s in commList)
+                    {
+                        var comm = s.Split(':');
+                        if (comm.Length != 2) continue;
+                        if (comm[0] == type)
+                        {
+                            _problem.CompileCommand = GetRealString(comm[1], 0);
+                            break;
+                        }
+                    }
+                }
 
                 Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
@@ -174,7 +208,21 @@ namespace Server
             try
             {
                 Directory.CreateDirectory(_workingdir);
-                File.WriteAllText(_workingdir + "\\test.cpp", JudgeResult.Code);
+                var extList = Configuration.Configurations.Compiler
+                    .FirstOrDefault(i => i.DisplayName == JudgeResult.Type)?.ExtName.Split(' ');
+                if (extList == null || extList.Length == 0)
+                {
+                    for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                    {
+                        JudgeResult.Result[_cur] = "Compile Error";
+                        JudgeResult.Exitcode[_cur] = 0;
+                        JudgeResult.Score[_cur] = 0;
+                        JudgeResult.Timeused[_cur] = 0;
+                        JudgeResult.Memoryused[_cur] = 0;
+                    }
+                    return;
+                }
+                File.WriteAllText(_workingdir + $"\\test{extList[0]}", JudgeResult.Code);
                 foreach (var t in _problem.ExtraFiles)
                 {
                     if (string.IsNullOrEmpty(t))
@@ -560,7 +608,7 @@ namespace Server
             {
                 var a = new ProcessStartInfo
                 {
-                    FileName = Configuration.Configurations.Compiler,
+                    //FileName = Configuration.Configurations.Compiler,
                     ErrorDialog = false,
                     UseShellExecute = false,
                     Arguments = _problem.CompileCommand,

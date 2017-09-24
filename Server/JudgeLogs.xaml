@@ -30,6 +30,7 @@
                     <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding Path=JudgeDate}" />
                     <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummery}" />
                     <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding Path=FullScore}" />
+                    <GridViewColumn Header="代码类型" Width="60" DisplayMemberBinding="{Binding Path=Type}" />
                 </GridView>
             </ListView.View>
         </ListView>

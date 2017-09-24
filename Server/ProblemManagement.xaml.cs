@@ -110,18 +110,18 @@ namespace Server
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var problem = ListView.SelectedItem as Problem;
-            ProblemName.Text = problem?.ProblemName;
-            SpecialJudge.Text = problem?.SpecialJudge;
-            ExtraFiles.Text = StringArrCastToString(problem?.ExtraFiles);
-            InputFileName.Text = problem?.InputFileName;
-            OutputFileName.Text = problem?.OutputFileName;
-            CompileCommand.Text = problem?.CompileCommand;
-            AddDate.Content = problem?.AddDate;
-            DataSetsNumber.Text = problem?.DataSets?.Length.ToString() ?? "0";
-            Level.Value = Convert.ToInt32(problem?.Level);
+            if (!(ListView.SelectedItem is Problem problem)) return;
+            ProblemName.Text = problem.ProblemName;
+            SpecialJudge.Text = problem.SpecialJudge;
+            ExtraFiles.Text = StringArrCastToString(problem.ExtraFiles);
+            InputFileName.Text = problem.InputFileName;
+            OutputFileName.Text = problem.OutputFileName;
+            CompileCommand.Text = problem.CompileCommand;
+            AddDate.Content = problem.AddDate;
+            DataSetsNumber.Text = problem.DataSets?.Length.ToString() ?? "0";
+            Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
-            var a = problem?.DataSets?.Length ?? 0;
+            var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
             while (ListBox.Items.Count > a)
             {
@@ -144,15 +144,15 @@ namespace Server
                 {
                     if ((t as Grid)?.Name != $"Data{i + 1}") continue;
                     var b = (t as Grid).FindName($"Input{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem?.DataSets?[i].InputFile;
+                    if (b != null) b.Text = problem.DataSets?[i]?.InputFile ?? string.Empty;
                     b = (t as Grid).FindName($"Output{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem?.DataSets?[i].OutputFile;
+                    if (b != null) b.Text = problem.DataSets?[i]?.OutputFile ?? string.Empty;
                     b = (t as Grid).FindName($"Time{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem?.DataSets?[i].TimeLimit.ToString();
+                    if (b != null) b.Text = problem.DataSets?[i]?.TimeLimit.ToString() ?? string.Empty;
                     b = (t as Grid).FindName($"Memory{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem?.DataSets?[i].MemoryLimit.ToString();
+                    if (b != null) b.Text = problem.DataSets?[i]?.MemoryLimit.ToString() ?? string.Empty;
                     b = (t as Grid).FindName($"Score{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem?.DataSets?[i].Score.ToString(CultureInfo.CurrentCulture);
+                    if (b != null) b.Text = problem.DataSets?[i]?.Score.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
                 }
         }
 
@@ -169,8 +169,7 @@ namespace Server
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            var problem = ListView.SelectedItem as Problem;
-            if (problem == null) return;
+            if (!(ListView.SelectedItem is Problem problem)) return;
             foreach (var t in _problems)
             {
                 if (t.ProblemId != problem.ProblemId) continue;
@@ -182,8 +181,7 @@ namespace Server
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
-            var problem = ListView.SelectedItem as Problem;
-            if (problem == null) return;
+            if (!(ListView.SelectedItem is Problem problem)) return;
             problem.Type = 1;
             problem.CompileCommand = CompileCommand.Text;
             problem.ProblemName = ProblemName.Text;
@@ -236,7 +234,7 @@ namespace Server
                 sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                 sdc.Clear();
             }
-            sdc.Add(new SortDescription(bindingProperty, sortDirection));
+            if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
     }
 }

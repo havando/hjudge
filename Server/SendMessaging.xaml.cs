@@ -52,7 +52,7 @@ namespace Server
                     sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
-                sdc.Add(new SortDescription(bindingProperty, sortDirection));
+                if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
             }
             catch
             {

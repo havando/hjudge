@@ -88,19 +88,21 @@
                     <Label Content="输入文件名：" HorizontalAlignment="Left" Margin="10,288,0,0" VerticalAlignment="Top" />
                     <Label Content="输出文件名：" HorizontalAlignment="Left" Margin="240,288,0,0" VerticalAlignment="Top" />
                     <TextBox Name="InputFileName" HorizontalAlignment="Left" Height="25" Margin="92,288,0,0"
-                             TextWrapping="Wrap" BorderThickness ="0"  VerticalAlignment="Top" Width="143" IsReadOnly="True" />
+                             TextWrapping="Wrap" BorderThickness ="0"  VerticalAlignment="Center" Width="143" IsReadOnly="True" />
                     <TextBox Name="OutFileName" HorizontalAlignment="Left" Height="25" Margin="322,288,0,0"
-                             TextWrapping="Wrap" BorderThickness ="0" VerticalAlignment="Top" Width="143" IsReadOnly="True" />
+                             TextWrapping="Wrap" BorderThickness ="0" VerticalAlignment="Center" Width="143" IsReadOnly="True" />
                     <Button Content="提交代码" HorizontalAlignment="Left" Margin="620,288,0,0" VerticalAlignment="Top"
                             Width="67" Height="25" Click="Button_Click_5" />
                     <Label Content="500 金币兑换题目数据" HorizontalAlignment="Left" Margin="478,288,0,0"
                            VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown" />
                     <Label Content="题目信息：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" />
                     <Label Content="代码：" HorizontalAlignment="Left" Margin="137,40,0,0" VerticalAlignment="Top" />
-                    <ListBox Name="ProblemInfomationList" HorizontalAlignment="Left" Height="218" Margin="10,65,0,0"
+                    <ListBox Name="ProblemInfomationList" HorizontalAlignment="Left" Height="122" Margin="10,65,0,0"
                              VerticalAlignment="Top" Width="173" />
                     <Button Content="刷新" HorizontalAlignment="Left" Margin="632,10,0,0" VerticalAlignment="Top"
                             Width="55" Height="25" Click="Button_Click_3" />
+                    <Label Content="选择语言：" HorizontalAlignment="Left" Margin="10,192,0,0" VerticalAlignment="Top"/>
+                    <ListBox Name="LangBox" HorizontalAlignment="Left" Height="65" Margin="10,218,0,0" VerticalAlignment="Top" Width="173"/>
                 </Grid>
             </TabItem>
             <TabItem Name="Messaging" Header="发送消息">
@@ -150,6 +152,7 @@
                                 <GridViewColumn Width="150" Header="评测结果"
                                                 DisplayMemberBinding="{Binding Path=ResultSummery}" />
                                 <GridViewColumn Width="50" Header="得分" DisplayMemberBinding="{Binding Path=FullScore}" />
+                                <GridViewColumn Width="60" Header="代码类型" DisplayMemberBinding="{Binding Path=Type}" />
 
                             </GridView>
                         </ListView.View>

@@ -44,8 +44,7 @@ namespace Server
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var a = ListView.SelectedItem as JudgeInfo;
-            if (a == null) return;
+            if (!(ListView.SelectedItem is JudgeInfo a)) return;
             Code.Text = "代码：\r\n" + a.Code;
             var details = "详情：\r\n";
             if (a.Result != null)
@@ -101,6 +100,7 @@ namespace Server
                 dt.Columns.Add("结果");
                 dt.Columns.Add("分数");
                 dt.Columns.Add("代码");
+                dt.Columns.Add("代码类型");
                 foreach (var i in a)
                 {
                     var dr = dt.NewRow();
@@ -112,6 +112,7 @@ namespace Server
                     dr[5] = i?.ResultSummery ?? string.Empty;
                     dr[6] = i?.FullScore ?? 0;
                     dr[7] = i?.Code ?? string.Empty;
+                    dr[8] = i?.Type ?? string.Empty;
                     dt.Rows.Add(dr);
                 }
                 ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
@@ -139,7 +140,7 @@ namespace Server
                     sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
-                sdc.Add(new SortDescription(bindingProperty, sortDirection));
+                if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
             }
             catch
             {

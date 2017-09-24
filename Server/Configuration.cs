@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
@@ -15,7 +16,7 @@ namespace Server
             Configurations = new Config();
             if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\Config.xml"))
             {
-                Configurations.Compiler = string.Empty;
+                Configurations.Compiler = new List<Compiler>();
                 Configurations.EnvironmentValues = string.Empty;
                 Configurations.AllowRequestDataSet = true;
                 Configurations.MutiThreading = 0;
@@ -27,10 +28,14 @@ namespace Server
             var rdr =
                 new StringReader(
                     File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
-            Configurations = (Config) xmlDeserializer.Deserialize(rdr);
+            Configurations = (Config)xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
                 EnvironmentVariableTarget.Process);
+            if (Configurations.Compiler == null)
+            {
+                Configurations.Compiler = new List<Compiler>();
+            }
         }
 
         private static string SerializeToXmlString(object objectToSerialize)

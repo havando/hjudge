@@ -87,6 +87,11 @@ namespace Server
                 int[] cur = { -1 };
                 var cnt = 0;
                 var myJudgeTask = new List<Task>();
+                var extList = new List<string>();
+                foreach (var compiler in Configuration.Configurations.Compiler)
+                {
+                    extList.AddRange(compiler.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+                }
                 foreach (var t in members)
                 {
                     if (_stop) break;
@@ -108,15 +113,35 @@ namespace Server
                             });
                         }));
                         string code;
+                        string type;
                         try
                         {
                             if (dirPlan)
-                                code = File.ReadAllText(dirPath + "\\" + t + "\\" +
-                                                        Judge.GetEngName(m.ProblemName) + ".cpp");
+                            {
+                                var codeFile = Directory.GetFiles(dirPath + "\\" + t).FirstOrDefault(f =>
+                                                   Path.GetFileNameWithoutExtension(f) ==
+                                                   Judge.GetEngName(m.ProblemName)) ??
+                                               throw new InvalidOperationException();
+                                code = File.ReadAllText(codeFile);
+                                type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
+                                           c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
+                                               .Any(d => d == Path.GetExtension(codeFile)))?.DisplayName ??
+                                       throw new InvalidOperationException();
+                            }
                             else
-                                code = File.ReadAllText(dirPath + "\\" + t + "\\" +
-                                                        Judge.GetEngName(m.ProblemName) + "\\" +
-                                                        Judge.GetEngName(m.ProblemName) + ".cpp");
+                            {
+                                var codeFile =
+                                    Directory.GetFiles(dirPath + "\\" + t + "\\" + Judge.GetEngName(m.ProblemName))
+                                        .FirstOrDefault(f =>
+                                            Path.GetFileNameWithoutExtension(f) ==
+                                            Judge.GetEngName(m.ProblemName)) ??
+                                    throw new InvalidOperationException();
+                                code = File.ReadAllText(codeFile);
+                                type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
+                                           c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
+                                               .Any(d => d == Path.GetExtension(codeFile)))?.DisplayName ??
+                                       throw new InvalidOperationException();
+                            }
                         }
                         catch
                         {
@@ -125,7 +150,7 @@ namespace Server
                         cnt++;
                         myJudgeTask.Add(Task.Run(() =>
                             {
-                                var j = new Judge(m.ProblemId, 1, code);
+                                var j = new Judge(m.ProblemId, 1, code, type);
                                 p.Result.Add(j.JudgeResult);
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {
@@ -173,8 +198,7 @@ namespace Server
 
         private void JudgeResult_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var t = JudgeResult.SelectedItem as JudgeResult;
-            if (t == null)
+            if (!(JudgeResult.SelectedItem is JudgeResult t))
                 return;
             var f = new ObservableCollection<ResultTree>();
             for (var i = 0; i < t.Result.Count; i++)
@@ -197,7 +221,7 @@ namespace Server
                 }
                 f[i].Children.Add(new ResultTree
                 {
-                    Content = "代码",
+                    Content = $"代码（{t.Result[i].Type}）：",
                     Children = new ObservableCollection<ResultTree>()
                 });
                 f[i].Children[f[i].Children.Count - 1].Children.Add(new ResultTree
@@ -222,7 +246,7 @@ namespace Server
                 sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                 sdc.Clear();
             }
-            sdc.Add(new SortDescription(bindingProperty, sortDirection));
+            if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -271,6 +295,7 @@ namespace Server
                         dti.Columns.Add("分数");
                         dti.Columns.Add("代码");
                         dti.Columns.Add("评测 ID");
+                        dti.Columns.Add("代码类型");
                         foreach (var t in _results)
                         {
                             var dr = dti.NewRow();
@@ -283,6 +308,7 @@ namespace Server
                             dr[4] = temp?.FullScore ?? 0;
                             dr[5] = temp?.Code ?? string.Empty;
                             dr[6] = temp?.JudgeId ?? 0;
+                            dr[7] = temp?.Type ?? string.Empty;
                             dti.Rows.Add(dr);
                         }
                         dt.Add(dti);
@@ -312,7 +338,7 @@ namespace Server
                     sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
-                sdc.Add(new SortDescription(bindingProperty, sortDirection));
+                if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
             }
             catch
             {

@@ -19,7 +19,7 @@ namespace Server.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,13 +61,26 @@ namespace Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;GroupBox Header=&quot;编译器 #${index}&quot; Height=&quot;162&quot; Width=&quot;460&quot; Name=&quot;CompilerConfig${index}&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        ///                      xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot; xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+        ///                      xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot; xmlns:local=&quot;clr-namespace:Server&quot; mc:Ignorable=&quot;d&quot;&gt;
+        ///                &lt;Grid&gt;
+        ///                    &lt;Label Content=&quot;编译器：&quot; Horiz [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string CompilerSetControl {
+            get {
+                return ResourceManager.GetString("CompilerSetControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;Grid Name=&quot;Data${index}&quot; Height=&quot;125&quot; Width=&quot;351&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
         ///        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
         ///        xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
         ///        xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
         ///        xmlns:local=&quot;clr-namespace:Server&quot;
         ///        mc:Ignorable=&quot;d&quot;&gt;
-        ///                            &lt;Label Content=&quot;输入文件：&quot; HorizontalAlignment=&quot;Left&quot; Margin=&quot;10,36,0,0&quot; VerticalAlig [rest of string was truncated]&quot;;.
+        ///                            &lt;Label Content=&quot;输入文件：&quot; HorizontalAlignment=&quot;Left&quot; Margin=&quot;10,36,0,0&quot; VerticalAlignment= [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string DataSetControl {
             get {
