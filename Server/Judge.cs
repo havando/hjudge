@@ -144,7 +144,7 @@ namespace Server
                 Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
-                BeginJudge();
+                BeginJudge(t.CompilerPath);
 
                 Connection.UpdateJudgeInfo(JudgeResult);
 
@@ -203,7 +203,7 @@ namespace Server
             }
         }
 
-        private void BeginJudge()
+        private void BeginJudge(string compiler)
         {
             try
             {
@@ -242,7 +242,7 @@ namespace Server
                 }
                 return;
             }
-            if (Compile())
+            if (Compile(compiler))
                 Judging();
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -602,13 +602,13 @@ namespace Server
             return "\"" + filename + "\"";
         }
 
-        private bool Compile()
+        private bool Compile(string compiler)
         {
             try
             {
                 var a = new ProcessStartInfo
                 {
-                    //FileName = Configuration.Configurations.Compiler,
+                    FileName = compiler,
                     ErrorDialog = false,
                     UseShellExecute = false,
                     Arguments = _problem.CompileCommand,
