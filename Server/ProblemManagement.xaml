@@ -39,8 +39,8 @@
                              TextWrapping="Wrap" VerticalAlignment="Top" Width="88" />
                     <TextBox Name="OutputFileName" HorizontalAlignment="Left" Height="23" Margin="285,168,0,0"
                              TextWrapping="Wrap" VerticalAlignment="Top" Width="88" />
-                    <TextBox Name="CompileCommand" HorizontalAlignment="Left" Height="23" Margin="85,199,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="288" />
+                    <TextBox Name="CompileCommand" HorizontalAlignment="Left" Height="40" Margin="85,199,0,0"
+                             TextWrapping="Wrap" VerticalAlignment="Top" Width="288" HorizontalScrollBarVisibility="Auto" />
                     <Label Name="AddDate" HorizontalAlignment="Left" Margin="85,41,0,0" VerticalAlignment="Top"
                            Width="167" />
                     <Slider Name="Level" HorizontalAlignment="Left" Margin="85,72,0,0" VerticalAlignment="Top"
