@@ -59,6 +59,10 @@ namespace Server
                             {
                                 t.Text = i.ExtName;
                             }
+                            if (t.Name.Contains("Safe"))
+                            {
+                                t.Text = i.SafeCheck;
+                            }
                         }
                     }
                 }
@@ -104,6 +108,10 @@ namespace Server
                                 if (t.Name.Contains("Ext"))
                                 {
                                     cTmp.ExtName = t.Text;
+                                }
+                                if (t.Name.Contains("Safe"))
+                                {
+                                    cTmp.SafeCheck = t.Text;
                                 }
                             }
                         }

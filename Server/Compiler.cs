@@ -6,5 +6,6 @@
         public string CompilerPath { get; set; }
         public string DefaultArgs { get; set; }
         public string ExtName { get; set; }
+        public string SafeCheck { get; set; }
     }
 }

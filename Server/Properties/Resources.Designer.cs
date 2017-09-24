@@ -61,11 +61,11 @@ namespace Server.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;GroupBox Header=&quot;编译器 #${index}&quot; Height=&quot;162&quot; Width=&quot;460&quot; Name=&quot;CompilerConfig${index}&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        ///   Looks up a localized string similar to &lt;GroupBox Header=&quot;编译器 #${index}&quot; Height=&quot;190&quot; Width=&quot;460&quot; Name=&quot;CompilerConfig${index}&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
         ///                      xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot; xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
         ///                      xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot; xmlns:local=&quot;clr-namespace:Server&quot; mc:Ignorable=&quot;d&quot;&gt;
         ///                &lt;Grid&gt;
-        ///                    &lt;Label Content=&quot;编译器：&quot; Horiz [rest of string was truncated]&quot;;.
+        ///                    &lt;Label Content=&quot;显示名称：&quot; Hori [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CompilerSetControl {
             get {

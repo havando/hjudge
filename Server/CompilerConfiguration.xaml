@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="编译器配置" Height="292.143" Width="515.725" ResizeMode="NoResize" Topmost="True" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid>
-        <ListBox Name="CompilerBox" Margin="0,0,-0.5,52.5" />
+        <ListBox Name="CompilerBox" Margin="0,0,0,52.5" />
         <Button Content="添加" HorizontalAlignment="Left" Margin="429,216,0,0" VerticalAlignment="Top" Width="60" Height="28" Click="Button_Click"/>
         <Label Content="*提示：如需删除某一项，只需将其显示名称置为空即可" HorizontalAlignment="Left" Margin="10,216,0,0" VerticalAlignment="Top" Foreground="Red"/>
     </Grid>
