@@ -245,35 +245,38 @@ namespace Server
                         continue;
                     File.Copy(t, _workingdir + "\\" + Path.GetFileName(t), true);
                 }
-
-                var a = new ProcessStartInfo
+                if (!string.IsNullOrEmpty(safeCheck))
                 {
-                    FileName = safeCheck,
-                    Arguments = Dn(_workingdir + $"\\test{extList[0]}") + " " + Dn(_workingdir + "\\security_check.res"),
-                    ErrorDialog = false,
-                    UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                Process.Start(a)?.WaitForExit();
-                var fs = File.OpenRead(_workingdir + "\\security_check.res");
-                var sr = new StreamReader(fs);
-                if ((sr.ReadLine()?.Trim() ?? string.Empty) != "ok")
-                {
-                    for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                    var a = new ProcessStartInfo
                     {
-                        JudgeResult.Result[_cur] = "Compile Error";
-                        JudgeResult.Exitcode[_cur] = 0;
-                        JudgeResult.Score[_cur] = 0;
-                        JudgeResult.Timeused[_cur] = 0;
-                        JudgeResult.Memoryused[_cur] = 0;
+                        FileName = safeCheck,
+                        Arguments = Dn(_workingdir + $"\\test{extList[0]}") + " " + Dn(_workingdir + "\\security_check.res"),
+                        ErrorDialog = false,
+                        UseShellExecute = true,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    Process.Start(a)?.WaitForExit();
+                    var fs = File.OpenRead(_workingdir + "\\security_check.res");
+                    var sr = new StreamReader(fs);
+                    if ((sr.ReadLine()?.Trim() ?? string.Empty) != "ok")
+                    {
+                        for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                        {
+                            JudgeResult.Result[_cur] = "Compile Error";
+                            JudgeResult.Exitcode[_cur] = 0;
+                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Timeused[_cur] = 0;
+                            JudgeResult.Memoryused[_cur] = 0;
+                        }
+                        sr.Close();
+                        fs.Close();
+                        return;
                     }
                     sr.Close();
                     fs.Close();
-                    return;
                 }
-                sr.Close();
-                fs.Close();
+
             }
             catch (Exception ex)
             {

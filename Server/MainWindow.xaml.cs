@@ -139,16 +139,16 @@ namespace Server
             switch (res)
             {
                 case 1:
-                {
-                    MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
                 default:
-                {
-                    if (res != 0)
-                        MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        if (res != 0)
+                            MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;
@@ -424,7 +424,10 @@ namespace Server
             }
             _notifyIcon.Visible = false;
             Connection.IsExited = true;
-            Environment.Exit(0);
+            Task.Run(() =>
+            {
+                Environment.Exit(0);
+            });
         }
     }
 }
