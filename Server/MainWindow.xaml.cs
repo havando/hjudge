@@ -29,15 +29,6 @@ namespace Server
 
         public MainWindow()
         {
-            var mutex = new Mutex(
-                true,
-                "hjudge_server",
-                out bool isSucceed);
-            if (!isSucceed)
-            {
-                MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(1);
-            }
             //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
             //{
             //    new Process

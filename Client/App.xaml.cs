@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Threading;
+using System.Windows;
 
 namespace Client
 {
@@ -7,5 +9,17 @@ namespace Client
     /// </summary>
     public partial class App : Application
     {
+        private void App_OnStartup(object sender, StartupEventArgs e)
+        {
+            var mutex = new Mutex(
+                true,
+                "hjudge_client",
+                out bool isSucceed);
+            if (!isSucceed)
+            {
+                MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
+            }
+        }
     }
 }
