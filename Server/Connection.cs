@@ -1364,8 +1364,7 @@ namespace Server
                 {
                     if (Operations.TryDequeue(out var res))
                     {
-                        var u = (from c in Recv where c.Info.ConnId == res.Client.ConnId select c)
-                            .FirstOrDefault();
+                        var u = Recv.FirstOrDefault(c => c.Info.ConnId == res.Client.ConnId);
                         if (u != null)
                             try
                             {
@@ -1381,8 +1380,17 @@ namespace Server
                                                     {
                                                         lock (BytesLock)
                                                         {
-                                                            u.Info.UserId =
-                                                                GetUserId(Encoding.Unicode.GetString(res.Content[0]));
+                                                            var uid = GetUserId(
+                                                                Encoding.Unicode.GetString(res.Content[0]));
+                                                            foreach (var li in Recv.Where(c => c.Info.UserId == uid))
+                                                            {
+                                                                UpdateMainPageState(
+                                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
+                                                                li.Info.UserId = 0;
+                                                                li.Data.Clear();
+                                                                SendData("Logout", "Succeed", u.Info.ConnId);
+                                                            }
+                                                            u.Info.UserId = uid;
                                                         }
                                                         SendData("Login", "Succeed", u.Info.ConnId);
                                                         UpdateMainPageState(
