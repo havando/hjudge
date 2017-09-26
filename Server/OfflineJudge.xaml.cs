@@ -125,7 +125,7 @@ namespace Server
                                 code = File.ReadAllText(codeFile);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                            c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Any(d => d == Path.GetExtension(codeFile)))?.DisplayName ??
+                                               .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
                             else
@@ -139,7 +139,7 @@ namespace Server
                                 code = File.ReadAllText(codeFile);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                            c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Any(d => d == Path.GetExtension(codeFile)))?.DisplayName ??
+                                               .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
                         }
