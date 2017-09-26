@@ -1385,10 +1385,10 @@ namespace Server
                                                             foreach (var li in Recv.Where(c => c.Info.UserId == uid))
                                                             {
                                                                 UpdateMainPageState(
-                                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
+                                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {li.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
                                                                 li.Info.UserId = 0;
                                                                 li.Data.Clear();
-                                                                SendData("Logout", "Succeed", u.Info.ConnId);
+                                                                SendData("Logout", "Succeed", li.Info.ConnId);
                                                             }
                                                             u.Info.UserId = uid;
                                                         }
