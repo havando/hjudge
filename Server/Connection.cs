@@ -6,7 +6,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -98,6 +97,16 @@ namespace Server
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();
+                    //sqlTable.Append("CREATE TABLE Message (");
+                    //sqlTable.Append("MessageId integer PRIMARY KEY autoincrement,");
+                    //sqlTable.Append("FromUserId int,");
+                    //sqlTable.Append("ToUserId int,");
+                    //sqlTable.Append("SendDate ntext,");
+                    //sqlTable.Append("Content ntext)");
+                    //cmd.CommandText = sqlTable.ToString();
+                    //cmd.ExecuteNonQuery();
+                    //sqlTable.Clear(); 
+                    //TODO: Make message function online
                 } //CreateTable
                 using (var cmd = new SQLiteCommand(sqLite))
                 {
@@ -1148,7 +1157,8 @@ namespace Server
         {
             var a = Directory.GetDirectories(path).Select(Path.GetFileName).ToList();
             a.Add("|");
-            a.AddRange(Directory.GetFiles(path).Select(Path.GetFileName).ToList());
+            a.AddRange(Directory.GetFiles(path).Where(i => new FileInfo(i).Length <= 256 * 1048576)
+                .Select(Path.GetFileName));
             return a;
         }
 
@@ -1175,6 +1185,19 @@ namespace Server
             {
                 if (ptr != IntPtr.Zero)
                     Marshal.FreeHGlobal(ptr);
+            }
+        }
+
+        public static void LogoutAll()
+        {
+            foreach (var i in Recv)
+            {
+                if (i.Info.UserId != 0)
+                {
+                    SendData("Logout", "Succeed", i.Info.ConnId);
+                    i.Info.UserId = 0;
+                    i.Data.Clear();
+                }
             }
         }
 
@@ -1632,6 +1655,15 @@ namespace Server
                                                         problem.ProblemName, 0);
                                                     problem.OutputFileName = GetRealString(problem.OutputFileName,
                                                         problem.ProblemName, 0);
+                                                    problem.ExtraFiles = new[] { string.Empty };
+                                                    problem.AddDate = string.Empty;
+                                                    problem.CompileCommand = string.Empty;
+                                                    foreach (var problemDataSet in problem.DataSets)
+                                                    {
+                                                        problemDataSet.InputFile =
+                                                            problemDataSet.OutputFile = string.Empty;
+                                                    }
+                                                    problem.SpecialJudge = string.Empty;
                                                 }
                                                 var x = JsonConvert.SerializeObject(pl);
                                                 SendData("ProblemList", x, u.Info.ConnId);
@@ -1656,7 +1688,12 @@ namespace Server
                                                 break;
                                             Task.Run(() =>
                                             {
-                                                var x = JsonConvert.SerializeObject(Configuration.Configurations.Compiler);
+                                                var cmp = new List<Compiler>();
+                                                foreach (var t in Configuration.Configurations.Compiler)
+                                                {
+                                                    cmp.Add(new Compiler { DisplayName = t.DisplayName });
+                                                }
+                                                var x = JsonConvert.SerializeObject(cmp);
                                                 SendData("Compiler", x, u.Info.ConnId);
                                             });
                                             break;

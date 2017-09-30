@@ -417,6 +417,7 @@ namespace Server
             Connection.IsExited = true;
             Task.Run(() =>
             {
+                Connection.LogoutAll();
                 Environment.Exit(0);
             });
         }

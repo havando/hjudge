@@ -106,6 +106,12 @@ namespace Server
             if (ofg.ShowDialog() == true)
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
+                    var fi = new FileInfo(ofg.FileName);
+                    if (fi.Length > 1048576)
+                    {
+                        MessageBox.Show("图片大小不能超过 1 MB", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     ofg.OpenFile();
                     var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read,
                         FileShare.Read);

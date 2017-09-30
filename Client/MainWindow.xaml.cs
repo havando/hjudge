@@ -617,6 +617,12 @@ namespace Client
             if (ofg.ShowDialog() == true)
                 if (!string.IsNullOrEmpty(ofg.FileName))
                 {
+                    var fi = new FileInfo(ofg.FileName);
+                    if (fi.Length > 1048576)
+                    {
+                        MessageBox.Show("图片大小不能超过 1 MB", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     ofg.OpenFile();
                     var fs = new FileStream(ofg.FileName, FileMode.Open, FileAccess.Read,
                         FileShare.Read);
@@ -674,29 +680,32 @@ namespace Client
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(MessageContent.Text))
+            if (string.IsNullOrEmpty(MessageContent.Text)) return;
+            if (MessageContent.Text.Length > 1048576)
             {
-                if (_coins < 10)
-                {
-                    MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
-                    MessageBoxResult.Yes) return;
-                _coins -= 10;
-                Coins.Content = _coins;
-                Connection.SendData("UpdateCoins", "-10");
-                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
-                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
-                MessagesCollection.Insert(0, new Message
-                {
-                    Content = MessageContent.Text,
-                    Direction = "发送",
-                    MessageTime = DateTime.Now
-                });
-                Connection.SendMsg(MessageContent.Text);
-                MessageContent.Text = string.Empty;
+                MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
+            if (_coins < 10)
+            {
+                MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                MessageBoxResult.Yes) return;
+            _coins -= 10;
+            Coins.Content = _coins;
+            Connection.SendData("UpdateCoins", "-10");
+            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
+            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
+            MessagesCollection.Insert(0, new Message
+            {
+                Content = MessageContent.Text,
+                Direction = "发送",
+                MessageTime = DateTime.Now
+            });
+            Connection.SendMsg(MessageContent.Text);
+            MessageContent.Text = string.Empty;
         }
 
         private void Button_Click_5(object sender, RoutedEventArgs e)

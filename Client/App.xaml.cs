@@ -9,9 +9,10 @@ namespace Client
     /// </summary>
     public partial class App : Application
     {
+        private static Mutex _mutex;
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            var mutex = new Mutex(
+            _mutex = new Mutex(
                 true,
                 "hjudge_client",
                 out bool isSucceed);

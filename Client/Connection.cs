@@ -476,7 +476,7 @@ namespace Client
                 while (!IsExited)
                 {
                     SendData("@", string.Empty);
-                    Thread.Sleep(10000);
+                    Thread.Sleep(30000);
                     while (_isReceiving)
                         Thread.Sleep(5000);
                     if (_isConnecting)

@@ -33,6 +33,11 @@ namespace Server
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            if (MyMsg.Text.Length > 1048576)
+            {
+                MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             Connection.SendMsg($"回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", _id);
             Close();
         }
