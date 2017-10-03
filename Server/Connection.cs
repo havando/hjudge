@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using DocumentFormat.OpenXml.Wordprocessing;
 using HPSocketCS;
 using Ionic.Zip;
 using Newtonsoft.Json;
@@ -1214,6 +1215,30 @@ namespace Server
             });
         }
 
+        private static void SendFile(string fileName, IntPtr connId) //TODO: Improve File Tranfer Ability
+        {
+            Task.Run(() =>
+            {
+                var fileId = Guid.NewGuid().ToString();
+                var temp = Encoding.Unicode.GetBytes("File" + Divpar
+                                                     + fileId + Divpar
+                                                     + new FileInfo(fileName).Length + Divtot);
+                var final = GetSendBuffer(temp);
+                HServer.Send(connId, final, final.Length);
+                var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                int cnt, last = 0;
+                do
+                {
+                    var bytes = new byte[1024];
+                    cnt = fs.Read(bytes, last, 1024);
+                    var tempc = Encoding.Unicode.GetBytes(fileId + Divpar + cnt + Divpar + last + Divpar).Concat(bytes)
+                        .Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+                    last += cnt;
+                    HServer.Send(connId, tempc, tempc.Length);
+                } while (cnt != 0);
+            });
+        }
+
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
             Task.Run(() =>
@@ -1553,9 +1578,13 @@ namespace Server
                                                                     GetRealString(problem.DataSets[i].OutputFile,
                                                                         problem.ProblemName, i);
                                                                 if (File.Exists(inputName))
-                                                                    zip.AddFile(inputName);
+                                                                    zip.AddFile(inputName,
+                                                                        inputName.Replace(Environment.CurrentDirectory,
+                                                                            string.Empty));
                                                                 if (File.Exists(outputName))
-                                                                    zip.AddFile(outputName);
+                                                                    zip.AddFile(outputName,
+                                                                        outputName.Replace(Environment.CurrentDirectory,
+                                                                            string.Empty));
                                                             }
                                                             zip.Save(ms);
                                                         }
