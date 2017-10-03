@@ -32,6 +32,7 @@ namespace Client
         public readonly ObservableCollection<Problem> Problems = new ObservableCollection<Problem>();
         private int _coins, _experience, _currentGetJudgeRecordIndex;
         private string _userName;
+        private int _curId;
 
         public MainWindow()
         {
@@ -198,6 +199,7 @@ namespace Client
                     case "Logout":
                         {
                             _userName = string.Empty;
+                            _curId = 0;
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 CodeSubmit.Visibility = Messaging.Visibility =
@@ -322,6 +324,7 @@ namespace Client
                     case "Profile":
                         {
                             var x = JsonConvert.DeserializeObject<UserInfo>(content);
+                            _curId = x.Type;
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 WelcomeLabel.Content = $"你好，{x.UserName}";
@@ -686,17 +689,20 @@ namespace Client
                 MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (_coins < 10)
+            if (_curId == 0 || _curId == 4)
             {
-                MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (_coins < 10)
+                {
+                    MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                    MessageBoxResult.Yes) return;
+                _coins -= 10;
+                Coins.Content = _coins;
+                Connection.SendData("UpdateCoins", "-10");
+                ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10"});
             }
-            if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
-                MessageBoxResult.Yes) return;
-            _coins -= 10;
-            Coins.Content = _coins;
-            Connection.SendData("UpdateCoins", "-10");
-            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
             ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
             MessagesCollection.Insert(0, new Message
             {
@@ -757,53 +763,70 @@ namespace Client
                 MessageBox.Show("已经全部加载完了", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            if (_experience <= 128)
+            if (_curId == 0 || _curId == 4)
             {
-                MessageBox.Show("经验不足，达到 128 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            if (_coins >= 100)
-            {
-                if (MessageBox.Show("操此作将花费您 100 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
-                    MessageBoxResult.Yes)
+                if (_experience <= 128)
                 {
-                    _coins -= 100;
-                    Coins.Content = _coins;
-                    Connection.SendData("UpdateCoins", "-100");
-                    Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
-                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100" });
+                    MessageBox.Show("经验不足，达到 128 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (_coins >= 100)
+                {
+                    if (MessageBox.Show("操此作将花费您 100 金币，确定继续？", "提示", MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) ==
+                        MessageBoxResult.Yes)
+                    {
+                        _coins -= 100;
+                        Coins.Content = _coins;
+                        Connection.SendData("UpdateCoins", "-100");
+                        Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
+                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100"});
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
             {
-                MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
             }
         }
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!(MyProblemList.SelectedItem is Problem)) return;
-            if (_experience <= 2333)
+            if (_curId == 0 || _curId == 4)
             {
-                MessageBox.Show("经验不足，达到 2333 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            if (_coins >= 500)
-            {
-                if (MessageBox.Show("操此作将花费您 500 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
-                    MessageBoxResult.Yes)
+                if (_experience <= 2333)
                 {
-                    _coins -= 500;
-                    Coins.Content = _coins;
-                    Connection.SendData("UpdateCoins", "-500");
-                    Connection.SendData("RequestProblemDataSet",
-                        ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
-                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500" });
+                    MessageBox.Show("经验不足，达到 2333 后再来吧", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (_coins >= 500)
+                {
+                    if (MessageBox.Show("操此作将花费您 500 金币，确定继续？", "提示", MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) ==
+                        MessageBoxResult.Yes)
+                    {
+                        _coins -= 500;
+                        Coins.Content = _coins;
+                        Connection.SendData("UpdateCoins", "-500");
+                        Connection.SendData("RequestProblemDataSet",
+                            ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
+                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500"});
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
             {
-                MessageBox.Show("金币不足，无法购买", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Connection.SendData("RequestProblemDataSet",
+                    ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
             }
         }
 
@@ -820,19 +843,27 @@ namespace Client
             if (!(JudgeList.SelectedItem is JudgeInfo si)) return;
             if (si.Code == "-|/|\\|-")
             {
-                if (_coins < 20)
+                if (_curId == 0 || _curId == 4)
                 {
-                    MessageBox.Show("金币不足，无法查看", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    if (_coins < 20)
+                    {
+                        MessageBox.Show("金币不足，无法查看", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    if (MessageBox.Show("操此作将花费您 20 金币，确定继续？", "提示", MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) ==
+                        MessageBoxResult.Yes)
+                    {
+                        Connection.SendData("RequestJudgeCode", si.JudgeId.ToString());
+                        _coins -= 20;
+                        Coins.Content = _coins;
+                        Connection.SendData("UpdateCoins", "-20");
+                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20"});
+                    }
                 }
-                if (MessageBox.Show("操此作将花费您 20 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
-                    MessageBoxResult.Yes)
+                else
                 {
                     Connection.SendData("RequestJudgeCode", si.JudgeId.ToString());
-                    _coins -= 20;
-                    Coins.Content = _coins;
-                    Connection.SendData("UpdateCoins", "-20");
-                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20" });
                 }
             }
             else
