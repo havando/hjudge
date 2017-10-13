@@ -306,10 +306,11 @@ namespace Server
                 }
         }
 
-        private Task WriteDataToStream(StreamWriter sw)
+        private void WriteDataToStream(StreamWriter sw)
         {
-            return Task.Run(() =>
+            Task.Run(() =>
             {
+                Thread.Sleep(100);
                 try
                 {
                     sw.AutoFlush = true;
@@ -381,7 +382,7 @@ namespace Server
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false,
                             CreateNoWindow = true,
-                            UseShellExecute = true,
+                            UseShellExecute = false,
                             RedirectStandardInput = _problem.InputFileName=="stdin",
                             RedirectStandardOutput = _problem.InputFileName=="stdin"
                         },
