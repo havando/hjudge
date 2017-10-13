@@ -306,23 +306,6 @@ namespace Server
                 }
         }
 
-        private void WriteDataToStream(StreamWriter sw)
-        {
-            sw.AutoFlush = true;
-            var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile, FileMode.Open, FileAccess.Read,
-                FileShare.ReadWrite);
-            var tmpReadStream = new StreamReader(tmpInputFile, Encoding.Default);
-            while (!tmpReadStream.EndOfStream)
-            {
-                sw.WriteLine(tmpReadStream.ReadLine());
-            }
-            sw.Write('\0');
-            sw.Flush();
-            sw.Close();
-            tmpReadStream.Close();
-            tmpInputFile.Close();
-        }
-
         private void Judging()
         {
             for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
@@ -397,28 +380,43 @@ namespace Server
                     var noProcessTime = DateTime.Now;
                     if (_problem.InputFileName == "stdin")
                     {
-                        try
-                        {
-                            WriteDataToStream(execute.StandardInput);
-                        }
-                        catch (Exception ex)
+                        Task.Run(() =>
                         {
                             try
                             {
-                                execute?.Kill();
-                                execute?.Close();
+                                using (var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile, FileMode.Open,
+                                    FileAccess.Read,
+                                    FileShare.ReadWrite))
+                                {
+                                    using (var tmpReadStream = new StreamReader(tmpInputFile, Encoding.Default))
+                                    {
+                                        while (!tmpReadStream.EndOfStream)
+                                        {
+                                            if (_isfault || _isexited)
+                                            {
+                                                execute.StandardInput.Close();
+                                                tmpReadStream.Close();
+                                                tmpInputFile.Close();
+                                                return;
+                                            }
+                                            var t = new char[512];
+                                            var cnt = tmpReadStream.ReadBlock(t, 0, 512);
+                                            execute.StandardInput.Write(t, 0, cnt);
+                                            execute.StandardInput.Flush();
+                                        }
+                                        execute.StandardInput.Write('\0');
+                                        execute.StandardInput.Flush();
+                                        execute.StandardInput.Close();
+                                        tmpReadStream.Close();
+                                        tmpInputFile.Close();
+                                    }
+                                }
                             }
                             catch
                             {
                                 //ignored
                             }
-                            JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                            JudgeResult.Exitcode[_cur] = 0;
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Timeused[_cur] = 0;
-                            JudgeResult.Memoryused[_cur] = 0;
-                            continue;
-                        }
+                        }).Wait(10000);
                     }
                     while (!_isexited)
                     {
@@ -508,16 +506,24 @@ namespace Server
                         }
                         else
                         {
-                            var tmpOutputFile = new FileStream(_workingdir + "\\" + _problem.OutputFileName,
-                                FileMode.Create, FileAccess.ReadWrite);
-                            var tmpOutputStream = new StreamWriter(tmpOutputFile, Encoding.Default) { AutoFlush = true };
-                            while (!execute.StandardOutput.EndOfStream)
+                            using (var tmpOutputFile = new FileStream(_workingdir + "\\" + _problem.OutputFileName,
+                                FileMode.Create, FileAccess.ReadWrite))
                             {
-                                tmpOutputStream.WriteLine(execute.StandardOutput.ReadLine());
+                                using (var tmpOutputStream =
+                                    new StreamWriter(tmpOutputFile, Encoding.Default))
+                                {
+                                    while (!execute.StandardOutput.EndOfStream)
+                                    {
+                                        var t = new char[512];
+                                        var cnt = execute.StandardOutput.ReadBlock(t, 0, 512);
+                                        tmpOutputStream.Write(t, 0, cnt);
+                                        tmpOutputStream.Flush();
+                                    }
+                                    tmpOutputStream.Flush();
+                                    tmpOutputStream.Close();
+                                    tmpOutputFile.Close();
+                                }
                             }
-                            tmpOutputStream.Flush();
-                            tmpOutputStream.Close();
-                            tmpOutputFile.Close();
                         }
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
                         {
@@ -634,8 +640,12 @@ namespace Server
                                 } while (!(sr1.EndOfStream && sr2.EndOfStream));
                                 sr1.Close();
                                 sr2.Close();
+                                sr1.Dispose();
+                                sr2.Dispose();
                                 fs1.Close();
                                 fs2.Close();
+                                fs1.Dispose();
+                                fs2.Dispose();
                                 if (iswrong)
                                     continue;
                                 JudgeResult.Result[_cur] = "Correct";
