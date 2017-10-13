@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -122,7 +123,7 @@ namespace Server
                                                    Path.GetFileNameWithoutExtension(f) ==
                                                    Judge.GetEngName(m.ProblemName)) ??
                                                throw new InvalidOperationException();
-                                code = File.ReadAllText(codeFile);
+                                code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                            c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
                                                .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))?.DisplayName ??

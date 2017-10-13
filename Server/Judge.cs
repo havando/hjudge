@@ -240,7 +240,7 @@ namespace Server
                     }
                     return;
                 }
-                File.WriteAllText(_workingdir + $"\\test{extList[0]}", JudgeResult.Code);
+                File.WriteAllText(_workingdir + $"\\test{extList[0]}", JudgeResult.Code, Encoding.Default);
                 foreach (var t in _problem.ExtraFiles)
                 {
                     if (string.IsNullOrEmpty(t))
@@ -308,29 +308,19 @@ namespace Server
 
         private void WriteDataToStream(StreamWriter sw)
         {
-            Task.Run(() =>
+            sw.AutoFlush = true;
+            var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite);
+            var tmpReadStream = new StreamReader(tmpInputFile, Encoding.Default);
+            while (!tmpReadStream.EndOfStream)
             {
-                Thread.Sleep(100);
-                try
-                {
-                    sw.AutoFlush = true;
-                    var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile, FileMode.Open, FileAccess.Read,
-                        FileShare.ReadWrite);
-                    var tmpReadStream = new StreamReader(tmpInputFile);
-                    while (!tmpReadStream.EndOfStream)
-                    {
-                        sw.WriteLine(tmpReadStream.ReadLine());
-                    }
-                    sw.Write('\0');
-                    sw.Close();
-                    tmpReadStream.Close();
-                    tmpInputFile.Close();
-                }
-                catch
-                {
-                    //ignored
-                }
-            });
+                sw.WriteLine(tmpReadStream.ReadLine());
+            }
+            sw.Write('\0');
+            sw.Flush();
+            sw.Close();
+            tmpReadStream.Close();
+            tmpInputFile.Close();
         }
 
         private void Judging()
@@ -407,7 +397,28 @@ namespace Server
                     var noProcessTime = DateTime.Now;
                     if (_problem.InputFileName == "stdin")
                     {
-                        WriteDataToStream(execute.StandardInput);
+                        try
+                        {
+                            WriteDataToStream(execute.StandardInput);
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                execute?.Kill();
+                                execute?.Close();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
+                            JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
+                            JudgeResult.Exitcode[_cur] = 0;
+                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Timeused[_cur] = 0;
+                            JudgeResult.Memoryused[_cur] = 0;
+                            continue;
+                        }
                     }
                     while (!_isexited)
                     {
@@ -504,6 +515,7 @@ namespace Server
                             {
                                 tmpOutputStream.WriteLine(execute.StandardOutput.ReadLine());
                             }
+                            tmpOutputStream.Flush();
                             tmpOutputStream.Close();
                             tmpOutputFile.Close();
                         }
