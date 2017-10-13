@@ -148,9 +148,14 @@ namespace Server
                             continue;
                         }
                         cnt++;
+                        var isStdInOut = false;
+                        Dispatcher.Invoke(() =>
+                        {
+                            isStdInOut = StdInOut.IsChecked ?? false;
+                        });
                         myJudgeTask.Add(Task.Run(() =>
                             {
-                                var j = new Judge(m.ProblemId, 1, code, type);
+                                var j = new Judge(m.ProblemId, 1, code, type, isStdInOut);
                                 p.Result.Add(j.JudgeResult);
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {

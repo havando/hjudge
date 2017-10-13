@@ -55,6 +55,7 @@
                         RenderTransformOrigin="0.895,0.577" />
                     <RadioButton Name="RadioButton1" Content="方案一" IsChecked="True" HorizontalAlignment="Left" Margin="372,46,0,0" VerticalAlignment="Top"/>
                     <RadioButton Name="RadioButton2" Content="方案二" HorizontalAlignment="Left" Margin="432,46,0,0" VerticalAlignment="Top"/>
+                    <CheckBox Name="StdInOut" Content="使用标准输入输出" HorizontalAlignment="Left" Margin="580,46,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="评测结果">

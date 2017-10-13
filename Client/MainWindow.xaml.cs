@@ -662,8 +662,6 @@ namespace Client
             ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目难度：{x?.Level}" });
             ProblemInfomationList.Items.Add(new TextBlock { Text = $"数据组数：{x?.DataSets.Length}" });
             ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}" });
-            InputFileName.Text = x?.InputFileName ?? string.Empty;
-            OutFileName.Text = x?.OutputFileName ?? string.Empty;
         }
 
         private void Button_Click_3(object sender, RoutedEventArgs e)

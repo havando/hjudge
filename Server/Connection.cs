@@ -1626,7 +1626,7 @@ namespace Server
                                                         var j = new Judge(
                                                             Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
                                                             u.Info.UserId, code,
-                                                            Encoding.Unicode.GetString(res.Content[1]));
+                                                            Encoding.Unicode.GetString(res.Content[1]), true);
                                                         var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                         SendData("JudgeResult", jr, u.Info.ConnId);
                                                     });

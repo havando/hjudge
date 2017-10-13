@@ -85,15 +85,9 @@
                               SelectionChanged="ProblemList_SelectionChanged" IsEditable="True" IsReadOnly="False"
                               DisplayMemberPath="ProblemIndex" />
                     <Label Content="题目：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
-                    <Label Content="输入文件名：" HorizontalAlignment="Left" Margin="10,288,0,0" VerticalAlignment="Top" />
-                    <Label Content="输出文件名：" HorizontalAlignment="Left" Margin="240,288,0,0" VerticalAlignment="Top" />
-                    <TextBox Name="InputFileName" HorizontalAlignment="Left" Height="25" Margin="92,288,0,0"
-                             TextWrapping="Wrap" BorderThickness ="0"  VerticalAlignment="Center" Width="143" IsReadOnly="True" />
-                    <TextBox Name="OutFileName" HorizontalAlignment="Left" Height="25" Margin="322,288,0,0"
-                             TextWrapping="Wrap" BorderThickness ="0" VerticalAlignment="Center" Width="143" IsReadOnly="True" />
                     <Button Content="提交代码" HorizontalAlignment="Left" Margin="620,288,0,0" VerticalAlignment="Top"
                             Width="67" Height="25" Click="Button_Click_5" />
-                    <Label Content="500 金币兑换题目数据" HorizontalAlignment="Left" Margin="478,288,0,0"
+                    <Label Content="点击此处 500 金币兑换题目数据" HorizontalAlignment="Left" Margin="10,288,0,0"
                            VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown" />
                     <Label Content="题目信息：" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" />
                     <Label Content="代码：" HorizontalAlignment="Left" Margin="137,40,0,0" VerticalAlignment="Top" />
@@ -159,7 +153,7 @@
                     </ListView>
                     <Label Content="Tips：双击查看详情。查看非本次登录评测记录详情需花费 20 金币。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
-                    <Label Content="100 金币再加载 20 条记录" HorizontalAlignment="Left" Margin="536,284,0,0"
+                    <Label Content="点击此处 100 金币再加载 20 条记录" HorizontalAlignment="Left" Margin="486,284,0,0"
                            VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_1" />
                 </Grid>
             </TabItem>
