@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 
@@ -74,6 +76,7 @@ namespace Client
             FileList.ItemsSource = FileInfomations;
 
             Configuration.Init();
+
             if (string.IsNullOrEmpty(Configuration.Configurations.Ip))
             {
                 var hostIp = Dns.GetHostAddresses(Dns.GetHostName());
@@ -114,11 +117,27 @@ namespace Client
             LoginGrid.Margin = new Thickness(61, 32, 0, 0);
             CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                 JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
+
+            var rtf = new RotateTransform
+            {
+                CenterX = Loading1.ActualWidth * 0.5,
+                CenterY = Loading1.ActualHeight * 0.5
+            };
+            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Loading1.RenderTransform = rtf;
+            Loading2.RenderTransform = rtf;
+            Loading3.RenderTransform = rtf;
+            ReceivingFile.RenderTransform = rtf;
+            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Connection.SendData("Login", UserName.Text + Divpar + Password.Password);
+            Loading1.Visibility = Visibility.Visible;
         }
 
         private void UpdateMainPage(string s)
@@ -206,6 +225,7 @@ namespace Client
                                     Messages.Visibility = JudgeResult.Visibility =
                                         GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
                                 LoginGrid.Visibility = Visibility.Visible;
+                                Loading1.Visibility = Visibility.Hidden;
                                 OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
                                 ActiveBox.Items.Clear();
                                 JudgeInfos.Clear();
@@ -217,6 +237,11 @@ namespace Client
                                 CodeBox.Text = string.Empty;
                                 _coins = _experience = _currentGetJudgeRecordIndex = 0;
                                 TabControl.SelectedIndex = 0;
+                                FileList.IsEnabled = true;
+                                ReceivingFile.Visibility = Visibility.Hidden;
+                                Loading1.Visibility = Visibility.Hidden;
+                                Loading2.Visibility = Visibility.Hidden;
+                                Loading3.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -259,6 +284,7 @@ namespace Client
                                         Name = final[i]
                                     });
                                 }
+                                ReceivingFile.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -319,6 +345,10 @@ namespace Client
                         {
                             var x = JsonConvert.DeserializeObject<Problem[]>(content);
                             UpdateProblemList(x);
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading2.Visibility = Visibility.Hidden;
+                            }));
                             break;
                         }
                     case "Profile":
@@ -335,6 +365,7 @@ namespace Client
                                 Coins.Content = _coins = x.Coins;
                                 Experience.Content = _experience = x.Experience;
                                 SetLevel(x.Experience);
+                                Loading1.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -354,6 +385,10 @@ namespace Client
                                     Connection.SendData("RequestProfile", _userName);
                                     break;
                             }
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading1.Visibility = Visibility.Hidden;
+                            }));
                             break;
                         }
                     case "ChangePassword":
@@ -370,6 +405,10 @@ namespace Client
                                         MessageBoxImage.Error);
                                     break;
                             }
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading1.Visibility = Visibility.Hidden;
+                            }));
                             break;
                         }
                     case "JudgeRecord":
@@ -383,6 +422,7 @@ namespace Client
                             {
                                 foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
                                     JudgeInfos.Add(i);
+                                Loading3.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -393,7 +433,11 @@ namespace Client
                                 .FirstOrDefault();
                             if (j == null) break;
                             j.Code = jc.Code;
-                            Dispatcher.BeginInvoke(new Action(() => { ShowJudgeDetails(j); }));
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                ShowJudgeDetails(j);
+                                Loading3.Visibility = Visibility.Hidden;
+                            }));
                             break;
                         }
                     case "FileReceived":
@@ -410,6 +454,7 @@ namespace Client
                             if (content != "Denied") break;
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
+                                Loading3.Visibility = Visibility.Hidden;
                                 _coins += 500;
                                 Coins.Content = _coins;
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500" });
@@ -430,6 +475,7 @@ namespace Client
                                 {
                                     LangBox.Items.Add(new RadioButton { Content = m.DisplayName });
                                 }
+                                Loading2.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -589,6 +635,7 @@ namespace Client
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            Loading1.Visibility = Visibility.Visible;
             Connection.SendData("Logout", string.Empty);
         }
 
@@ -667,16 +714,16 @@ namespace Client
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
             Connection.SendData("RequestProblemList", string.Empty);
+            Loading2.Visibility = Visibility.Visible;
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(e.Source is TabControl)) return;
-            if ((sender as TabControl)?.SelectedIndex == 1)
-            {
-                Connection.SendData("RequestProblemList", string.Empty);
-                Connection.SendData("RequestCompiler", string.Empty);
-            }
+            if ((sender as TabControl)?.SelectedIndex != 1) return;
+            Loading2.Visibility = Visibility.Visible;
+            Connection.SendData("RequestProblemList", string.Empty);
+            Connection.SendData("RequestCompiler", string.Empty);
         }
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
@@ -699,7 +746,7 @@ namespace Client
                 _coins -= 10;
                 Coins.Content = _coins;
                 Connection.SendData("UpdateCoins", "-10");
-                ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10"});
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
             }
             ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
             MessagesCollection.Insert(0, new Message
@@ -738,6 +785,7 @@ namespace Client
         private void Button_Click_6(object sender, RoutedEventArgs e)
         {
             Connection.SendData("RequestFileList", string.Empty);
+            ReceivingFile.Visibility = Visibility.Visible;
         }
 
         private void Button_Click_7(object sender, RoutedEventArgs e)
@@ -747,11 +795,13 @@ namespace Client
                 ? filePath.Substring(0, filePath.LastIndexOf("\\", StringComparison.Ordinal))
                 : string.Empty;
             Connection.SendData("RequestFileList", CurrentLocation.Text);
+            ReceivingFile.Visibility = Visibility.Visible;
         }
 
         private void Button_Click_8(object sender, RoutedEventArgs e)
         {
             Connection.SendData("RequestFileList", CurrentLocation.Text);
+            ReceivingFile.Visibility = Visibility.Visible;
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
@@ -778,7 +828,8 @@ namespace Client
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-100");
                         Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100"});
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100" });
+                        Loading3.Visibility = Visibility.Visible;
                     }
                 }
                 else
@@ -812,8 +863,9 @@ namespace Client
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-500");
                         Connection.SendData("RequestProblemDataSet",
-                            ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500"});
+                            ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500" });
+                        Loading2.Visibility = Visibility.Visible;
                     }
                 }
                 else
@@ -825,6 +877,7 @@ namespace Client
             {
                 Connection.SendData("RequestProblemDataSet",
                     ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
+                Loading2.Visibility = Visibility.Visible;
             }
         }
 
@@ -856,12 +909,14 @@ namespace Client
                         _coins -= 20;
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-20");
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20"});
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20" });
+                        Loading3.Visibility = Visibility.Visible;
                     }
                 }
                 else
                 {
                     Connection.SendData("RequestJudgeCode", si.JudgeId.ToString());
+                    Loading3.Visibility = Visibility.Visible;
                 }
             }
             else
@@ -881,9 +936,9 @@ namespace Client
                 {
                     Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 请求文件 {si.Name}"
                 });
-                ReceivingFile.Visibility = Visibility.Visible;
                 FileList.IsEnabled = false;
             }
+            ReceivingFile.Visibility = Visibility.Visible;
         }
 
         private void Window_Closed(object sender, EventArgs e)

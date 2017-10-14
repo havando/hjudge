@@ -30,13 +30,17 @@ namespace Server
         public static bool IsExited;
         private static Action<string> _updateMain;
         private static int _id;
+
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
+
         public static readonly object ComparingLock = new object();
         private static readonly object DataBaseLock = new object();
         public static readonly object ResourceLoadingLock = new object();
         private static readonly object BytesLock = new object();
         public static readonly object JudgeListCntLock = new object();
         public static readonly object StreamLock = new object();
+
+        private static List<Task> _actionList = new List<Task>();
 
         public static int CurJudgingCnt = 0;
 
@@ -190,6 +194,8 @@ namespace Server
             }
             DealingBytes();
             DealingOperations();
+            ActionExecuter();
+
             #endregion
         }
 
@@ -1473,16 +1479,16 @@ namespace Server
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+                                            var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                            if (filePath.Length > 1)
                                             {
-                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
-                                                if (filePath.Length > 1)
-                                                {
-                                                    if (filePath.Substring(0, 1) == "\\")
-                                                        filePath = filePath.Substring(1);
-                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
-                                                        filePath = filePath.Substring(filePath.Length - 1);
-                                                }
+                                                if (filePath.Substring(0, 1) == "\\")
+                                                    filePath = filePath.Substring(1);
+                                                if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                    filePath = filePath.Substring(filePath.Length - 1);
+                                            }
+                                            _actionList.Add(new Task(() =>
+                                            {
                                                 var x = SearchFiles(
                                                     Environment.CurrentDirectory + "\\Files" +
                                                     (string.IsNullOrEmpty(filePath) ? string.Empty : $"\\{filePath}")
@@ -1496,74 +1502,76 @@ namespace Server
                                                 SendData("FileList",
                                                     filePath + Divpar + y,
                                                     u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "RequestFile":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+                                            var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                            if (filePath.Length > 1)
                                             {
-                                                var filePath = Encoding.Unicode.GetString(res.Content[0]);
-                                                if (filePath.Length > 1)
+                                                if (filePath.Substring(0, 1) == "\\")
+                                                    filePath = filePath.Substring(1);
+                                                if (filePath.Substring(filePath.Length - 1) == "\\")
+                                                    filePath = filePath.Substring(filePath.Length - 1);
+                                            }
+                                            filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
+                                            var fileName = Path.GetFileName(filePath);
+                                            if (File.Exists(filePath))
+                                            {
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
+                                                _actionList.Add(new Task(() =>
                                                 {
-                                                    if (filePath.Substring(0, 1) == "\\")
-                                                        filePath = filePath.Substring(1);
-                                                    if (filePath.Substring(filePath.Length - 1) == "\\")
-                                                        filePath = filePath.Substring(filePath.Length - 1);
-                                                }
-                                                filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
-                                                var fileName = Path.GetFileName(filePath);
-                                                if (File.Exists(filePath))
-                                                {
-                                                    UpdateMainPageState(
-                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
                                                     SendData("File",
-                                                        Encoding.Unicode.GetBytes(fileName).ToList()
-                                                            .Concat(Encoding.Unicode.GetBytes(Divpar)
-                                                                .Concat(File.ReadAllBytes(
-                                                                    filePath))),
-                                                        u.Info.ConnId);
-                                                }
-                                            });
+                                                            Encoding.Unicode.GetBytes(fileName).ToList()
+                                                                .Concat(Encoding.Unicode.GetBytes(Divpar)
+                                                                    .Concat(File.ReadAllBytes(
+                                                                        filePath))),
+                                                            u.Info.ConnId);
+                                                }));
+                                            }
                                             break;
                                         }
                                     case "RequestProblemDataSet":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+                                            if (!Configuration.Configurations.AllowRequestDataSet)
                                             {
-                                                if (!Configuration.Configurations.AllowRequestDataSet)
+                                                _actionList.Add(new Task(() =>
+                                                   SendData("ProblemDataSet", "Denied", u.Info.ConnId)));
+                                            }
+                                            else
+                                            {
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
+
+                                                _actionList.Add(new Task(() =>
                                                 {
-                                                    SendData("ProblemDataSet", "Denied", u.Info.ConnId);
-                                                }
-                                                else
-                                                {
-                                                    UpdateMainPageState(
-                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
                                                     try
                                                     {
                                                         var problem =
-                                                            GetProblem(Convert.ToInt32(
-                                                                Encoding.Unicode.GetString(res.Content[0])));
+                                                        GetProblem(Convert.ToInt32(
+                                                            Encoding.Unicode.GetString(res.Content[0])));
 
                                                         string GetEngName(string origin)
                                                         {
                                                             var re = new Regex("[A-Z]|[a-z]|[0-9]");
                                                             return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
-                                                                (current, t) => current + t);
+                                                            (current, t) => current + t);
                                                         }
 
                                                         string GetRealString(string origin, string problemName, int cur)
                                                         {
                                                             return origin
-                                                                .Replace("${datadir}",
-                                                                    Environment.CurrentDirectory + "\\Data")
-                                                                .Replace("${name}", GetEngName(problemName))
-                                                                .Replace("${index0}", cur.ToString())
-                                                                .Replace("${index}", (cur + 1).ToString());
+                                                            .Replace("${datadir}",
+                                                                Environment.CurrentDirectory + "\\Data")
+                                                            .Replace("${name}", GetEngName(problemName))
+                                                            .Replace("${index0}", cur.ToString())
+                                                            .Replace("${index}", (cur + 1).ToString());
                                                         }
 
                                                         var ms = new MemoryStream();
@@ -1572,48 +1580,48 @@ namespace Server
                                                             for (var i = 0; i < problem.DataSets.Length; i++)
                                                             {
                                                                 var inputName =
-                                                                    GetRealString(problem.DataSets[i].InputFile,
-                                                                        problem.ProblemName, i);
+                                                                GetRealString(problem.DataSets[i].InputFile,
+                                                                    problem.ProblemName, i);
                                                                 var outputName =
-                                                                    GetRealString(problem.DataSets[i].OutputFile,
-                                                                        problem.ProblemName, i);
+                                                                GetRealString(problem.DataSets[i].OutputFile,
+                                                                    problem.ProblemName, i);
                                                                 if (File.Exists(inputName))
                                                                     zip.AddFile(inputName,
-                                                                        inputName.Replace(Environment.CurrentDirectory,
-                                                                            string.Empty));
+                                                                    inputName.Replace(Environment.CurrentDirectory,
+                                                                        string.Empty));
                                                                 if (File.Exists(outputName))
                                                                     zip.AddFile(outputName,
-                                                                        outputName.Replace(Environment.CurrentDirectory,
-                                                                            string.Empty));
+                                                                    outputName.Replace(Environment.CurrentDirectory,
+                                                                        string.Empty));
                                                             }
                                                             zip.Save(ms);
                                                         }
                                                         var x = new List<byte>();
                                                         x.AddRange(Encoding.Unicode.GetBytes(
-                                                            problem.ProblemId + Divpar));
+                                                        problem.ProblemId + Divpar));
                                                         x.AddRange(ms.ToArray());
                                                         SendData("ProblemDataSet", x
-                                                            , u.Info.ConnId);
+                                                        , u.Info.ConnId);
                                                     }
                                                     catch
                                                     {
                                                         //ignored
                                                     }
-                                                }
-                                            });
+                                                }));
+                                            }
                                             break;
                                         }
                                     case "SubmitCode":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+                                            if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
                                             {
-                                                if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
-                                                {
-                                                    UpdateMainPageState(
-                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                                UpdateMainPageState(
+                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
 
+                                                _actionList.Add(new Task(() =>
+                                                {
                                                     var code = string.Empty;
                                                     for (var i = 2; i < res.Content.Count; i++)
                                                         if (i != res.Content.Count - 1)
@@ -1621,17 +1629,14 @@ namespace Server
                                                         else
                                                             code += Encoding.Unicode.GetString(res.Content[i]);
 
-                                                    Task.Run(() =>
-                                                    {
-                                                        var j = new Judge(
-                                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                            u.Info.UserId, code,
-                                                            Encoding.Unicode.GetString(res.Content[1]), true);
-                                                        var jr = JsonConvert.SerializeObject(j.JudgeResult);
-                                                        SendData("JudgeResult", jr, u.Info.ConnId);
-                                                    });
-                                                }
-                                            });
+                                                    var j = new Judge(
+                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
+                                                        u.Info.UserId, code,
+                                                        Encoding.Unicode.GetString(res.Content[1]), true);
+                                                    var jr = JsonConvert.SerializeObject(j.JudgeResult);
+                                                    SendData("JudgeResult", jr, u.Info.ConnId);
+                                                }));
+                                            }
 
                                             break;
                                         }
@@ -1639,10 +1644,10 @@ namespace Server
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
+                                            _actionList.Add(new Task(() =>
                                             {
-                                                UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
                                                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                                 {
                                                     var x = new Messaging();
@@ -1650,7 +1655,7 @@ namespace Server
                                                         u.Info.ConnId, u.Info.UserName);
                                                     x.Show();
                                                 }));
-                                            });
+                                            }));
 
                                             break;
                                         }
@@ -1658,7 +1663,8 @@ namespace Server
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 string GetEngName(string origin)
                                                 {
@@ -1696,26 +1702,28 @@ namespace Server
                                                 }
                                                 var x = JsonConvert.SerializeObject(pl);
                                                 SendData("ProblemList", x, u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "RequestProfile":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 var x = JsonConvert.SerializeObject(
                                                     GetUser(Encoding.Unicode.GetString(res.Content[0])));
                                                 SendData("Profile", x, u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "RequestCompiler":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 var cmp = new List<Compiler>();
                                                 foreach (var t in Configuration.Configurations.Compiler)
@@ -1724,14 +1732,15 @@ namespace Server
                                                 }
                                                 var x = JsonConvert.SerializeObject(cmp);
                                                 SendData("Compiler", x, u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "ChangePassword":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 SendData("ChangePassword",
                                                     RemoteChangePassword(u.Info.UserName,
@@ -1739,14 +1748,15 @@ namespace Server
                                                         Encoding.Unicode.GetString(res.Content[1]))
                                                         ? "Succeed"
                                                         : "Failed", u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "UpdateProfile":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 SendData("UpdateProfile",
                                                     RemoteUpdateProfile(
@@ -1755,14 +1765,15 @@ namespace Server
                                                         Encoding.Unicode.GetString(res.Content[1]))
                                                         ? "Succeed"
                                                         : "Failed", u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "UpdateCoins":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 SendData("UpdateCoins",
                                                     UpdateCoins(
@@ -1770,14 +1781,15 @@ namespace Server
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
                                                         ? "Succeed"
                                                         : "Failed", u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "UpdateExperience":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 SendData("UpdateExperience",
                                                     UpdateExperience(
@@ -1785,14 +1797,15 @@ namespace Server
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
                                                         ? "Succeed"
                                                         : "Failed", u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "RequestJudgeRecord":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 var x = GetJudgeRecord(u.Info.UserId,
                                                     Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
@@ -1802,20 +1815,21 @@ namespace Server
                                                     x.Length + Divpar +
                                                     JsonConvert.SerializeObject(x),
                                                     u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                     case "RequestJudgeCode":
                                         {
                                             if (u.Info.UserId == 0)
                                                 break;
-                                            Task.Run(() =>
+
+                                            _actionList.Add(new Task(() =>
                                             {
                                                 SendData("JudgeCode",
                                                     JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
                                                         Encoding.Unicode.GetString(res.Content[0])))),
                                                     u.Info.ConnId);
-                                            });
+                                            }));
                                             break;
                                         }
                                 }
@@ -1840,6 +1854,29 @@ namespace Server
                 a.Add(i.Info);
             }
             return a;
+        }
+
+        private static void ActionExecuter()
+        {
+            Task.Run(() =>
+            {
+                int[] cnt = {0};
+                while (true)
+                {
+                    if (_actionList.Any())
+                    {
+                        if (cnt[0] <= 5)
+                        {
+                            _actionList[0].Start();
+                            _actionList[0].ContinueWith(x => { cnt[0]--; });
+                            _actionList.RemoveAt(0);
+                            cnt[0]++;
+                        }
+                    }
+
+                    Thread.Sleep(10);
+                }
+            });
         }
 
         #endregion

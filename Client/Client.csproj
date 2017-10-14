@@ -149,6 +149,7 @@
     <Resource Include="Resources\Messaging.png" />
     <Resource Include="Resources\default_user_icon.png" />
     <Resource Include="Resources\list.png" />
+    <Resource Include="Resources\loading.gif" />
     <Content Include="x64\HPSocket4C_U.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

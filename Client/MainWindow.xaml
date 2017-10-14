@@ -59,6 +59,7 @@
                             <Image Name="LevelImage" HorizontalAlignment="Left" Height="85" Margin="186,12,0,0"
                                    VerticalAlignment="Top" Width="85" />
                         </Grid>
+                        <Image Name="Loading1" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                     </Grid>
                     <Grid Name="LoginGrid" HorizontalAlignment="Left" Height="222" Margin="61,372,0,-276"
                           VerticalAlignment="Top" Width="571">
@@ -97,6 +98,7 @@
                             Width="55" Height="25" Click="Button_Click_3" />
                     <Label Content="选择语言：" HorizontalAlignment="Left" Margin="10,192,0,0" VerticalAlignment="Top"/>
                     <ListBox Name="LangBox" HorizontalAlignment="Left" Height="65" Margin="10,218,0,0" VerticalAlignment="Top" Width="173"/>
+                    <Image Name="Loading2" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                 </Grid>
             </TabItem>
             <TabItem Name="Messaging" Header="发送消息">
@@ -155,6 +157,7 @@
                            VerticalAlignment="Top" Foreground="Red" />
                     <Label Content="点击此处 100 金币再加载 20 条记录" HorizontalAlignment="Left" Margin="486,284,0,0"
                            VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_1" />
+                    <Image Name="Loading3" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                 </Grid>
             </TabItem>
             <TabItem Name="GetFiles" Header="获取文件">
@@ -169,8 +172,6 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <Label Name="ReceivingFile" Visibility="Hidden" HorizontalAlignment="Center" Content="正在接收文件..."
-                           Margin="10,109,10,183" Background="#FFD2D2D2" />
                     <Label Content="Tips：双击下载文件或打开文件夹。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
                     <Button Content="向上一级" HorizontalAlignment="Left" Margin="554,284,0,0" VerticalAlignment="Top"
@@ -182,6 +183,7 @@
                     <Label Content="当前路径：" HorizontalAlignment="Left" Margin="10,254,0,0" VerticalAlignment="Top" />
                     <TextBox Name="CurrentLocation" HorizontalAlignment="Left" Height="25" Margin="80,254,0,0"
                              TextWrapping="Wrap" VerticalAlignment="Top" Width="607" IsReadOnly="True" />
+                    <Image Name="ReceivingFile" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                 </Grid>
             </TabItem>
         </TabControl>
