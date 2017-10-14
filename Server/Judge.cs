@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Server
 {
@@ -309,6 +310,12 @@ namespace Server
         private void Judging()
         {
             for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
+            {
+                if (_cur != 0)
+                {
+                    Connection.UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}");
+                }
                 if (!File.Exists(_problem.DataSets[_cur].InputFile) || !File.Exists(_problem.DataSets[_cur].OutputFile))
                 {
                     JudgeResult.Result[_cur] = "Problem Configuration Error";
@@ -356,8 +363,8 @@ namespace Server
                             ErrorDialog = false,
                             CreateNoWindow = true,
                             UseShellExecute = false,
-                            RedirectStandardInput = _problem.InputFileName=="stdin",
-                            RedirectStandardOutput = _problem.InputFileName=="stdin"
+                            RedirectStandardInput = _problem.InputFileName == "stdin",
+                            RedirectStandardOutput = _problem.InputFileName == "stdin"
                         },
                         EnableRaisingEvents = true
                     };
@@ -380,35 +387,19 @@ namespace Server
                     var noProcessTime = DateTime.Now;
                     if (_problem.InputFileName == "stdin")
                     {
-                        Task.Run(() =>
+                        lock (Connection.StreamLock)
                         {
                             try
                             {
-                                using (var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile, FileMode.Open,
+                                using (var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile,
+                                    FileMode.Open,
                                     FileAccess.Read,
                                     FileShare.ReadWrite))
                                 {
                                     using (var tmpReadStream = new StreamReader(tmpInputFile, Encoding.Default))
                                     {
-                                        while (!tmpReadStream.EndOfStream)
-                                        {
-                                            if (_isfault || _isexited)
-                                            {
-                                                execute.StandardInput.Close();
-                                                tmpReadStream.Close();
-                                                tmpInputFile.Close();
-                                                return;
-                                            }
-                                            var t = new char[512];
-                                            var cnt = tmpReadStream.ReadBlock(t, 0, 512);
-                                            execute.StandardInput.Write(t, 0, cnt);
-                                            execute.StandardInput.Flush();
-                                        }
-                                        execute.StandardInput.Write('\0');
-                                        execute.StandardInput.Flush();
-                                        execute.StandardInput.Close();
-                                        tmpReadStream.Close();
-                                        tmpInputFile.Close();
+                                        execute.StandardInput.AutoFlush = true;
+                                        execute.StandardInput.WriteAsync(tmpReadStream.ReadToEnd() + "\0");
                                     }
                                 }
                             }
@@ -416,7 +407,7 @@ namespace Server
                             {
                                 //ignored
                             }
-                        }).Wait(10000);
+                        }
                     }
                     while (!_isexited)
                     {
@@ -448,7 +439,8 @@ namespace Server
                             }
                             _isexited = true;
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit || dt > _problem.DataSets[_cur].TimeLimit * 20)
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
+                            dt > _problem.DataSets[_cur].TimeLimit * 20)
                         {
                             _isfault = true;
                             try
@@ -512,14 +504,13 @@ namespace Server
                                 using (var tmpOutputStream =
                                     new StreamWriter(tmpOutputFile, Encoding.Default))
                                 {
+                                    tmpOutputStream.AutoFlush = true;
                                     while (!execute.StandardOutput.EndOfStream)
                                     {
-                                        var t = new char[512];
-                                        var cnt = execute.StandardOutput.ReadBlock(t, 0, 512);
+                                        var t = new char[1048576];
+                                        var cnt = execute.StandardOutput.ReadBlock(t, 0, 1048576);
                                         tmpOutputStream.Write(t, 0, cnt);
-                                        tmpOutputStream.Flush();
                                     }
-                                    tmpOutputStream.Flush();
                                     tmpOutputStream.Close();
                                     tmpOutputFile.Close();
                                 }
@@ -667,6 +658,9 @@ namespace Server
                         //ignored
                     }
                 }
+            }
+            Connection.UpdateMainPageState(
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}");
         }
 
         private void Exithandler(object sender, EventArgs e)

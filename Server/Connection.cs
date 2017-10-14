@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using DocumentFormat.OpenXml.Wordprocessing;
 using HPSocketCS;
 using Ionic.Zip;
 using Newtonsoft.Json;
@@ -37,6 +36,7 @@ namespace Server
         public static readonly object ResourceLoadingLock = new object();
         private static readonly object BytesLock = new object();
         public static readonly object JudgeListCntLock = new object();
+        public static readonly object StreamLock = new object();
 
         public static int CurJudgingCnt = 0;
 
