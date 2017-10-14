@@ -508,8 +508,9 @@ namespace Server
                                     while (!execute.StandardOutput.EndOfStream)
                                     {
                                         var t = new char[1048576];
-                                        var cnt = execute.StandardOutput.ReadBlock(t, 0, 1048576);
-                                        tmpOutputStream.Write(t, 0, cnt);
+                                        var cnt = execute.StandardOutput.ReadBlockAsync(t, 0, 1048576);
+                                        cnt.Wait();
+                                        tmpOutputStream.Write(t, 0, cnt.Result);
                                     }
                                     tmpOutputStream.Close();
                                     tmpOutputFile.Close();
