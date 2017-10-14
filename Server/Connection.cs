@@ -39,8 +39,10 @@ namespace Server
         private static readonly object BytesLock = new object();
         public static readonly object JudgeListCntLock = new object();
         public static readonly object StreamLock = new object();
+        public static readonly object JudgePointLock = new object();
+        private static readonly object ActionCounterLock = new object();
 
-        private static List<Task> _actionList = new List<Task>();
+        private static readonly ConcurrentQueue<Task> ActionList = new ConcurrentQueue<Task>();
 
         public static int CurJudgingCnt = 0;
 
@@ -1487,7 +1489,7 @@ namespace Server
                                                 if (filePath.Substring(filePath.Length - 1) == "\\")
                                                     filePath = filePath.Substring(filePath.Length - 1);
                                             }
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 var x = SearchFiles(
                                                     Environment.CurrentDirectory + "\\Files" +
@@ -1523,7 +1525,7 @@ namespace Server
                                             {
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
-                                                _actionList.Add(new Task(() =>
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     SendData("File",
                                                             Encoding.Unicode.GetBytes(fileName).ToList()
@@ -1541,7 +1543,7 @@ namespace Server
                                                 break;
                                             if (!Configuration.Configurations.AllowRequestDataSet)
                                             {
-                                                _actionList.Add(new Task(() =>
+                                                ActionList.Enqueue(new Task(() =>
                                                    SendData("ProblemDataSet", "Denied", u.Info.ConnId)));
                                             }
                                             else
@@ -1549,7 +1551,7 @@ namespace Server
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
 
-                                                _actionList.Add(new Task(() =>
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     try
                                                     {
@@ -1620,7 +1622,7 @@ namespace Server
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
 
-                                                _actionList.Add(new Task(() =>
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     var code = string.Empty;
                                                     for (var i = 2; i < res.Content.Count; i++)
@@ -1646,7 +1648,7 @@ namespace Server
                                                 break;
                                             UpdateMainPageState(
                                                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                                 {
@@ -1664,7 +1666,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 string GetEngName(string origin)
                                                 {
@@ -1710,7 +1712,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 var x = JsonConvert.SerializeObject(
                                                     GetUser(Encoding.Unicode.GetString(res.Content[0])));
@@ -1723,7 +1725,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 var cmp = new List<Compiler>();
                                                 foreach (var t in Configuration.Configurations.Compiler)
@@ -1740,7 +1742,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 SendData("ChangePassword",
                                                     RemoteChangePassword(u.Info.UserName,
@@ -1756,7 +1758,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 SendData("UpdateProfile",
                                                     RemoteUpdateProfile(
@@ -1773,7 +1775,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 SendData("UpdateCoins",
                                                     UpdateCoins(
@@ -1789,7 +1791,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 SendData("UpdateExperience",
                                                     UpdateExperience(
@@ -1805,7 +1807,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 var x = GetJudgeRecord(u.Info.UserId,
                                                     Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
@@ -1823,7 +1825,7 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            _actionList.Add(new Task(() =>
+                                            ActionList.Enqueue(new Task(() =>
                                             {
                                                 SendData("JudgeCode",
                                                     JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
@@ -1860,17 +1862,29 @@ namespace Server
         {
             Task.Run(() =>
             {
-                int[] cnt = {0};
+                var cnt = 0;
                 while (true)
                 {
-                    if (_actionList.Any())
+                    if (ActionList.Any())
                     {
-                        if (cnt[0] <= 5)
+                        if (cnt <= 5)
                         {
-                            _actionList[0].Start();
-                            _actionList[0].ContinueWith(x => { cnt[0]--; });
-                            _actionList.RemoveAt(0);
-                            cnt[0]++;
+                            if (ActionList.TryDequeue(out var t))
+                            {
+                                t.ContinueWith(o =>
+                                {
+                                    lock (ActionCounterLock)
+                                    {
+                                        cnt--;
+                                    }
+                                });
+                                t.Start();
+                                lock (ActionCounterLock)
+                                {
+                                    cnt++;
+                                }
+                            }
+                            GC.Collect();
                         }
                     }
 

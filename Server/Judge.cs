@@ -343,16 +343,34 @@ namespace Server
                             continue;
                         }
                     }
-                    try
+                    if (_problem.InputFileName == "stdin")
                     {
-                        File.Delete(_workingdir + "\\" + _problem.OutputFileName);
+                        try
+                        {
+                            File.Delete(_workingdir + "\\" + _problem.OutputFileName + ".htmp");
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
-                    catch
+                    else
                     {
-                        //ignored
+                        try
+                        {
+                            File.Delete(_workingdir + "\\" + _problem.OutputFileName);
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
                     _isfault = false;
                     _isexited = false;
+                    var tmpOutputFile =
+                        new FileStream(_workingdir + "\\" + _problem.OutputFileName + ".htmp", FileMode.Create,
+                            FileAccess.Write, FileShare.ReadWrite);
+                    var tmpOutputStream = new StreamWriter(tmpOutputFile, Encoding.Default) { AutoFlush = true };
                     var execute = new Process
                     {
                         StartInfo =
@@ -368,121 +386,144 @@ namespace Server
                         },
                         EnableRaisingEvents = true
                     };
+                    execute.OutputDataReceived += (sender, args) =>
+                    {
+                        try
+                        {
+                            tmpOutputStream.WriteLine(args.Data);
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                    };
                     execute.Exited += Exithandler;
                     Thread.Sleep(100);
-                    try
+
+                    lock (Connection.JudgePointLock)
                     {
-                        execute.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                        JudgeResult.Exitcode[_cur] = 0;
-                        JudgeResult.Score[_cur] = 0;
-                        JudgeResult.Timeused[_cur] = 0;
-                        JudgeResult.Memoryused[_cur] = 0;
-                        continue;
-                    }
-                    long curTime = 0;
-                    var noProcessTime = DateTime.Now;
-                    if (_problem.InputFileName == "stdin")
-                    {
-                        lock (Connection.StreamLock)
+
+                        try
+                        {
+                            execute.Start();
+                        }
+                        catch (Exception ex)
+                        {
+                            JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
+                            JudgeResult.Exitcode[_cur] = 0;
+                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Timeused[_cur] = 0;
+                            JudgeResult.Memoryused[_cur] = 0;
+                            continue;
+                        }
+                        execute.StandardInput.AutoFlush = true;
+                        execute.BeginOutputReadLine();
+                        var inputStream = execute.StandardInput;
+                        long curTime = 0;
+                        var noProcessTime = DateTime.Now;
+                        if (_problem.InputFileName == "stdin")
+                        {
+                            Task.Run(() =>
+                            {
+                                lock (Connection.StreamLock)
+                                {
+                                    try
+                                    {
+                                        inputStream
+                                            .Write(File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) +
+                                                   "\0");
+                                    }
+                                    catch
+                                    {
+                                    //ignored
+                                }
+                                }
+                            });
+                        }
+                        while (!_isexited)
+                        {
+                            long dt = 0;
+                            try
+                            {
+                                execute?.Refresh();
+                                JudgeResult.Timeused[_cur] = Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                                if (curTime != JudgeResult.Timeused[_cur])
+                                {
+                                    noProcessTime = DateTime.Now;
+                                    curTime = JudgeResult.Timeused[_cur];
+                                }
+                                else
+                                {
+                                    dt = Convert.ToInt64((DateTime.Now - noProcessTime).TotalMilliseconds);
+                                }
+                                JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    execute?.Kill();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
+                                _isexited = true;
+                            }
+                            if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
+                                dt > _problem.DataSets[_cur].TimeLimit * 20)
+                            {
+                                _isfault = true;
+                                try
+                                {
+                                    execute?.Kill();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
+                                _isexited = true;
+                                JudgeResult.Result[_cur] = "Time Limit Exceeded";
+                                JudgeResult.Score[_cur] = 0;
+                                JudgeResult.Exitcode[_cur] = 0;
+                            }
+                            if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
+                            {
+                                _isfault = true;
+                                try
+                                {
+                                    execute?.Kill();
+                                }
+                                catch
+                                {
+                                    //ignored 
+                                }
+                                _isexited = true;
+                                JudgeResult.Result[_cur] = "Memory Limit Exceeded";
+                                JudgeResult.Score[_cur] = 0;
+                                JudgeResult.Exitcode[_cur] = 0;
+                            }
+                        }
+                        if (_isfault)
                         {
                             try
                             {
-                                using (var tmpInputFile = new FileStream(_problem.DataSets[_cur].InputFile,
-                                    FileMode.Open,
-                                    FileAccess.Read,
-                                    FileShare.ReadWrite))
-                                {
-                                    using (var tmpReadStream = new StreamReader(tmpInputFile, Encoding.Default))
-                                    {
-                                        execute.StandardInput.AutoFlush = true;
-                                        execute.StandardInput.WriteAsync(tmpReadStream.ReadToEnd() + "\0");
-                                    }
-                                }
+                                execute?.Close();
                             }
                             catch
                             {
                                 //ignored
                             }
+                            continue;
                         }
-                    }
-                    while (!_isexited)
-                    {
-                        long dt = 0;
                         try
                         {
-                            execute?.Refresh();
-                            JudgeResult.Timeused[_cur] = Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
-                            if (curTime != JudgeResult.Timeused[_cur])
-                            {
-                                noProcessTime = DateTime.Now;
-                                curTime = JudgeResult.Timeused[_cur];
-                            }
-                            else
-                            {
-                                dt = Convert.ToInt64((DateTime.Now - noProcessTime).TotalMilliseconds);
-                            }
-                            JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
+                            execute?.Kill();
                         }
                         catch
                         {
-                            try
-                            {
-                                execute?.Kill();
-                            }
-                            catch
-                            {
-                                //ignored 
-                            }
-                            _isexited = true;
+                            //ignored 
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
-                            dt > _problem.DataSets[_cur].TimeLimit * 20)
-                        {
-                            _isfault = true;
-                            try
-                            {
-                                execute?.Kill();
-                                execute?.Close();
-                            }
-                            catch
-                            {
-                                //ignored 
-                            }
-                            _isexited = true;
-                            JudgeResult.Result[_cur] = "Time Limit Exceeded";
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Exitcode[_cur] = 0;
-                        }
-                        if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
-                        {
-                            _isfault = true;
-                            try
-                            {
-                                execute?.Kill();
-                                execute?.Close();
-                            }
-                            catch
-                            {
-                                //ignored 
-                            }
-                            _isexited = true;
-                            JudgeResult.Result[_cur] = "Memory Limit Exceeded";
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Exitcode[_cur] = 0;
-                        }
-                    }
-                    if (_isfault) continue;
-                    try
-                    {
-                        execute?.Kill();
-                    }
-                    catch
-                    {
-                        //ignored 
                     }
                     Thread.Sleep(100);
                     lock (Connection.ComparingLock)
@@ -496,26 +537,13 @@ namespace Server
                                 continue;
                             }
                         }
-                        else
+                        try
                         {
-                            using (var tmpOutputFile = new FileStream(_workingdir + "\\" + _problem.OutputFileName,
-                                FileMode.Create, FileAccess.ReadWrite))
-                            {
-                                using (var tmpOutputStream =
-                                    new StreamWriter(tmpOutputFile, Encoding.Default))
-                                {
-                                    tmpOutputStream.AutoFlush = true;
-                                    while (!execute.StandardOutput.EndOfStream)
-                                    {
-                                        var t = new char[1048576];
-                                        var cnt = execute.StandardOutput.ReadBlockAsync(t, 0, 1048576);
-                                        cnt.Wait();
-                                        tmpOutputStream.Write(t, 0, cnt.Result);
-                                    }
-                                    tmpOutputStream.Close();
-                                    tmpOutputFile.Close();
-                                }
-                            }
+                            execute?.Close();
+                        }
+                        catch
+                        {
+                            //ignored
                         }
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
                         {
@@ -541,7 +569,10 @@ namespace Server
                                             FileName = _problem.SpecialJudge,
                                             Arguments = Dn(_problem.DataSets[_cur].InputFile) + " " +
                                                         Dn(_problem.DataSets[_cur].OutputFile) + " " +
-                                                        Dn(_workingdir + "\\" + _problem.OutputFileName) + " " +
+                                                        (_problem.InputFileName != "stdin"
+                                                            ? Dn(_workingdir + "\\" + _problem.OutputFileName)
+                                                            : Dn(_workingdir + "\\" + _problem.OutputFileName + ".htmp")
+                                                        ) + " " +
                                                         Dn(_workingdir + "\\hjudge_spj_result.dat"),
                                             WindowStyle = ProcessWindowStyle.Hidden
                                         };
@@ -590,7 +621,10 @@ namespace Server
                                 var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open,
                                     FileAccess.Read,
                                     FileShare.ReadWrite);
-                                var fs2 = new FileStream(_workingdir + "\\" + _problem.OutputFileName,
+                                var fs2 = new FileStream(
+                                    (_problem.InputFileName != "stdin"
+                                        ? _workingdir + "\\" + _problem.OutputFileName
+                                        : _workingdir + "\\" + _problem.OutputFileName + ".htmp"),
                                     FileMode.OpenOrCreate,
                                     FileAccess.Read,
                                     FileShare.ReadWrite);
@@ -631,12 +665,12 @@ namespace Server
                                     else break;
                                 } while (!(sr1.EndOfStream && sr2.EndOfStream));
                                 sr1.Close();
-                                sr2.Close();
                                 sr1.Dispose();
+                                sr2.Close();
                                 sr2.Dispose();
                                 fs1.Close();
-                                fs2.Close();
                                 fs1.Dispose();
+                                fs2.Close();
                                 fs2.Dispose();
                                 if (iswrong)
                                     continue;
@@ -649,14 +683,6 @@ namespace Server
                                 JudgeResult.Score[_cur] = 0;
                             }
                         }
-                    }
-                    try
-                    {
-                        execute?.Close();
-                    }
-                    catch
-                    {
-                        //ignored
                     }
                 }
             }
@@ -686,7 +712,6 @@ namespace Server
             try
             {
                 process?.Kill();
-                process?.Close();
             }
             catch
             {
