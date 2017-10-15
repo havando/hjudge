@@ -679,6 +679,7 @@ namespace Client
                     var icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(icon));
                     Connection.SendData("UpdateProfile", _userName + Divpar + icon);
+                    Loading1.Visibility = Visibility.Visible;
                 }
         }
 
@@ -840,6 +841,7 @@ namespace Client
             else
             {
                 Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
+                Loading3.Visibility = Visibility.Visible;
             }
         }
 
