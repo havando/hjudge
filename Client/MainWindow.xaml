@@ -73,6 +73,7 @@
                                      VerticalAlignment="Top" Width="308" KeyDown="Password_OnKeyDown" />
                         <Button Name="LoginButton" Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0"
                                 VerticalAlignment="Top" Width="66" Height="57" Click="Button_Click" IsEnabled="False" />
+                        <Image x:Name="Loading0" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="266,99,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                     </Grid>
                 </Grid>
             </TabItem>

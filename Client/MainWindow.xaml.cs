@@ -127,6 +127,7 @@ namespace Client
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
+            Loading0.RenderTransform = rtf;
             Loading1.RenderTransform = rtf;
             Loading2.RenderTransform = rtf;
             Loading3.RenderTransform = rtf;
@@ -137,7 +138,7 @@ namespace Client
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Connection.SendData("Login", UserName.Text + Divpar + Password.Password);
-            Loading1.Visibility = Visibility.Visible;
+            Loading0.Visibility = Visibility.Visible;
         }
 
         private void UpdateMainPage(string s)
@@ -192,6 +193,10 @@ namespace Client
                         }
                     case "Login":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading0.Visibility = Visibility.Hidden;
+                            }));
                             if (content == "Succeed")
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {
@@ -202,6 +207,7 @@ namespace Client
                                         JudgeResult.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
+                                    Loading1.Visibility = Visibility.Visible;
                                     Connection.SendData("RequestProfile", _userName);
                                     Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
                                     Connection.SendData("RequestFileList", string.Empty);
@@ -338,6 +344,7 @@ namespace Client
                                 Coins.Content = _coins;
                                 Experience.Content = _experience;
                                 SetLevel(_experience);
+                                ShowJudgeDetails(p);
                             }));
                             break;
                         }
@@ -371,6 +378,10 @@ namespace Client
                         }
                     case "UpdateProfile":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading1.Visibility = Visibility.Hidden;
+                            }));
                             switch (content)
                             {
                                 case "Succeed":
@@ -385,14 +396,14 @@ namespace Client
                                     Connection.SendData("RequestProfile", _userName);
                                     break;
                             }
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                Loading1.Visibility = Visibility.Hidden;
-                            }));
                             break;
                         }
                     case "ChangePassword":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading1.Visibility = Visibility.Hidden;
+                            }));
                             switch (content)
                             {
                                 case "Succeed":
@@ -405,14 +416,14 @@ namespace Client
                                         MessageBoxImage.Error);
                                     break;
                             }
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                Loading1.Visibility = Visibility.Hidden;
-                            }));
                             break;
                         }
                     case "JudgeRecord":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading3.Visibility = Visibility.Hidden;
+                            }));
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 3) break;
                             _currentGetJudgeRecordIndex = Convert.ToInt32(final[0]) + Convert.ToInt32(final[1]);
@@ -422,12 +433,15 @@ namespace Client
                             {
                                 foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
                                     JudgeInfos.Add(i);
-                                Loading3.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
                     case "JudgeCode":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading3.Visibility = Visibility.Hidden;
+                            }));
                             var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             var j = (from c in JudgeInfos where c.JudgeId == jc.JudgeId select c)
                                 .FirstOrDefault();
@@ -436,7 +450,6 @@ namespace Client
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ShowJudgeDetails(j);
-                                Loading3.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -451,10 +464,13 @@ namespace Client
                         }
                     case "ProblemDataSet":
                         {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading2.Visibility = Visibility.Hidden;
+                            }));
                             if (content != "Denied") break;
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                Loading3.Visibility = Visibility.Hidden;
                                 _coins += 500;
                                 Coins.Content = _coins;
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500" });
@@ -613,13 +629,8 @@ namespace Client
 
         private void ShowJudgeDetails(JudgeInfo jInfo)
         {
-            var details = string.Empty;
-            if (jInfo.Result != null)
-                for (var i = 0; i < jInfo.Result.Length; i++)
-                    details +=
-                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数：{jInfo.Score[i]}\r\n";
             var x = new JudgeDetails();
-            x.SetContent(jInfo.Code, details);
+            x.SetContent(jInfo);
             x.Show();
         }
 

@@ -12,9 +12,15 @@ namespace Client
             InitializeComponent();
         }
 
-        public void SetContent(string code, string details)
+        public void SetContent(JudgeInfo jInfo)
         {
-            CodeBox.Text = "代码：\r\n" + code;
+            MyJudgeInfo.Content = $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，结果：{jInfo.ResultSummery}，得分：{jInfo.FullScore}";
+            CodeBox.Text = "代码：\r\n" + jInfo.Code;
+            var details = string.Empty;
+            if (jInfo.Result != null)
+                for (var i = 0; i < jInfo.Result.Length; i++)
+                    details +=
+                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数：{jInfo.Score[i]}\r\n";
             DetailsBox.Text = "详情：\r\n" + details;
         }
     }
