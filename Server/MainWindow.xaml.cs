@@ -179,7 +179,8 @@ namespace Server
             Button[] operationsButton =
             {
                 new Button {Height = 32, Width = 80, Content = "个人信息"},
-                new Button {Height = 32, Width = 80, Content = "题目管理"},
+                new Button {Height = 32, Width = 80, Content = "题目管理"}, //TODO: Competition Mode
+                new Button {Height = 32, Width = 80, Content = "比赛管理"},
                 new Button {Height = 32, Width = 80, Content = "评测日志"},
                 new Button {Height = 32, Width = 80, Content = "发送消息"},
                 new Button {Height = 32, Width = 80, Content = "成员管理"},
@@ -190,7 +191,8 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
             operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
-            operationsButton[2].Click += (o, args) =>
+            operationsButton[2].Click += (o, args) => new CompetitionManagement().ShowDialog();
+            operationsButton[3].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
                 {
@@ -203,12 +205,12 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
-            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
-            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
-            operationsButton[6].Click += (o, args) => new SystemConfiguration().ShowDialog();
-            operationsButton[7].Click += async (o, args) => await Logout();
-            operationsButton[8].Click += (o, args) => { Exit(); };
+            operationsButton[4].Click += (o, args) => new SendMessaging().ShowDialog();
+            operationsButton[5].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[6].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[7].Click += (o, args) => new SystemConfiguration().ShowDialog();
+            operationsButton[8].Click += async (o, args) => await Logout();
+            operationsButton[9].Click += (o, args) => { Exit(); };
             foreach (var t in operationsButton)
                 Operations.Items.Add(t);
         }
@@ -219,6 +221,7 @@ namespace Server
             {
                 new Button {Height = 32, Width = 80, Content = "个人信息"},
                 new Button {Height = 32, Width = 80, Content = "题目管理"},
+                new Button {Height = 32, Width = 80, Content = "比赛管理"},
                 new Button {Height = 32, Width = 80, Content = "评测日志"},
                 new Button {Height = 32, Width = 80, Content = "发送消息"},
                 new Button {Height = 32, Width = 80, Content = "成员管理"},
@@ -229,7 +232,8 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
             operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
-            operationsButton[2].Click += (o, args) =>
+            operationsButton[2].Click += (o, args) => new CompetitionManagement().ShowDialog();
+            operationsButton[3].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
                 {
@@ -242,12 +246,12 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
-            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
-            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
-            operationsButton[6].Click += (o, args) => new SystemConfiguration().ShowDialog();
-            operationsButton[7].Click += async (o, args) => await Logout();
-            operationsButton[8].Click += (o, args) => { Exit(); };
+            operationsButton[4].Click += (o, args) => new SendMessaging().ShowDialog();
+            operationsButton[5].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[6].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[7].Click += (o, args) => new SystemConfiguration().ShowDialog();
+            operationsButton[8].Click += async (o, args) => await Logout();
+            operationsButton[9].Click += (o, args) => { Exit(); };
             foreach (var t in operationsButton)
                 Operations.Items.Add(t);
         }
@@ -258,6 +262,7 @@ namespace Server
             {
                 new Button {Height = 32, Width = 80, Content = "个人信息"},
                 new Button {Height = 32, Width = 80, Content = "题目管理"},
+                new Button {Height = 32, Width = 80, Content = "比赛管理"},
                 new Button {Height = 32, Width = 80, Content = "评测日志"},
                 new Button {Height = 32, Width = 80, Content = "发送消息"},
                 new Button {Height = 32, Width = 80, Content = "选手管理"},
@@ -266,7 +271,8 @@ namespace Server
             };
             operationsButton[0].Click += (o, args) => new ProfileManagement().ShowDialog();
             operationsButton[1].Click += (o, args) => new ProblemManagement().ShowDialog();
-            operationsButton[2].Click += (o, args) =>
+            operationsButton[2].Click += (o, args) => new CompetitionManagement().ShowDialog();
+            operationsButton[3].Click += (o, args) =>
             {
                 if (_judgeLogsForm == null)
                 {
@@ -279,10 +285,10 @@ namespace Server
                     _judgeLogsForm.Activate();
                 }
             };
-            operationsButton[3].Click += (o, args) => new SendMessaging().ShowDialog();
-            operationsButton[4].Click += (o, args) => new MembersManagement().ShowDialog();
-            operationsButton[5].Click += (o, args) => new OfflineJudge().Show();
-            operationsButton[6].Click += async (o, args) => await Logout();
+            operationsButton[4].Click += (o, args) => new SendMessaging().ShowDialog();
+            operationsButton[5].Click += (o, args) => new MembersManagement().ShowDialog();
+            operationsButton[6].Click += (o, args) => new OfflineJudge().Show();
+            operationsButton[7].Click += async (o, args) => await Logout();
             foreach (var t in operationsButton)
                 Operations.Items.Add(t);
         }

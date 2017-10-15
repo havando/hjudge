@@ -176,6 +176,9 @@
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="ClientData.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="CompetitionManagement.xaml.cs">
+      <DependentUpon>CompetitionManagement.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CompilerConfiguration.xaml.cs">
       <DependentUpon>CompilerConfiguration.xaml</DependentUpon>
     </Compile>
@@ -217,6 +220,10 @@
     </Compile>
     <Compile Include="UserHelper.cs" />
     <Compile Include="UserInfo.cs" />
+    <Page Include="CompetitionManagement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CompilerConfiguration.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
