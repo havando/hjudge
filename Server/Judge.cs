@@ -311,11 +311,11 @@ namespace Server
         {
             for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
             {
-                if (_cur != 0)
-                {
-                    Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}");
-                }
+                //if (_cur != 0)
+                //{
+                //    Connection.UpdateMainPageState(
+                //        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}");
+                //}
                 if (!File.Exists(_problem.DataSets[_cur].InputFile) || !File.Exists(_problem.DataSets[_cur].OutputFile))
                 {
                     JudgeResult.Result[_cur] = "Problem Configuration Error";
@@ -686,8 +686,8 @@ namespace Server
                     }
                 }
             }
-            Connection.UpdateMainPageState(
-                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}");
+            //Connection.UpdateMainPageState(
+            //    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}");
         }
 
         private void Exithandler(object sender, EventArgs e)
