@@ -74,7 +74,7 @@
                         <Button Name="LoginButton" Content="登录" HorizontalAlignment="Left" Margin="453,95,0,0"
                                 VerticalAlignment="Top" Width="66" Height="26" Click="Button_Click" IsEnabled="False" />
                         <Image x:Name="Loading0" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="266,99,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
-                        <Button Name="Register" Content="注册" HorizontalAlignment="Left" Margin="453,126,0,0" VerticalAlignment="Top" Width="66" Click="Register_Click" Height="26"/>
+                        <Button Name="Register" IsEnabled="False" Content="注册" HorizontalAlignment="Left" Margin="453,126,0,0" VerticalAlignment="Top" Width="66" Click="Register_Click" Height="26"/>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -188,7 +188,7 @@
                     <Image Name="ReceivingFile" Visibility="Hidden" HorizontalAlignment="Left" Height="45" Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="查看比赛">
+            <TabItem Name="Competitions" Header="查看比赛">
                 <Grid>
                     <Label Content="功能开发中，请期待后续版本" HorizontalAlignment="Left" Margin="266,128,0,0" VerticalAlignment="Top"/>
 

@@ -116,7 +116,7 @@ namespace Client
         {
             LoginGrid.Margin = new Thickness(61, 32, 0, 0);
             CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
+                JudgeResult.Visibility = GetFiles.Visibility = ContentGrid.Visibility = Competitions.Visibility = Visibility.Hidden;
 
             var rtf = new RotateTransform
             {
@@ -161,7 +161,7 @@ namespace Client
                             {
                                 case "Connected":
                                     {
-                                        Dispatcher.BeginInvoke(new Action(() => { LoginButton.IsEnabled = true; }));
+                                        Dispatcher.BeginInvoke(new Action(() => { LoginButton.IsEnabled = Register.IsEnabled = true; }));
                                         break;
                                     }
                                 case "Break":
@@ -170,7 +170,7 @@ namespace Client
                                         {
                                             CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                                                 JudgeResult.Visibility =
-                                                    GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
+                                                    GetFiles.Visibility = ContentGrid.Visibility = Competitions.Visibility = Visibility.Hidden;
                                             LoginGrid.Visibility = Visibility.Visible;
                                             OldPassword.Password = NewPassword.Password =
                                                 ConfirmPassword.Password = string.Empty;
@@ -183,7 +183,7 @@ namespace Client
                                             Identity.Content = "身份：";
                                             CodeBox.Text = string.Empty;
                                             _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                            LoginButton.IsEnabled = false;
+                                            LoginButton.IsEnabled = Register.IsEnabled = false;
                                             TabControl.SelectedIndex = 0;
                                         }));
                                         break;
@@ -204,7 +204,7 @@ namespace Client
                                     Password.Password = string.Empty;
                                     _coins = _experience = _currentGetJudgeRecordIndex = 0;
                                     CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                        JudgeResult.Visibility =
+                                        JudgeResult.Visibility = Competitions.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Loading1.Visibility = Visibility.Visible;
@@ -229,7 +229,7 @@ namespace Client
                             {
                                 CodeSubmit.Visibility = Messaging.Visibility =
                                     Messages.Visibility = JudgeResult.Visibility =
-                                        GetFiles.Visibility = ContentGrid.Visibility = Visibility.Hidden;
+                                        GetFiles.Visibility = ContentGrid.Visibility = Competitions.Visibility = Visibility.Hidden;
                                 LoginGrid.Visibility = Visibility.Visible;
                                 Loading1.Visibility = Visibility.Hidden;
                                 OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
