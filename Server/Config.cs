@@ -9,5 +9,6 @@ namespace Server
         public bool AllowRequestDataSet { get; set; }
         public int MutiThreading { get; set; }
         public string IpAddress { get; set; }
+        public int RegisterMode { get; set; }
     }
 }

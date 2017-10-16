@@ -962,6 +962,24 @@ namespace Client
             });
         }
 
+        private void Register_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Register.IsEnabled) return;
+            if (!string.IsNullOrWhiteSpace(UserName.Text) && !string.IsNullOrEmpty(Password.Password))
+            {
+                if (MessageBox.Show("你输入的密码是：" + Password.Password + "，确认无误？", "提示", MessageBoxButton.OKCancel,
+                        MessageBoxImage.Question) == MessageBoxResult.OK)
+                {
+                    Connection.SendData("Register", UserName.Text + Divpar + Password.Password);
+                    MessageBox.Show("注册请求已提交，等待审核。审核完毕后你将可以登录。请勿重复注册。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show("请填写完整的用户名和密码", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (!LoginButton.IsEnabled) return;

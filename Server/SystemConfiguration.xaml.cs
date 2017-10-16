@@ -20,6 +20,24 @@ namespace Server
             AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
             MutiThreading.Text = Configuration.Configurations.MutiThreading.ToString();
             Address.Text = Configuration.Configurations.IpAddress;
+            if (Configuration.Configurations.RegisterMode == 0)
+            {
+                BanRegister.IsChecked = true;
+                InquiryRegister.IsChecked = false;
+                AllowRegister.IsChecked = false;
+            }
+            if (Configuration.Configurations.RegisterMode == 1)
+            {
+                BanRegister.IsChecked = false;
+                InquiryRegister.IsChecked = true;
+                AllowRegister.IsChecked = false;
+            }
+            if (Configuration.Configurations.RegisterMode == 2)
+            {
+                BanRegister.IsChecked = false;
+                InquiryRegister.IsChecked = false;
+                AllowRegister.IsChecked = true;
+            }
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
@@ -57,6 +75,18 @@ namespace Server
             if (mt < 0)
                 mt = Configuration.Configurations.MutiThreading;
             Configuration.Configurations.MutiThreading = mt;
+            if (BanRegister.IsChecked ?? false)
+            {
+                Configuration.Configurations.RegisterMode = 0;
+            }
+            if (InquiryRegister.IsChecked ?? false)
+            {
+                Configuration.Configurations.RegisterMode = 1;
+            }
+            if (AllowRegister.IsChecked ?? false)
+            {
+                Configuration.Configurations.RegisterMode = 2;
+            }
             Configuration.Save();
         }
     }

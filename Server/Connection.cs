@@ -283,6 +283,88 @@ namespace Server
             return ji.ToArray();
         }
 
+        private static bool RegisterUser(string userName, string password)
+        {
+            if (CheckUser(userName) != 0)
+            {
+                return false;
+            }
+            lock (DataBaseLock)
+            {
+                try
+                {
+                    using (var cmd = new SQLiteCommand(_sqLite))
+                    {
+                        cmd.CommandText =
+                            "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                        SQLiteParameter[] parameters =
+                        {
+                            new SQLiteParameter("@1", DbType.String),
+                            new SQLiteParameter("@2", DbType.String),
+                            new SQLiteParameter("@3", DbType.String),
+                            new SQLiteParameter("@4", DbType.Int32),
+                            new SQLiteParameter("@5", DbType.String),
+                            new SQLiteParameter("@6", DbType.String),
+                            new SQLiteParameter("@7", DbType.Int32),
+                            new SQLiteParameter("@8", DbType.Int32)
+                        };
+                        parameters[0].Value = userName;
+                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[2].Value = password;
+                        parameters[3].Value = 4;
+                        parameters[4].Value = string.Empty;
+                        parameters[5].Value = string.Empty;
+                        parameters[6].Value = 0;
+                        parameters[7].Value = 0;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static void RemoteRegister(string userName, string password)
+        {
+            if (Configuration.Configurations.RegisterMode == 0) return;
+
+            if (CheckUser(userName) != 0)
+            {
+                return;
+            }
+            SHA256 s = new SHA256CryptoServiceProvider();
+            var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(password));
+            var sb = new StringBuilder();
+            foreach (var t in retVal)
+                sb.Append(t.ToString("x2"));
+            if (Configuration.Configurations.RegisterMode == 1)
+            {
+                if (MessageBox.Show($"用户 {userName} 请求注册 hjudge，是否同意？", "提示", MessageBoxButton.YesNo,
+                        MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    if (RegisterUser(userName, sb.ToString()))
+                    {
+                        UserHelper.GetUserBelongs();
+                        UpdateMainPageState(
+                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {userName} 注册了");
+                    }
+                }
+            }
+            else
+            {
+                if (RegisterUser(userName, sb.ToString()))
+                {
+                    UserHelper.GetUserBelongs();
+                    UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {userName} 注册了");
+                }
+            }
+        }
+
         private static bool RemoteChangePassword(string userName, string oldPassword, string newPassword)
         {
             SHA256 s = new SHA256CryptoServiceProvider();
@@ -557,6 +639,7 @@ namespace Server
         public static ObservableCollection<UserInfo> GetUsersBelongs(int userType)
         {
             var a = new ObservableCollection<UserInfo>();
+            if (userType <= 0 || userType >= 4) return a;
             lock (DataBaseLock)
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
@@ -1475,6 +1558,17 @@ namespace Server
                                             u.Data.Clear();
                                             u.Info.UserId = 0;
                                             SendData("Logout", "Succeed", u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "Register":
+                                        {
+                                            if (u.Info.UserId != 0)
+                                                break;
+                                            Task.Run(() =>
+                                            {
+                                                RemoteRegister(Encoding.Unicode.GetString(res.Content[0]),
+                                                    Encoding.Unicode.GetString(res.Content[1]));
+                                            });
                                             break;
                                         }
                                     case "RequestFileList":

@@ -21,6 +21,7 @@ namespace Server
                 Configurations.AllowRequestDataSet = true;
                 Configurations.MutiThreading = 0;
                 Configurations.IpAddress = "127.0.0.1";
+                Configurations.RegisterMode = 0;
                 File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
                     SerializeToXmlString(Configurations), Encoding.UTF8);
             }
