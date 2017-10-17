@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="比赛管理" Height="312" Width="693.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True">
+        Title="比赛管理" Height="349" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True">
     <Grid>
-        <ListView HorizontalAlignment="Left" Height="252" Margin="10,10,0,0" VerticalAlignment="Top" Width="226">
+        <ListView HorizontalAlignment="Left" Height="291" Margin="10,10,0,0" VerticalAlignment="Top" Width="302">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="比赛 ID" Width="50"/>
@@ -18,7 +18,29 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label Content="功能开发中，请期待后续更新" HorizontalAlignment="Left" Margin="374,116,0,0" VerticalAlignment="Top"/>
+        <Label Content="比赛名称：" HorizontalAlignment="Left" Margin="317,10,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="ComName"  HorizontalAlignment="Left" Height="26" Margin="392,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="192"/>
+        <Label Content="开始时间：" HorizontalAlignment="Left" Margin="317,41,0,0" VerticalAlignment="Top"/>
+        <Label Content="结束时间：" HorizontalAlignment="Left" Margin="317,103,0,0" VerticalAlignment="Top"/>
+        <DatePicker Name="StartDate" HorizontalAlignment="Left" Margin="323,72,0,0" VerticalAlignment="Top" Width="137"/>
+        <TextBox Name="StartHour" HorizontalAlignment="Left" Height="24" Margin="465,72,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="29"/>
+        <TextBlock HorizontalAlignment="Left" Margin="496,76,0,0" TextWrapping="Wrap"  Text="：" VerticalAlignment="Top" Height="23" Width="10"/>
+        <TextBox x:Name="StartMinute" HorizontalAlignment="Left" Height="24" Margin="508,72,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="30"/>
+        <TextBlock HorizontalAlignment="Left" Margin="540,76,0,0" TextWrapping="Wrap"  Text="：" VerticalAlignment="Top" Height="23" Width="10"/>
+        <TextBox x:Name="StartSecond" HorizontalAlignment="Left" Height="24" Margin="554,72,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="30"/>
+        <DatePicker x:Name="EndDate" HorizontalAlignment="Left" Margin="323,132,0,0" VerticalAlignment="Top" Width="137"/>
+        <TextBox x:Name="EndHour" HorizontalAlignment="Left" Height="24" Margin="465,132,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="29"/>
+        <TextBlock HorizontalAlignment="Left" Margin="496,136,0,0" TextWrapping="Wrap"  Text="：" VerticalAlignment="Top" Height="24" Width="10"/>
+        <TextBox x:Name="EndMinute" HorizontalAlignment="Left" Height="24" Margin="508,132,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="30"/>
+        <TextBlock HorizontalAlignment="Left" Margin="540,136,0,0" TextWrapping="Wrap"  Text="：" VerticalAlignment="Top" Height="24" Width="10"/>
+        <TextBox x:Name="EndSecond" HorizontalAlignment="Left" Height="24" Margin="554,132,0,0" TextWrapping="Wrap" Text="0"  VerticalAlignment="Top" Width="30"/>
+        <Label Content="题目设置：（输入题目 ID，以空格分隔开）" HorizontalAlignment="Left" Margin="317,161,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="ComProblems" HorizontalAlignment="Left" Height="26" Margin="323,192,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="261"/>
+        <Label Content="比赛选项：" HorizontalAlignment="Left" Margin="317,223,0,0" VerticalAlignment="Top"/>
+        <ListBox HorizontalAlignment="Left" Height="47" Margin="323,254,0,0" VerticalAlignment="Top" Width="261"/>
+        <Button Content="添加" HorizontalAlignment="Left" Margin="589,10,0,0" VerticalAlignment="Top" Width="57" Height="30"/>
+        <Button Content="删除" HorizontalAlignment="Left" Margin="589,45,0,0" VerticalAlignment="Top" Width="57" Height="30"/>
+        <Button Content="保存" HorizontalAlignment="Left" Margin="589,271,0,0" VerticalAlignment="Top" Width="57" Height="30"/>
 
     </Grid>
 </Window>
