@@ -365,8 +365,6 @@ namespace Server
                             //ignored
                         }
                     }
-                    _isfault = false;
-                    _isexited = false;
                     var tmpOutputFile =
                         new FileStream(_workingdir + "\\" + _problem.OutputFileName + ".htmp", FileMode.Create,
                             FileAccess.Write, FileShare.ReadWrite);
@@ -402,7 +400,8 @@ namespace Server
 
                     lock (Connection.JudgePointLock)
                     {
-
+                        _isfault = false;
+                        _isexited = false;
                         try
                         {
                             execute.Start();
