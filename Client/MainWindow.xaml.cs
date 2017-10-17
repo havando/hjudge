@@ -307,7 +307,7 @@ namespace Client
                                 if (p.ResultSummery == "Accepted")
                                 {
                                     var delta = 4 + _random.Next() % 32;
-                                    var delta2 = 16 + _random.Next() % 8;
+                                    var delta2 = 16 + _random.Next() % 12;
                                     Connection.SendData("UpdateExperience", delta.ToString());
                                     _experience += delta;
                                     Connection.SendData("UpdateCoins", delta2.ToString());

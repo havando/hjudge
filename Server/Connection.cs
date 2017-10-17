@@ -1681,14 +1681,22 @@ namespace Server
                                                                 var outputName =
                                                                 GetRealString(problem.DataSets[i].OutputFile,
                                                                     problem.ProblemName, i);
+                                                                var inputFilePath = inputName.Replace(
+                                                                    Environment.CurrentDirectory,
+                                                                    string.Empty);
+                                                                inputFilePath = inputFilePath.Substring(0,
+                                                                    inputFilePath.LastIndexOf("\\", StringComparison.Ordinal)) + "\\" + (i + 1);
+                                                                var outputFilePath = outputName.Replace(
+                                                                    Environment.CurrentDirectory,
+                                                                    string.Empty);
+                                                                outputFilePath = outputFilePath.Substring(0,
+                                                                    outputFilePath.LastIndexOf("\\", StringComparison.Ordinal)) + "\\" + (i + 1);
                                                                 if (File.Exists(inputName))
                                                                     zip.AddFile(inputName,
-                                                                    inputName.Replace(Environment.CurrentDirectory,
-                                                                        string.Empty));
+                                                                    inputFilePath);
                                                                 if (File.Exists(outputName))
                                                                     zip.AddFile(outputName,
-                                                                    outputName.Replace(Environment.CurrentDirectory,
-                                                                        string.Empty));
+                                                                    outputFilePath);
                                                             }
                                                             zip.Save(ms);
                                                         }
