@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -79,29 +80,13 @@ namespace Client
 
             if (string.IsNullOrEmpty(Configuration.Configurations.Ip))
             {
-                var hostIp = Dns.GetHostAddresses(Dns.GetHostName());
-                var flag = false;
-                foreach (var t in hostIp)
-                {
-                    if (t.ToString().Contains(":"))
-                        continue;
-                    Configuration.Configurations.Ip = t.ToString();
-                    Configuration.Configurations.Port = 23333;
-                    flag = true;
-                    break;
-                }
-                if (!flag)
-                {
-                    MessageBox.Show("尚未配置服务端地址", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Environment.Exit(1);
-                }
-                else
-                {
-                    if (Connection.Init(Configuration.Configurations.Ip, Configuration.Configurations.Port,
-                        UpdateMainPage)) return;
-                    MessageBox.Show("程序初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Environment.Exit(1);
-                }
+                MessageBox.Show("尚未配置服务端地址，将自动连接至 ::1", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                Configuration.Configurations.Ip = "::1";
+                Configuration.Configurations.Port = 23333;
+                if (Connection.Init(Configuration.Configurations.Ip, Configuration.Configurations.Port,
+                    UpdateMainPage)) return;
+                MessageBox.Show("程序初始化失败，请检查网络", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
             }
             else
             {
@@ -493,6 +478,19 @@ namespace Client
                                 }
                                 Loading2.Visibility = Visibility.Hidden;
                             }));
+                            break;
+                        }
+                    case "Version":
+                        {
+                            if (content != Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    MessageBox.Show($"此版本的 hjudge - Client 无法正常工作，请更新至 {content} 版本", "提示",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                });
+                                Environment.Exit(0);
+                            }
                             break;
                         }
                 }

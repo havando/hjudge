@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -173,6 +174,7 @@ namespace Server
                 {
                     Recv.Add(new ClientData { Info = clientInfo });
                 }
+                SendData("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), id);
                 return HandleResult.Ok;
             };
             HServer.OnClose += (id, operation, code) =>

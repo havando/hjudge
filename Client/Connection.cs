@@ -457,6 +457,11 @@ namespace Client
                                         _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
                                         break;
                                     }
+                                case "Version":
+                                    {
+                                        _updateMainPage.Invoke($"Version{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        break;
+                                    }
                             }
                         }
                         catch
