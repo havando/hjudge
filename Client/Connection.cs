@@ -320,6 +320,7 @@ namespace Client
                                             _updateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
                                             break;
                                         }
+                                        _updateMainPage.Invoke($"ProblemDataSet{Divpar}Accepted");
                                         var problemId = Encoding.Unicode.GetString(res.Content[0]);
                                         var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
                                         File.WriteAllBytes(
