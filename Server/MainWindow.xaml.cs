@@ -130,20 +130,21 @@ namespace Server
             switch (res)
             {
                 case 1:
-                    {
-                        MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
-                    }
+                {
+                    MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                }
                 default:
-                    {
-                        if (res != 0)
-                            MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
-                    }
+                {
+                    if (res != 0)
+                        MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                }
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;
-            UpdateListBoxContent($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端");
+            UpdateListBoxContent(
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端");
             UserName.Text = string.Empty;
             Password.Password = string.Empty;
             LoginGrid.Visibility = Visibility.Hidden;

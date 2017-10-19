@@ -14,7 +14,8 @@ namespace Client
 
         public void SetContent(JudgeInfo jInfo)
         {
-            MyJudgeInfo.Content = $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，结果：{jInfo.ResultSummery}，得分：{jInfo.FullScore}";
+            MyJudgeInfo.Content =
+                $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，结果：{jInfo.ResultSummery}，得分：{jInfo.FullScore}";
             CodeBox.Text = "代码：\r\n" + jInfo.Code;
             var details = string.Empty;
             if (jInfo.Result != null)

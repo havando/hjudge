@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 
 namespace Server
@@ -46,17 +47,15 @@ namespace Server
             CurCompCnt.Content = $"当前数量：{Configuration.Configurations.Compiler.Count}";
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
             Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
             try
             {
                 if (Configuration.Configurations.IpAddress != Address.Text)
-                {
                     MessageBox.Show("检测到您更改了主机地址信息，需要重新启动本程序才能生效", "提示", MessageBoxButton.OK,
                         MessageBoxImage.Information);
-                }
             }
             catch
             {
@@ -76,17 +75,11 @@ namespace Server
                 mt = Configuration.Configurations.MutiThreading;
             Configuration.Configurations.MutiThreading = mt;
             if (BanRegister.IsChecked ?? false)
-            {
                 Configuration.Configurations.RegisterMode = 0;
-            }
             if (InquiryRegister.IsChecked ?? false)
-            {
                 Configuration.Configurations.RegisterMode = 1;
-            }
             if (AllowRegister.IsChecked ?? false)
-            {
                 Configuration.Configurations.RegisterMode = 2;
-            }
             Configuration.Save();
         }
     }

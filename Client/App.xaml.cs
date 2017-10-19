@@ -10,12 +10,13 @@ namespace Client
     public partial class App : Application
     {
         private static Mutex _mutex;
+
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
             _mutex = new Mutex(
                 true,
                 "hjudge_client",
-                out bool isSucceed);
+                out var isSucceed);
             if (!isSucceed)
             {
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);

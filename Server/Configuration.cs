@@ -29,14 +29,12 @@ namespace Server
             var rdr =
                 new StringReader(
                     File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
-            Configurations = (Config)xmlDeserializer.Deserialize(rdr);
+            Configurations = (Config) xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
                 EnvironmentVariableTarget.Process);
             if (Configurations.Compiler == null)
-            {
                 Configurations.Compiler = new List<Compiler>();
-            }
         }
 
         private static string SerializeToXmlString(object objectToSerialize)

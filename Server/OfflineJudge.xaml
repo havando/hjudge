@@ -52,10 +52,13 @@
                     <ProgressBar Name="JudgingProcess" HorizontalAlignment="Left" Height="25" Margin="300,70,0,0"
                                  VerticalAlignment="Top" Width="447" />
                     <Label Content="选手代码目录组织方式：" HorizontalAlignment="Left" Margin="225,40,0,0" VerticalAlignment="Top"
-                        RenderTransformOrigin="0.895,0.577" />
-                    <RadioButton Name="RadioButton1" Content="方案一" IsChecked="True" HorizontalAlignment="Left" Margin="372,46,0,0" VerticalAlignment="Top"/>
-                    <RadioButton Name="RadioButton2" Content="方案二" HorizontalAlignment="Left" Margin="432,46,0,0" VerticalAlignment="Top"/>
-                    <CheckBox Name="StdInOut" Content="使用标准输入输出" HorizontalAlignment="Left" Margin="580,46,0,0" VerticalAlignment="Top"/>
+                           RenderTransformOrigin="0.895,0.577" />
+                    <RadioButton Name="RadioButton1" Content="方案一" IsChecked="True" HorizontalAlignment="Left"
+                                 Margin="372,46,0,0" VerticalAlignment="Top" />
+                    <RadioButton Name="RadioButton2" Content="方案二" HorizontalAlignment="Left" Margin="432,46,0,0"
+                                 VerticalAlignment="Top" />
+                    <CheckBox Name="StdInOut" Content="使用标准输入输出" HorizontalAlignment="Left" Margin="580,46,0,0"
+                              VerticalAlignment="Top" />
                 </Grid>
             </TabItem>
             <TabItem Header="评测结果">
@@ -88,7 +91,20 @@
             <TabItem Header="评测帮助">
                 <Grid>
                     <TextBlock HorizontalAlignment="Left" Height="276" Margin="10,10,0,0" TextWrapping="Wrap"
-                               VerticalAlignment="Top" Width="737"><Run Text="评测"/><Run Text="前，请将各选手的源代码文件放在对应的文件夹下"/><Run Text="，题目名称只取英文和数字"/><Run Text=" "/><Run Text="。"/><LineBreak/><Run Text="如有两个选手名为 aaa、bbb，要测试的题目名称分别为d"/><Run Text="蛤"/><Run Text=" "/><Run Text="dd、e"/><Run Text="2的"/><Run Text="ee、fff，则目录结构如下："/><LineBreak/><Run Text="方案一："/><LineBreak/><Run Text="评测"/><Run Text="文件夹"/><Run Text="（名称任意）"/><LineBreak/><Run Text="     |----aaa"/><LineBreak/><Run Text="     |        |----ddd.cpp"/><LineBreak/><Run Text="     |        |----e2ee.cpp"/><LineBreak/><Run Text="     |        |----fff.cpp"/><LineBreak/><Run Text="     |"/><LineBreak/><Run Text="     |----bbb"/><LineBreak/><Run Text="              |----ddd.cpp"/><LineBreak/><Run Text="              |----e2ee.cpp"/><LineBreak/><Run Text="              |----fff.cpp"/><LineBreak/><Run Text="方案二："/><LineBreak/><Run Text="与方案一类似，但是需要在每个选手文件夹中给不同题目建立相应的文件夹，名称与该题目名称相同，然后将代码放入建立好的文件夹中，代码文件的文件名仍与该题目名称相同。"/></TextBlock>
+                               VerticalAlignment="Top" Width="737">
+                        <Run Text="评测" /><Run Text="前，请将各选手的源代码文件放在对应的文件夹下" /><Run Text="，题目名称只取英文和数字" />
+                        <Run Text=" " /><Run Text="。" /><LineBreak /><Run Text="如有两个选手名为 aaa、bbb，要测试的题目名称分别为d" />
+                        <Run Text="蛤" /><Run Text=" " /><Run Text="dd、e" /><Run Text="2的" />
+                        <Run Text="ee、fff，则目录结构如下：" /><LineBreak /><Run Text="方案一：" /><LineBreak /><Run Text="评测" />
+                        <Run Text="文件夹" /><Run Text="（名称任意）" /><LineBreak /><Run Text="     |----aaa" /><LineBreak />
+                        <Run Text="     |        |----ddd.cpp" /><LineBreak />
+                        <Run Text="     |        |----e2ee.cpp" /><LineBreak />
+                        <Run Text="     |        |----fff.cpp" /><LineBreak /><Run Text="     |" /><LineBreak />
+                        <Run Text="     |----bbb" /><LineBreak /><Run Text="              |----ddd.cpp" /><LineBreak />
+                        <Run Text="              |----e2ee.cpp" /><LineBreak />
+                        <Run Text="              |----fff.cpp" /><LineBreak /><Run Text="方案二：" /><LineBreak />
+                        <Run Text="与方案一类似，但是需要在每个选手文件夹中给不同题目建立相应的文件夹，名称与该题目名称相同，然后将代码放入建立好的文件夹中，代码文件的文件名仍与该题目名称相同。" />
+                    </TextBlock>
                 </Grid>
             </TabItem>
         </TabControl>

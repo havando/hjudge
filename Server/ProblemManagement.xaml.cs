@@ -40,7 +40,7 @@ namespace Server
                 var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", i.ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Server
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement)obj);
+                    ListBox.Items.Add((UIElement) obj);
                 }
             }
         }
@@ -137,7 +137,7 @@ namespace Server
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -152,7 +152,8 @@ namespace Server
                     b = (t as Grid).FindName($"Memory{i + 1}") as TextBox;
                     if (b != null) b.Text = problem.DataSets?[i]?.MemoryLimit.ToString() ?? string.Empty;
                     b = (t as Grid).FindName($"Score{i + 1}") as TextBox;
-                    if (b != null) b.Text = problem.DataSets?[i]?.Score.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+                    if (b != null)
+                        b.Text = problem.DataSets?[i]?.Score.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
                 }
         }
 
@@ -231,7 +232,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));

@@ -20,7 +20,7 @@ namespace Client
         private bool _isChecked { get; set; }
         public bool IsChecked { get; set; }
         public float FullScore { get; set; }
-        public event PropertyChangedEventHandler PropertyChanged;
         public string Type { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

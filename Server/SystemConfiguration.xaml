@@ -21,12 +21,16 @@
                Foreground="Red" />
         <Label Content="本机地址：" HorizontalAlignment="Left" Margin="20,109,0,0" VerticalAlignment="Top" />
         <TextBox Name="Address" HorizontalAlignment="Left" Height="26" Margin="90,109,0,0"
-            TextWrapping="Wrap" VerticalAlignment="Top" Width="219" />
-        <Button Content="进入配置" HorizontalAlignment="Left" Margin="231,18,0,0" VerticalAlignment="Top" Width="75" Height="26" Click="Button_Click_2"/>
-        <Label Name="CurCompCnt" Content="当前数量：0" HorizontalAlignment="Left" Margin="90,18,0,0" VerticalAlignment="Top"/>
-        <Label Content="注册模式：" HorizontalAlignment="Left" Margin="20,160,0,0" VerticalAlignment="Top"/>
-        <RadioButton Name="BanRegister" Content="禁止" HorizontalAlignment="Left" Margin="95,166,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton Name="InquiryRegister" Content="询问" HorizontalAlignment="Left" Margin="143,166,0,0" VerticalAlignment="Top"/>
-        <RadioButton Name="AllowRegister" Content="开放" HorizontalAlignment="Left" Margin="191,166,0,0" VerticalAlignment="Top"/>
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="219" />
+        <Button Content="进入配置" HorizontalAlignment="Left" Margin="231,18,0,0" VerticalAlignment="Top" Width="75"
+                Height="26" Click="Button_Click_2" />
+        <Label Name="CurCompCnt" Content="当前数量：0" HorizontalAlignment="Left" Margin="90,18,0,0" VerticalAlignment="Top" />
+        <Label Content="注册模式：" HorizontalAlignment="Left" Margin="20,160,0,0" VerticalAlignment="Top" />
+        <RadioButton Name="BanRegister" Content="禁止" HorizontalAlignment="Left" Margin="95,166,0,0"
+                     VerticalAlignment="Top" IsChecked="True" />
+        <RadioButton Name="InquiryRegister" Content="询问" HorizontalAlignment="Left" Margin="143,166,0,0"
+                     VerticalAlignment="Top" />
+        <RadioButton Name="AllowRegister" Content="开放" HorizontalAlignment="Left" Margin="191,166,0,0"
+                     VerticalAlignment="Top" />
     </Grid>
 </Window>

@@ -85,14 +85,12 @@ namespace Server
             {
                 Thread.Sleep(1000);
                 var all = members.Count * _problems.Count(t => t.IsChecked);
-                int[] cur = { -1 };
+                int[] cur = {-1};
                 var cnt = 0;
                 var myJudgeTask = new List<Task>();
                 var extList = new List<string>();
                 foreach (var compiler in Configuration.Configurations.Compiler)
-                {
-                    extList.AddRange(compiler.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                }
+                    extList.AddRange(compiler.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries));
                 foreach (var t in members)
                 {
                     if (_stop) break;
@@ -125,8 +123,9 @@ namespace Server
                                                throw new InvalidOperationException();
                                 code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
-                                           c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))?.DisplayName ??
+                                               c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
+                                                   .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))
+                                           ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
                             else
@@ -139,8 +138,9 @@ namespace Server
                                     throw new InvalidOperationException();
                                 code = File.ReadAllText(codeFile);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
-                                           c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))?.DisplayName ??
+                                               c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
+                                                   .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))
+                                           ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
                         }
@@ -150,10 +150,7 @@ namespace Server
                         }
                         cnt++;
                         var isStdInOut = false;
-                        Dispatcher.Invoke(() =>
-                        {
-                            isStdInOut = StdInOut.IsChecked ?? false;
-                        });
+                        Dispatcher.Invoke(() => { isStdInOut = StdInOut.IsChecked ?? false; });
                         myJudgeTask.Add(Task.Run(() =>
                             {
                                 var j = new Judge(m.ProblemId, 1, code, type, isStdInOut);
@@ -161,7 +158,7 @@ namespace Server
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {
                                     cur[0]++;
-                                    JudgingProcess.Value = (double)cur[0] * 100 / all;
+                                    JudgingProcess.Value = (double) cur[0] * 100 / all;
                                     JudgingLog.Items.Add(new Label
                                     {
                                         Content =
@@ -221,9 +218,9 @@ namespace Server
                         Content = $"#{j + 1}：{t.Result[i].Result[j]}，{t.Result[i].Score[j]}",
                         Children = new ObservableCollection<ResultTree>()
                     });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"时间：{t.Result[i].Timeused[j]}ms" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"内存：{t.Result[i].Memoryused[j]}kb" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"退出代码：{t.Result[i].Exitcode[j]}" });
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"时间：{t.Result[i].Timeused[j]}ms"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"内存：{t.Result[i].Memoryused[j]}kb"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"退出代码：{t.Result[i].Exitcode[j]}"});
                 }
                 f[i].Children.Add(new ResultTree
                 {
@@ -249,7 +246,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -341,7 +338,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));

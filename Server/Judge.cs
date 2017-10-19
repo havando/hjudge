@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace Server
 {
@@ -42,7 +41,7 @@ namespace Server
                                 };
                                 var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
                                 var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                    .Concat(new long[] { 0 })
+                                    .Concat(new long[] {0})
                                     .Max();
                                 if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
                                     Connection.CurJudgingCnt < 3)
@@ -112,7 +111,7 @@ namespace Server
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
                     return;
                 }
-                var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                var extList = t.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
                 if (extList.Length == 0)
                 {
                     for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -131,10 +130,12 @@ namespace Server
                 }
 
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
+                {
                     _problem.CompileCommand = GetRealString(t.DefaultArgs, 0, extList[0]);
+                }
                 else
                 {
-                    var commList = _problem.CompileCommand.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                    var commList = _problem.CompileCommand.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var s in commList)
                     {
                         var comm = s.Split(':');
@@ -253,7 +254,8 @@ namespace Server
                     var a = new ProcessStartInfo
                     {
                         FileName = safeCheck,
-                        Arguments = Dn(_workingdir + $"\\test{extList[0]}") + " " + Dn(_workingdir + "\\security_check.res"),
+                        Arguments = Dn(_workingdir + $"\\test{extList[0]}") + " " +
+                                    Dn(_workingdir + "\\security_check.res"),
                         ErrorDialog = false,
                         UseShellExecute = true,
                         CreateNoWindow = true,
@@ -279,7 +281,6 @@ namespace Server
                     sr.Close();
                     fs.Close();
                 }
-
             }
             catch (Exception ex)
             {
@@ -310,7 +311,6 @@ namespace Server
         private void Judging()
         {
             for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
-            {
                 //if (_cur != 0)
                 //{
                 //    Connection.UpdateMainPageState(
@@ -327,7 +327,6 @@ namespace Server
                 else
                 {
                     if (_problem.InputFileName != "stdin")
-                    {
                         try
                         {
                             File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
@@ -342,9 +341,7 @@ namespace Server
                             JudgeResult.Memoryused[_cur] = 0;
                             continue;
                         }
-                    }
                     if (_problem.InputFileName == "stdin")
-                    {
                         try
                         {
                             File.Delete(_workingdir + "\\" + _problem.OutputFileName + ".htmp");
@@ -353,9 +350,7 @@ namespace Server
                         {
                             //ignored
                         }
-                    }
                     else
-                    {
                         try
                         {
                             File.Delete(_workingdir + "\\" + _problem.OutputFileName);
@@ -364,11 +359,10 @@ namespace Server
                         {
                             //ignored
                         }
-                    }
                     var tmpOutputFile =
                         new FileStream(_workingdir + "\\" + _problem.OutputFileName + ".htmp", FileMode.Create,
                             FileAccess.Write, FileShare.ReadWrite);
-                    var tmpOutputStream = new StreamWriter(tmpOutputFile, Encoding.Default) { AutoFlush = true };
+                    var tmpOutputStream = new StreamWriter(tmpOutputFile, Encoding.Default) {AutoFlush = true};
                     var execute = new Process
                     {
                         StartInfo =
@@ -421,7 +415,6 @@ namespace Server
                         long curTime = 0;
                         var noProcessTime = DateTime.Now;
                         if (_problem.InputFileName == "stdin")
-                        {
                             Task.Run(() =>
                             {
                                 lock (Connection.StreamLock)
@@ -429,23 +422,24 @@ namespace Server
                                     try
                                     {
                                         inputStream
-                                            .Write(File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) +
-                                                   "\0");
+                                            .Write(
+                                                File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) +
+                                                "\0");
                                     }
                                     catch
                                     {
-                                    //ignored
-                                }
+                                        //ignored
+                                    }
                                 }
                             });
-                        }
                         while (!_isexited)
                         {
                             long dt = 0;
                             try
                             {
                                 execute?.Refresh();
-                                JudgeResult.Timeused[_cur] = Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                                JudgeResult.Timeused[_cur] =
+                                    Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
                                 if (curTime != JudgeResult.Timeused[_cur])
                                 {
                                     noProcessTime = DateTime.Now;
@@ -528,14 +522,12 @@ namespace Server
                     lock (Connection.ComparingLock)
                     {
                         if (_problem.InputFileName != "stdin")
-                        {
                             if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
                             {
                                 JudgeResult.Result[_cur] = "Output File Error";
                                 JudgeResult.Score[_cur] = 0;
                                 continue;
                             }
-                        }
                         try
                         {
                             execute?.Close();
@@ -621,9 +613,9 @@ namespace Server
                                     FileAccess.Read,
                                     FileShare.ReadWrite);
                                 var fs2 = new FileStream(
-                                    (_problem.InputFileName != "stdin"
+                                    _problem.InputFileName != "stdin"
                                         ? _workingdir + "\\" + _problem.OutputFileName
-                                        : _workingdir + "\\" + _problem.OutputFileName + ".htmp"),
+                                        : _workingdir + "\\" + _problem.OutputFileName + ".htmp",
                                     FileMode.OpenOrCreate,
                                     FileAccess.Read,
                                     FileShare.ReadWrite);
@@ -684,7 +676,6 @@ namespace Server
                         }
                     }
                 }
-            }
             //Connection.UpdateMainPageState(
             //    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}");
         }
