@@ -105,16 +105,16 @@ namespace Server
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();
-                    //sqlTable.Append("CREATE TABLE Message (");
-                    //sqlTable.Append("MessageId integer PRIMARY KEY autoincrement,");
-                    //sqlTable.Append("FromUserId int,");
-                    //sqlTable.Append("ToUserId int,");
-                    //sqlTable.Append("SendDate ntext,");
-                    //sqlTable.Append("Content ntext)");
-                    //cmd.CommandText = sqlTable.ToString();
-                    //cmd.ExecuteNonQuery();
-                    //sqlTable.Clear(); 
-                    //TODO: Make message function online
+                    sqlTable.Append("CREATE TABLE Message (");
+                    sqlTable.Append("MessageId integer PRIMARY KEY autoincrement,");
+                    sqlTable.Append("FromUserId int,");
+                    sqlTable.Append("ToUserId int,");
+                    sqlTable.Append("SendDate ntext,");
+                    sqlTable.Append("Content ntext)");
+                    cmd.CommandText = sqlTable.ToString();
+                    cmd.ExecuteNonQuery();
+                    sqlTable.Clear();
+
                 } //CreateTable
                 using (var cmd = new SQLiteCommand(sqLite))
                 {
@@ -1308,27 +1308,34 @@ namespace Server
             });
         }
 
-        private static void SendFile(string fileName, IntPtr connId) //TODO: Improve File Tranfer Ability
+        private static void SendFile(string fileName, IntPtr connId) //buggy
         {
             Task.Run(() =>
             {
                 var fileId = Guid.NewGuid().ToString();
                 var temp = Encoding.Unicode.GetBytes("File" + Divpar
+                                                     + Path.GetFileName(fileName) + Divpar
                                                      + fileId + Divpar
                                                      + new FileInfo(fileName).Length + Divtot);
                 var final = GetSendBuffer(temp);
                 HServer.Send(connId, final, final.Length);
-                var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                int cnt, last = 0;
-                do
+                Thread.Sleep(1000);
+                using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    var bytes = new byte[1024];
-                    cnt = fs.Read(bytes, last, 1024);
-                    var tempc = Encoding.Unicode.GetBytes(fileId + Divpar + cnt + Divpar + last + Divpar).Concat(bytes)
-                        .Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-                    last += cnt;
-                    HServer.Send(connId, tempc, tempc.Length);
-                } while (cnt != 0);
+                    long tot = 0;
+                    while (tot != fs.Length)
+                    {
+                        var bytes = new byte[10240];
+                        long cnt = fs.Read(bytes, 0, 10240);
+                        var tempc = Encoding.Unicode.GetBytes("File" + Divpar
+                                                              + Path.GetFileName(fileName) + Divpar
+                                                              + fileId + Divpar + tot + Divpar).Concat(bytes)
+                            .Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+                        tot += cnt;
+                        HServer.Send(connId, tempc, tempc.Length);
+                    }
+                    fs.Close();
+                }
             });
         }
 
@@ -1344,6 +1351,26 @@ namespace Server
 
         public static void SendMsg(string sendString, IntPtr connId)
         {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.Int32),
+                        new SQLiteParameter("@2", DbType.Int32),
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String)
+                    };
+                    parameters[0].Value = 1;
+                    parameters[1].Value = Recv.FirstOrDefault(i => i.Info.ConnId == connId)?.Info.UserId ?? 0;
+                    parameters[2].Value = DateTime.Now;
+                    parameters[3].Value = sendString;
+                    cmd.Parameters.AddRange(parameters);
+                    cmd.ExecuteNonQuery();
+                }
+            }
             SendData("Messaging", sendString, connId);
         }
 
@@ -1616,19 +1643,13 @@ namespace Server
                                                     filePath = filePath.Substring(filePath.Length - 1);
                                             }
                                             filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
-                                            var fileName = Path.GetFileName(filePath);
                                             if (File.Exists(filePath))
                                             {
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
                                                 ActionList.Enqueue(new Task(() =>
                                                 {
-                                                    SendData("File",
-                                                            Encoding.Unicode.GetBytes(fileName).ToList()
-                                                                .Concat(Encoding.Unicode.GetBytes(Divpar)
-                                                                    .Concat(File.ReadAllBytes(
-                                                                        filePath))),
-                                                            u.Info.ConnId);
+                                                    SendFile(filePath, u.Info.ConnId);
                                                 }));
                                             }
                                             break;
@@ -1754,6 +1775,26 @@ namespace Server
                                                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 发来了消息");
                                             ActionList.Enqueue(new Task(() =>
                                             {
+                                                lock (DataBaseLock)
+                                                {
+                                                    using (var cmd = new SQLiteCommand(_sqLite))
+                                                    {
+                                                        cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                                                        SQLiteParameter[] parameters =
+                                                        {
+                                                            new SQLiteParameter("@1", DbType.Int32),
+                                                            new SQLiteParameter("@2", DbType.Int32),
+                                                            new SQLiteParameter("@3", DbType.String),
+                                                            new SQLiteParameter("@4", DbType.String)
+                                                        };
+                                                        parameters[0].Value = u.Info.UserId;
+                                                        parameters[1].Value = 1;
+                                                        parameters[2].Value = DateTime.Now;
+                                                        parameters[3].Value = res.Content[0];
+                                                        cmd.Parameters.AddRange(parameters);
+                                                        cmd.ExecuteNonQuery();
+                                                    }
+                                                }
                                                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                                 {
                                                     var x = new Messaging();

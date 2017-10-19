@@ -27,6 +27,7 @@ namespace Client
         public static bool IsExited;
         private static Action<string> _updateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
+        private static readonly List<FileRecvInfo> FrInfo = new List<FileRecvInfo>();
         private static readonly PkgInfo PkgInfo = new PkgInfo();
         private static int _id;
         private static string _ip;
@@ -349,28 +350,51 @@ namespace Client
 
                                         break;
                                     }
-                                case "File":
+                                case "File": //buggy
                                     {
                                         var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                        var x = new List<byte>();
-                                        for (var i = 1; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
+                                        var fileId = Encoding.Unicode.GetString(res.Content[1]);
+                                        var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                        if (FrInfo.Any(i => i.FileId == fileId))
+                                        {
+                                            var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                            var x = new List<byte>();
+                                            for (var i = 3; i < res.Content.Count; i++)
+                                                if (i != res.Content.Count - 1)
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                    x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                }
+                                                else
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                }
+                                            fs.Fs.Position = length;
+                                            fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                            fs.CurrentLength += x.Count;
+                                            if (fs.CurrentLength == fs.TotLength)
                                             {
-                                                x.AddRange(res.Content[i]);
-                                                x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                fs.Fs.Close();
+                                                fs.Fs.Dispose();
+                                                FrInfo.Remove(fs);
+                                                Process.Start("explorer.exe",
+                                                    $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                                _updateMainPage($"FileReceived{Divpar}Done");
                                             }
-                                            else
+                                        }
+                                        else
+                                        {
+                                            FrInfo.Add(new FileRecvInfo
                                             {
-                                                x.AddRange(res.Content[i]);
-                                            }
-                                        File.WriteAllBytes(
-                                            $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                            x.ToArray());
-                                        x.Clear();
-                                        GC.Collect();
-                                        Process.Start("explorer.exe",
-                                            $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                        _updateMainPage($"FileReceived{Divpar}Done");
+                                                CurrentLength = 0,
+                                                FileId = fileId,
+                                                FileName = fileName,
+                                                Fs = new FileStream(
+                                                    $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                                    FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
+                                                TotLength = length
+                                            });
+                                        }
                                         break;
                                     }
                                 case "JudgeResult":

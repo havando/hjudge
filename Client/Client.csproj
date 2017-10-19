@@ -76,6 +76,7 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="FileInfomation.cs" />
+    <Compile Include="FileRecvInfo.cs" />
     <Compile Include="JudgeDetails.xaml.cs">
       <DependentUpon>JudgeDetails.xaml</DependentUpon>
     </Compile>
