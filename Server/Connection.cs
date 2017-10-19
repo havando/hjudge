@@ -1297,56 +1297,46 @@ namespace Server
 
         private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
         {
-            Task.Run(() =>
-            {
-                var temp = Encoding.Unicode.GetBytes(operation);
-                temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
-                temp = temp.Concat(sendBytes).ToArray();
-                temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-                var final = GetSendBuffer(temp);
-                HServer.Send(connId, final, final.Length);
-            });
+            var temp = Encoding.Unicode.GetBytes(operation);
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
+            temp = temp.Concat(sendBytes).ToArray();
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+            var final = GetSendBuffer(temp);
+            HServer.Send(connId, final, final.Length);
         }
 
-        private static void SendFile(string fileName, IntPtr connId) //buggy
+        private static void SendFile(string fileName, IntPtr connId)
         {
-            Task.Run(() =>
+            var fileId = Guid.NewGuid().ToString();
+            var temp = Encoding.Unicode.GetBytes("File" + Divpar
+                                                 + Path.GetFileName(fileName) + Divpar
+                                                 + fileId + Divpar
+                                                 + new FileInfo(fileName).Length + Divtot);
+            var final = GetSendBuffer(temp);
+            HServer.Send(connId, final, final.Length);
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                var fileId = Guid.NewGuid().ToString();
-                var temp = Encoding.Unicode.GetBytes("File" + Divpar
-                                                     + Path.GetFileName(fileName) + Divpar
-                                                     + fileId + Divpar
-                                                     + new FileInfo(fileName).Length + Divtot);
-                var final = GetSendBuffer(temp);
-                HServer.Send(connId, final, final.Length);
-                Thread.Sleep(1000);
-                using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                long tot = 0;
+                while (tot != fs.Length)
                 {
-                    long tot = 0;
-                    while (tot != fs.Length)
-                    {
-                        var bytes = new byte[10240];
-                        long cnt = fs.Read(bytes, 0, 10240);
-                        var tempc = Encoding.Unicode.GetBytes("File" + Divpar
-                                                              + Path.GetFileName(fileName) + Divpar
-                                                              + fileId + Divpar + tot + Divpar).Concat(bytes)
-                            .Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-                        tot += cnt;
-                        HServer.Send(connId, tempc, tempc.Length);
-                    }
-                    fs.Close();
+                    var bytes = new byte[524288];
+                    long cnt = fs.Read(bytes, 0, 524288);
+                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes("File" + Divpar
+                                                          + Path.GetFileName(fileName) + Divpar
+                                                          + fileId + Divpar + tot + Divpar).Concat(bytes.Take((int)cnt))
+                        .Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray());
+                    tot += cnt;
+                    HServer.Send(connId, tempc, tempc.Length);
                 }
-            });
+                fs.Close();
+            }
         }
 
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
-            Task.Run(() =>
-            {
-                var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-                var final = GetSendBuffer(temp);
-                HServer.Send(connId, final, final.Length);
-            });
+            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
+            var final = GetSendBuffer(temp);
+            HServer.Send(connId, final, final.Length);
         }
 
         public static void SendMsg(string sendString, IntPtr connId)

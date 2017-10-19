@@ -230,6 +230,7 @@ namespace Client
                                 TabControl.SelectedIndex = 0;
                                 FileList.IsEnabled = true;
                                 ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
                                 Loading1.Visibility = Visibility.Hidden;
                                 Loading2.Visibility = Visibility.Hidden;
                                 Loading3.Visibility = Visibility.Hidden;
@@ -276,6 +277,7 @@ namespace Client
                                     });
                                 }
                                 ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -444,9 +446,18 @@ namespace Client
                             {
                                 FileList.IsEnabled = true;
                                 ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
+                    case "FileReceiving":
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            ReceivingProcess.Content = content;
+                        }));
+                        break;
+                    }
                     case "ProblemDataSet":
                         {
                             Dispatcher.BeginInvoke(new Action(() =>
@@ -796,6 +807,7 @@ namespace Client
         {
             Connection.SendData("RequestFileList", string.Empty);
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Visibility = Visibility.Visible;
         }
 
         private void Button_Click_7(object sender, RoutedEventArgs e)
@@ -806,12 +818,14 @@ namespace Client
                 : string.Empty;
             Connection.SendData("RequestFileList", CurrentLocation.Text);
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Visibility = Visibility.Visible;
         }
 
         private void Button_Click_8(object sender, RoutedEventArgs e)
         {
             Connection.SendData("RequestFileList", CurrentLocation.Text);
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Visibility = Visibility.Visible;
         }
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
@@ -950,6 +964,7 @@ namespace Client
                 FileList.IsEnabled = false;
             }
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Visibility = Visibility.Visible;
         }
 
         private void Window_Closed(object sender, EventArgs e)

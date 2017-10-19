@@ -144,25 +144,19 @@ namespace Client
 
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
-            Task.Run(() =>
-            {
-                var temp = Encoding.Unicode.GetBytes(operation);
-                temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
-                temp = temp.Concat(sendBytes).ToArray();
-                temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
-                var final = GetSendBuffer(temp);
-                HClient.Send(final, final.Length);
-            });
+            var temp = Encoding.Unicode.GetBytes(operation);
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
+            temp = temp.Concat(sendBytes).ToArray();
+            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
+            var final = GetSendBuffer(temp);
+            HClient.Send(final, final.Length);
         }
 
         public static void SendData(string operation, string sendString)
         {
-            Task.Run(() =>
-            {
-                var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
-                var final = GetSendBuffer(temp);
-                HClient.Send(final, final.Length);
-            });
+            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
+            var final = GetSendBuffer(temp);
+            HClient.Send(final, final.Length);
         }
 
         public static void SendMsg(string sendString)
@@ -350,7 +344,7 @@ namespace Client
 
                                         break;
                                     }
-                                case "File": //buggy
+                                case "File":
                                     {
                                         var fileName = Encoding.Unicode.GetString(res.Content[0]);
                                         var fileId = Encoding.Unicode.GetString(res.Content[1]);
@@ -372,7 +366,7 @@ namespace Client
                                             fs.Fs.Position = length;
                                             fs.Fs.Write(x.ToArray(), 0, x.Count);
                                             fs.CurrentLength += x.Count;
-                                            if (fs.CurrentLength == fs.TotLength)
+                                            if (fs.CurrentLength >= fs.TotLength)
                                             {
                                                 fs.Fs.Close();
                                                 fs.Fs.Dispose();
@@ -380,6 +374,10 @@ namespace Client
                                                 Process.Start("explorer.exe",
                                                     $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
                                                 _updateMainPage($"FileReceived{Divpar}Done");
+                                            }
+                                            else
+                                            {
+                                                _updateMainPage($"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
                                             }
                                         }
                                         else
