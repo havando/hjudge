@@ -74,7 +74,7 @@ namespace Server
                             break;
                         default:
                         {
-                            if (t.Contains("Unknown Error"))
+                            if (t?.Contains("Unknown Error") ?? false)
                             {
                                 error[10]++;
                                 tot++;
