@@ -369,7 +369,7 @@ namespace Server
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false,
                             CreateNoWindow = true,
-                            UseShellExecute = false,
+                            UseShellExecute = _problem.InputFileName != "stdin",
                             RedirectStandardInput = _problem.InputFileName == "stdin",
                             RedirectStandardOutput = _problem.InputFileName == "stdin"
                         },
