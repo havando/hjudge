@@ -373,9 +373,9 @@ namespace Server
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false,
                             CreateNoWindow = true,
-                            UseShellExecute = _problem.InputFileName != "stdin",
-                            RedirectStandardInput = _problem.InputFileName == "stdin",
-                            RedirectStandardOutput = _problem.InputFileName == "stdin"
+                            UseShellExecute = false,
+                            RedirectStandardInput = true,
+                            RedirectStandardOutput = true
                         },
                         EnableRaisingEvents = true
                     };
@@ -400,34 +400,48 @@ namespace Server
                             continue;
                         }
                         long curTime = 0;
-                        var noProcessTime = DateTime.Now;
 
+                        var inputStream = execute.StandardInput;
                         if (_problem.InputFileName == "stdin")
                         {
                             //Thread.Sleep(10);
                             var outputStream = execute.StandardOutput;
                             res = outputStream.ReadToEndAsync();
-                            var inputStream = execute.StandardInput;
                             inputStream.AutoFlush = true;
-                            inputStream.WriteAsync(File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) + "\0");
+                            inputStream.WriteAsync(
+                                    File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) + "\0")
+                                .ContinueWith(o =>
+                                {
+                                    try
+                                    {
+                                        inputStream.Close();
+                                        inputStream.Dispose();
+                                    }
+                                    catch
+                                    {
+                                        //ignored
+                                    }
+                                });
+                        }
+                        else
+                        {
+                            try
+                            {
+                                inputStream.Close();
+                                inputStream.Dispose();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         }
                         while (!_isexited)
                         {
-                            long dt = 0;
                             try
                             {
                                 execute?.Refresh();
                                 JudgeResult.Timeused[_cur] =
                                     Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
-                                if (curTime != JudgeResult.Timeused[_cur])
-                                {
-                                    noProcessTime = DateTime.Now;
-                                    curTime = JudgeResult.Timeused[_cur];
-                                }
-                                else
-                                {
-                                    dt = Convert.ToInt64((DateTime.Now - noProcessTime).TotalMilliseconds);
-                                }
                                 JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
                             }
                             catch
@@ -442,8 +456,7 @@ namespace Server
                                 }
                                 _isexited = true;
                             }
-                            if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
-                                dt > _problem.DataSets[_cur].TimeLimit * 30)
+                            if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
                             {
                                 _isfault = true;
                                 try
