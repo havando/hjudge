@@ -74,13 +74,13 @@ namespace Server
                                 if (Connection.CurJudgingCnt < 5)
                                     flag = true;
                             }
-                            Thread.Sleep(5000);
+                            Thread.Sleep(3000);
                         }
                     }
                     else
                     {
                         while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
-                            Thread.Sleep(5000);
+                            Thread.Sleep(3000);
                     }
                 }
                 catch
