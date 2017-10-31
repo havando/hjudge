@@ -404,7 +404,7 @@ namespace Server
 
                         if (_problem.InputFileName == "stdin")
                         {
-                            Thread.Sleep(100);
+                            //Thread.Sleep(10);
                             var outputStream = execute.StandardOutput;
                             res = outputStream.ReadToEndAsync();
                             var inputStream = execute.StandardInput;
@@ -496,7 +496,7 @@ namespace Server
                         {
                             //ignored 
                         }
-                        Thread.Sleep(100);
+                        //Thread.Sleep(10);
                         if (_problem.InputFileName != "stdin")
                         {
                             if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
@@ -519,7 +519,7 @@ namespace Server
                             //ignored
                         }
                     }
-                    Thread.Sleep(100);
+                    //Thread.Sleep(10);
                     lock (Connection.ComparingLock)
                     {
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
@@ -554,7 +554,7 @@ namespace Server
                                             WindowStyle = ProcessWindowStyle.Hidden
                                         };
                                         Process.Start(xx)?.WaitForExit();
-                                        Thread.Sleep(100);
+                                        //Thread.Sleep(10);
                                         if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                         {
                                             JudgeResult.Result[_cur] = "Special Judge Error";
@@ -592,7 +592,7 @@ namespace Server
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            //Thread.Sleep(10);
                             try
                             {
                                 var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open,
@@ -740,7 +740,7 @@ namespace Server
                     CreateNoWindow = true
                 };
                 Process.Start(a)?.WaitForExit();
-                Thread.Sleep(100);
+                //Thread.Sleep(10);
                 return File.Exists(_workingdir + "\\test_hjudge.exe");
             }
             catch
