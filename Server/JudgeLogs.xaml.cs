@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -99,7 +101,7 @@ namespace Server
                 dt.Columns.Add("最大内存 (kb)");
                 dt.Columns.Add("结果");
                 dt.Columns.Add("分数");
-                dt.Columns.Add("代码");
+                dt.Columns.Add("代码 (Base64)");
                 dt.Columns.Add("代码类型");
                 foreach (var i in a)
                 {
@@ -111,12 +113,27 @@ namespace Server
                     dr[4] = i?.Memoryused.Max() ?? 0;
                     dr[5] = i?.ResultSummery ?? string.Empty;
                     dr[6] = i?.FullScore ?? 0;
-                    dr[7] = i?.Code ?? string.Empty;
+                    try
+                    {
+                        var bytes = Encoding.Default.GetBytes(i?.Code ?? string.Empty);
+                        dr[7] = Convert.ToBase64String(bytes);
+                    }
+                    catch
+                    {
+                        dr[7] = string.Empty;
+                    }
                     dr[8] = i?.Type ?? string.Empty;
                     dt.Rows.Add(dr);
                 }
-                ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
-                MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"导出失败，因为 {ex.Message}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             else
             {

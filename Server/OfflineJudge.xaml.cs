@@ -136,7 +136,7 @@ namespace Server
                                             Path.GetFileNameWithoutExtension(f) ==
                                             Judge.GetEngName(m.ProblemName)) ??
                                     throw new InvalidOperationException();
-                                code = File.ReadAllText(codeFile);
+                                code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                                c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
                                                    .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))
@@ -296,7 +296,7 @@ namespace Server
                         dti.Columns.Add("最大内存 (kb)");
                         dti.Columns.Add("结果");
                         dti.Columns.Add("分数");
-                        dti.Columns.Add("代码");
+                        dti.Columns.Add("代码 (Base64)");
                         dti.Columns.Add("评测 ID");
                         dti.Columns.Add("代码类型");
                         foreach (var t in _results)
@@ -309,15 +309,30 @@ namespace Server
                             dr[2] = temp?.Memoryused.Max() ?? 0;
                             dr[3] = temp?.ResultSummery ?? string.Empty;
                             dr[4] = temp?.FullScore ?? 0;
-                            dr[5] = temp?.Code ?? string.Empty;
+                            try
+                            {
+                                var bytes = Encoding.Default.GetBytes(temp?.Code ?? string.Empty);
+                                dr[5] = Convert.ToBase64String(bytes);
+                            }
+                            catch
+                            {
+                                dr[5] = string.Empty;
+                            }
                             dr[6] = temp?.JudgeId ?? 0;
                             dr[7] = temp?.Type ?? string.Empty;
                             dti.Rows.Add(dr);
                         }
                         dt.Add(dti);
                     }
-                    ExcelUtility.CreateExcel(sfg.FileName, dt, dtname.ToArray());
-                    MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    try
+                    {
+                        ExcelUtility.CreateExcel(sfg.FileName, dt, dtname.ToArray());
+                        MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"导出失败，因为 {ex.Message}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
