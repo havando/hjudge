@@ -39,7 +39,6 @@ namespace Server
         public static readonly object ResourceLoadingLock = new object();
         private static readonly object BytesLock = new object();
         public static readonly object JudgeListCntLock = new object();
-        public static readonly object StreamLock = new object();
         public static readonly object JudgePointLock = new object();
         private static readonly object ActionCounterLock = new object();
 
@@ -1740,22 +1739,21 @@ namespace Server
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
 
-                                                ActionList.Enqueue(new Task(() =>
+                                                var code = string.Empty;
+                                                for (var i = 2; i < res.Content.Count; i++)
+                                                    if (i != res.Content.Count - 1)
+                                                        code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                                    else
+                                                        code += Encoding.Unicode.GetString(res.Content[i]);
+                                                Task.Run(() =>
                                                 {
-                                                    var code = string.Empty;
-                                                    for (var i = 2; i < res.Content.Count; i++)
-                                                        if (i != res.Content.Count - 1)
-                                                            code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                                        else
-                                                            code += Encoding.Unicode.GetString(res.Content[i]);
-
                                                     var j = new Judge(
                                                         Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
                                                         u.Info.UserId, code,
                                                         Encoding.Unicode.GetString(res.Content[1]), true);
                                                     var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                     SendData("JudgeResult", jr, u.Info.ConnId);
-                                                }));
+                                                });
                                             }
 
                                             break;
@@ -1864,9 +1862,7 @@ namespace Server
 
                                             ActionList.Enqueue(new Task(() =>
                                             {
-                                                var cmp = new List<Compiler>();
-                                                foreach (var t in Configuration.Configurations.Compiler)
-                                                    cmp.Add(new Compiler { DisplayName = t.DisplayName });
+                                                var cmp = Configuration.Configurations.Compiler.Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                                 var x = JsonConvert.SerializeObject(cmp);
                                                 SendData("Compiler", x, u.Info.ConnId);
                                             }));
@@ -1997,12 +1993,14 @@ namespace Server
         {
             Task.Run(() =>
             {
+                var textBlock = UpdateMainPageState("待投递事项：0，待处理事项：0");
                 var cnt = 0;
+                var last = 0;
                 while (true)
                 {
                     if (ActionList.Any())
+                    {
                         if (cnt <= 5)
-                        {
                             if (ActionList.TryDequeue(out var t))
                             {
                                 t.ContinueWith(o =>
@@ -2010,18 +2008,23 @@ namespace Server
                                     lock (ActionCounterLock)
                                     {
                                         cnt--;
+                                        UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
                                     }
                                 });
                                 t.Start();
                                 lock (ActionCounterLock)
                                 {
                                     cnt++;
+                                    UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
                                 }
                             }
-                            GC.Collect();
+                        if (last != ActionList.Count)
+                        {
+                            UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
+                            last = ActionList.Count;
                         }
-
-                    Thread.Sleep(10);
+                    }
+                    Thread.Sleep(1);
                 }
             });
         }

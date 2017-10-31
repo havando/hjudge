@@ -25,58 +25,6 @@ namespace Server
         {
             try
             {
-                if (Configuration.Configurations.MutiThreading == 0)
-                {
-                    var flag = false;
-                    while (!flag)
-                    {
-                        try
-                        {
-                            lock (Connection.ResourceLoadingLock)
-                            {
-                                var cpuCounter = new PerformanceCounter
-                                {
-                                    CategoryName = "Processor",
-                                    CounterName = "% Processor Time",
-                                    InstanceName = "_Total"
-                                };
-                                var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
-                                var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                    .Concat(new long[] { 0 })
-                                    .Max();
-                                if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
-                                    Connection.CurJudgingCnt < 3)
-                                    flag = true;
-                            }
-                        }
-                        catch
-                        {
-                            if (Connection.CurJudgingCnt < 3)
-                                flag = true;
-                        }
-                        Thread.Sleep(100);
-                    }
-                }
-                else
-                {
-                    while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
-                        Thread.Sleep(100);
-                }
-            }
-            catch
-            {
-                //ignored
-            }
-
-            lock (Connection.JudgeListCntLock)
-            {
-                if (Connection.CurJudgingCnt == 0)
-                    Killwerfault();
-                Connection.CurJudgingCnt++;
-            }
-
-            try
-            {
                 _problem = Connection.GetProblem(problemId);
                 var id = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
@@ -91,8 +39,63 @@ namespace Server
                 JudgeResult.Timeused = new long[_problem.DataSets.Length];
                 JudgeResult.Memoryused = new long[_problem.DataSets.Length];
                 JudgeResult.Type = type;
-                Connection.UpdateJudgeInfo(JudgeResult);
 
+                var textBlock = Connection.UpdateMainPageState(
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+
+                try
+                {
+                    if (Configuration.Configurations.MutiThreading == 0)
+                    {
+                        var flag = false;
+                        while (!flag)
+                        {
+                            try
+                            {
+                                lock (Connection.ResourceLoadingLock)
+                                {
+                                    var cpuCounter = new PerformanceCounter
+                                    {
+                                        CategoryName = "Processor",
+                                        CounterName = "% Processor Time",
+                                        InstanceName = "_Total"
+                                    };
+                                    var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
+                                    var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
+                                        .Concat(new long[] { 0 })
+                                        .Max();
+                                    if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
+                                        Connection.CurJudgingCnt < 5)
+                                        flag = true;
+                                }
+                            }
+                            catch
+                            {
+                                if (Connection.CurJudgingCnt < 5)
+                                    flag = true;
+                            }
+                            Thread.Sleep(5000);
+                        }
+                    }
+                    else
+                    {
+                        while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
+                            Thread.Sleep(5000);
+                    }
+                }
+                catch
+                {
+                    //ignored
+                }
+
+                lock (Connection.JudgeListCntLock)
+                {
+                    if (Connection.CurJudgingCnt == 0)
+                        new Thread(Killwerfault).Start();
+                    Connection.CurJudgingCnt++;
+                }
+
+                Connection.UpdateJudgeInfo(JudgeResult);
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
 
                 var t = Configuration.Configurations.Compiler.FirstOrDefault(i => i.DisplayName == type);
@@ -109,7 +112,7 @@ namespace Server
                     Connection.UpdateJudgeInfo(JudgeResult);
 
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}");
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
                     return;
                 }
                 var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -126,7 +129,7 @@ namespace Server
                     Connection.UpdateJudgeInfo(JudgeResult);
 
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}");
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
                     return;
                 }
 
@@ -162,8 +165,8 @@ namespace Server
                 _problem.InputFileName = isStdio ? "stdin" : GetRealString(_problem.InputFileName, 0, extList[0]);
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
-                var textBlock = Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+                Connection.UpdateMainPageState(
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}", textBlock);
 
                 BeginJudge(t.CompilerPath, t.SafeCheck, textBlock);
 
@@ -440,7 +443,7 @@ namespace Server
                                 _isexited = true;
                             }
                             if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit ||
-                                dt > _problem.DataSets[_cur].TimeLimit * 20)
+                                dt > _problem.DataSets[_cur].TimeLimit * 30)
                             {
                                 _isfault = true;
                                 try
@@ -696,29 +699,26 @@ namespace Server
 
         private void Killwerfault()
         {
-            Task.Run(() =>
+            while (Connection.CurJudgingCnt != 0)
             {
-                while (Connection.CurJudgingCnt != 0)
+                try
                 {
-                    try
-                    {
-                        var ps = Process.GetProcessesByName("werfault");
-                        foreach (var item in ps)
-                            if (item.MainWindowHandle != IntPtr.Zero)
-                            {
-                                item.WaitForInputIdle();
-                                item.CloseMainWindow();
-                                item.Kill();
-                                item.Close();
-                            }
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                    Thread.Sleep(10);
+                    var ps = Process.GetProcessesByName("werfault");
+                    foreach (var item in ps)
+                        if (item.MainWindowHandle != IntPtr.Zero)
+                        {
+                            item.WaitForInputIdle();
+                            item.CloseMainWindow();
+                            item.Kill();
+                            item.Close();
+                        }
                 }
-            });
+                catch
+                {
+                    // ignored
+                }
+                Thread.Sleep(10);
+            }
         }
 
         private static string Dn(string filename)
