@@ -67,10 +67,10 @@ namespace Server
                 //ignored
             }
 
-            if (Connection.CurJudgingCnt == 0)
-                Killwerfault();
             lock (Connection.JudgeListCntLock)
             {
+                if (Connection.CurJudgingCnt == 0)
+                    Killwerfault();
                 Connection.CurJudgingCnt++;
             }
 
@@ -376,7 +376,6 @@ namespace Server
                         EnableRaisingEvents = true
                     };
                     execute.Exited += Exithandler;
-                    Thread.Sleep(100);
 
                     Task<string> res = null;
                     _isfault = false;
@@ -401,6 +400,7 @@ namespace Server
 
                         if (_problem.InputFileName == "stdin")
                         {
+                            Thread.Sleep(100);
                             var outputStream = execute.StandardOutput;
                             res = outputStream.ReadToEndAsync();
                             var inputStream = execute.StandardInput;
@@ -733,7 +733,7 @@ namespace Server
                 {
                     FileName = compiler,
                     ErrorDialog = false,
-                    UseShellExecute = false,
+                    UseShellExecute = true,
                     Arguments = _problem.CompileCommand,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true
