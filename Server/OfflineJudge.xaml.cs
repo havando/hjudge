@@ -88,9 +88,6 @@ namespace Server
                 int[] cur = {-1};
                 var cnt = 0;
                 var myJudgeTask = new List<Task>();
-                var extList = new List<string>();
-                foreach (var compiler in Configuration.Configurations.Compiler)
-                    extList.AddRange(compiler.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries));
                 foreach (var t in members)
                 {
                     if (_stop) break;
@@ -124,7 +121,7 @@ namespace Server
                                 code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                                c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
-                                                   .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))
+                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile), StringComparison.CurrentCultureIgnoreCase)))
                                            ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
@@ -139,7 +136,7 @@ namespace Server
                                 code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
                                                c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
-                                                   .Any(d => d.ToLower() == Path.GetExtension(codeFile).ToLower()))
+                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile), StringComparison.CurrentCultureIgnoreCase)))
                                            ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Server
 {
@@ -108,7 +109,7 @@ namespace Server
                     Connection.UpdateJudgeInfo(JudgeResult);
 
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}");
                     return;
                 }
                 var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -125,7 +126,7 @@ namespace Server
                     Connection.UpdateJudgeInfo(JudgeResult);
 
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}");
                     return;
                 }
 
@@ -161,15 +162,15 @@ namespace Server
                 _problem.InputFileName = isStdio ? "stdin" : GetRealString(_problem.InputFileName, 0, extList[0]);
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
-                Connection.UpdateMainPageState(
+                var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
-                BeginJudge(t.CompilerPath, t.SafeCheck);
+                BeginJudge(t.CompilerPath, t.SafeCheck, textBlock);
 
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，结果：{JudgeResult.ResultSummery}");
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
             }
             catch
             {
@@ -223,7 +224,7 @@ namespace Server
             }
         }
 
-        private void BeginJudge(string compiler, string safeCheck)
+        private void BeginJudge(string compiler, string safeCheck, UIElement textBlock)
         {
             try
             {
@@ -268,7 +269,7 @@ namespace Server
                     {
                         for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                         {
-                            JudgeResult.Result[_cur] = "Compile Error";
+                            JudgeResult.Result[_cur] = "Runtime Error";
                             JudgeResult.Exitcode[_cur] = 0;
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Timeused[_cur] = 0;
@@ -296,7 +297,7 @@ namespace Server
             }
 
             if (Compile(compiler))
-                Judging();
+                Judging(textBlock);
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
                 {
@@ -308,15 +309,15 @@ namespace Server
                 }
         }
 
-        private void Judging()
+        private void Judging(UIElement textBlock)
         {
             for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
             {
-                //if (_cur != 0)
-                //{
-                //    Connection.UpdateMainPageState(
-                //        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}");
-                //}
+                if (_cur != 0)
+                {
+                    Connection.UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}", textBlock);
+                }
                 if (!File.Exists(_problem.DataSets[_cur].InputFile) || !File.Exists(_problem.DataSets[_cur].OutputFile))
                 {
                     JudgeResult.Result[_cur] = "Problem Configuration Error";
@@ -492,10 +493,7 @@ namespace Server
                         {
                             //ignored 
                         }
-                    }
-                    Thread.Sleep(100);
-                    lock (Connection.ComparingLock)
-                    {
+                        Thread.Sleep(100);
                         if (_problem.InputFileName != "stdin")
                         {
                             if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
@@ -517,6 +515,10 @@ namespace Server
                         {
                             //ignored
                         }
+                    }
+                    Thread.Sleep(100);
+                    lock (Connection.ComparingLock)
+                    {
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
                         {
                             if (File.Exists(_problem.SpecialJudge))
@@ -658,9 +660,8 @@ namespace Server
                     }
                 }
             }
-            //Connection.UpdateMainPageState(
-            //        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}");
-
+            Connection.UpdateMainPageState(
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}", textBlock);
         }
 
         private void Exithandler(object sender, EventArgs e)

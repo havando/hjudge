@@ -96,7 +96,7 @@ namespace Server
             UserHelper.CurrentUser.IsChanged = false;
             ShowUserInfo();
 
-            UpdateListBoxContent($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 欢迎使用 hjudge");
+            UpdateListBoxContent($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 欢迎使用 hjudge", null, false);
 
             Task.Run(() =>
             {
@@ -111,16 +111,26 @@ namespace Server
             });
         }
 
-        private void UpdateListBoxContent(string content)
+        private UIElement UpdateListBoxContent(string content, UIElement textBlock, bool remove)
         {
-            Dispatcher.BeginInvoke(new Action(() =>
+            return Dispatcher.Invoke(() =>
             {
-                ListBox.Items.Add(new TextBlock
+                if (!remove)
                 {
-                    Text = content
-                });
-                ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
-            }));
+                    if (textBlock is TextBlock tb)
+                    {
+                        tb.Text = content;
+                        ListBox.Items.Refresh();
+                        return tb;
+                    }
+                    var t = new TextBlock { Text = content };
+                    ListBox.Items.Add(t);
+                    ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
+                    return t;
+                }
+                ListBox.Items.Remove(textBlock);
+                return null;
+            });
         }
 
         private async void LoginButton_ClickAsync(object sender, RoutedEventArgs e)
@@ -130,21 +140,21 @@ namespace Server
             switch (res)
             {
                 case 1:
-                {
-                    MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
                 default:
-                {
-                    if (res != 0)
-                        MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        if (res != 0)
+                            MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;
             UpdateListBoxContent(
-                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端");
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端", null, false);
             UserName.Text = string.Empty;
             Password.Password = string.Empty;
             LoginGrid.Visibility = Visibility.Hidden;
@@ -386,7 +396,7 @@ namespace Server
             var unscratchWidthDaV = new DoubleAnimation(673, 473, new Duration(TimeSpan.FromSeconds(0.25)));
             var unscratchHeightDaV = new DoubleAnimation(328, 228, new Duration(TimeSpan.FromSeconds(0.25)));
             UserName.Text = Connection.Logout();
-            UpdateListBoxContent($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserName.Text} 在服务端注销");
+            UpdateListBoxContent($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserName.Text} 在服务端注销", null, false);
             await Dispatcher.BeginInvoke(new Action(() =>
             {
                 LoginGrid.Visibility = Visibility.Visible;
