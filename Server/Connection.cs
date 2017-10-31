@@ -1787,13 +1787,13 @@ namespace Server
                                                         cmd.ExecuteNonQuery();
                                                     }
                                                 }
-                                                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                                {
-                                                    var x = new Messaging();
-                                                    x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
-                                                        u.Info.ConnId, u.Info.UserName);
-                                                    x.Show();
-                                                }));
+                                            }));
+                                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                            {
+                                                var x = new Messaging();
+                                                x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
+                                                    u.Info.ConnId, u.Info.UserName);
+                                                x.Show();
                                             }));
 
                                             break;
@@ -1860,12 +1860,9 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            ActionList.Enqueue(new Task(() =>
-                                            {
-                                                var cmp = Configuration.Configurations.Compiler.Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
-                                                var x = JsonConvert.SerializeObject(cmp);
-                                                SendData("Compiler", x, u.Info.ConnId);
-                                            }));
+                                            var cmp = Configuration.Configurations.Compiler.Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
+                                            var x = JsonConvert.SerializeObject(cmp);
+                                            SendData("Compiler", x, u.Info.ConnId);
                                             break;
                                         }
                                     case "ChangePassword":
@@ -1922,15 +1919,12 @@ namespace Server
                                             if (u.Info.UserId == 0)
                                                 break;
 
-                                            ActionList.Enqueue(new Task(() =>
-                                            {
-                                                SendData("UpdateExperience",
-                                                    UpdateExperience(
-                                                        u.Info.UserId,
-                                                        Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
-                                                        ? "Succeed"
-                                                        : "Failed", u.Info.ConnId);
-                                            }));
+                                            SendData("UpdateExperience",
+                                                UpdateExperience(
+                                                    u.Info.UserId,
+                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
+                                                    ? "Succeed"
+                                                    : "Failed", u.Info.ConnId);
                                             break;
                                         }
                                     case "RequestJudgeRecord":
