@@ -496,7 +496,7 @@ namespace Server
                         {
                             //ignored 
                         }
-                        //Thread.Sleep(10);
+                        Thread.Sleep(10);
                         if (_problem.InputFileName != "stdin")
                         {
                             if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
