@@ -1253,7 +1253,7 @@ namespace Server
         {
             var a = Directory.GetDirectories(path).Select(Path.GetFileName).ToList();
             a.Add("|");
-            a.AddRange(Directory.GetFiles(path).Where(i => new FileInfo(i).Length <= 256 * 1048576)
+            a.AddRange(Directory.GetFiles(path).Where(i => new FileInfo(i).Length <= 512 * 1048576)
                 .Select(Path.GetFileName));
             return a;
         }
@@ -1638,7 +1638,7 @@ namespace Server
                                             {
                                                 UpdateMainPageState(
                                                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {u.Info.UserName} 请求文件：{filePath}");
-                                                ActionList.Enqueue(new Task(() => { SendFile(filePath, u.Info.ConnId); }));
+                                                Task.Run(() => { SendFile(filePath, u.Info.ConnId); });
                                             }
                                             break;
                                         }
@@ -1648,8 +1648,7 @@ namespace Server
                                                 break;
                                             if (!Configuration.Configurations.AllowRequestDataSet)
                                             {
-                                                ActionList.Enqueue(new Task(() =>
-                                                    SendData("ProblemDataSet", "Denied", u.Info.ConnId)));
+                                                SendData("ProblemDataSet", "Denied", u.Info.ConnId);
                                             }
                                             else
                                             {
