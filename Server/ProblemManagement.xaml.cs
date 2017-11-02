@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,7 +19,7 @@ namespace Server
     /// </summary>
     public partial class ProblemManagement : Window
     {
-        private ObservableCollection<Problem> _problems;
+        private ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
 
         public ProblemManagement()
         {
@@ -33,15 +34,14 @@ namespace Server
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _problems = Connection.QueryProblems();
             ListView.ItemsSource = _problems;
-            for (var i = 1; i <= Convert.ToInt32(DataSetsNumber.Text); i++)
+            Task.Run(() =>
             {
-                var strreader = new StringReader(Properties.Resources.DataSetControl.Replace("${index}", i.ToString()));
-                var xmlreader = new XmlTextReader(strreader);
-                var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement) obj);
-            }
+                foreach (var queryProblem in Connection.QueryProblems())
+                {
+                    Dispatcher.Invoke(() => _problems.Add(queryProblem));
+                }
+            });
         }
 
         private void TextBox_KeyDown(object sender, KeyEventArgs e)

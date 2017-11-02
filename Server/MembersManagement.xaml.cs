@@ -45,7 +45,7 @@ namespace Server
                     break;
             }
             UserIdentity.SelectedIndex = 0;
-            ListView.ItemsSource = UserHelper.UsersBelongs;
+            Dispatcher.BeginInvoke(new Action(() => ListView.ItemsSource = UserHelper.UsersBelongs));
         }
 
         private void NewUser_Click(object sender, RoutedEventArgs e)
@@ -80,8 +80,7 @@ namespace Server
 
         private void EditUser_Click(object sender, RoutedEventArgs e)
         {
-            var userInfo = ListView.SelectedItem as UserInfo;
-            if (userInfo == null) return;
+            if (!(ListView.SelectedItem is UserInfo userInfo)) return;
             _curItem = userInfo;
             UserIdentity.SelectedItem = userInfo.Type2;
             UserName.Text = userInfo.UserName;

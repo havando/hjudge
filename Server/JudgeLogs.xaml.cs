@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,7 +18,7 @@ namespace Server
     /// </summary>
     public partial class JudgeLogs : Window
     {
-        private ObservableCollection<JudgeInfo> _curJudgeInfo;
+        private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
 
         public JudgeLogs()
         {
@@ -58,9 +59,15 @@ namespace Server
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _curJudgeInfo = Connection.QueryJudgeLog();
-            ListView.ItemsSource = _curJudgeInfo;
             if (UserHelper.CurrentUser.Type >= 3) ClearLabel.Visibility = Visibility.Hidden;
+            ListView.ItemsSource = _curJudgeInfo;
+            Task.Run(() =>
+            {
+                foreach (var judgeInfo in Connection.QueryJudgeLog())
+                {
+                    Dispatcher.Invoke(() => _curJudgeInfo.Add(judgeInfo));
+                }
+            });
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -127,7 +134,7 @@ namespace Server
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -154,7 +161,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
