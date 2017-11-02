@@ -399,7 +399,6 @@ namespace Server
                             JudgeResult.Memoryused[_cur] = 0;
                             continue;
                         }
-                        long curTime = 0;
 
                         var inputStream = execute.StandardInput;
                         if (_problem.InputFileName == "stdin")
