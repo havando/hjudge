@@ -20,7 +20,7 @@ namespace Server
                 Configurations.EnvironmentValues = string.Empty;
                 Configurations.AllowRequestDataSet = true;
                 Configurations.MutiThreading = 0;
-                Configurations.IpAddress = "::1";
+                Configurations.IpAddress = "::";
                 Configurations.RegisterMode = 0;
                 File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
                     SerializeToXmlString(Configurations), Encoding.UTF8);
