@@ -1319,8 +1319,8 @@ namespace Server
                 long tot = 0;
                 while (tot != fs.Length)
                 {
-                    var bytes = new byte[524288];
-                    long cnt = fs.Read(bytes, 0, 524288);
+                    var bytes = new byte[65536];
+                    long cnt = fs.Read(bytes, 0, 65536);
                     var tempc = GetSendBuffer(Encoding.Unicode.GetBytes("File" + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
