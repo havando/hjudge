@@ -202,7 +202,12 @@
                 <Grid>
                     <Label Content="功能开发中，请期待后续版本" HorizontalAlignment="Left" Margin="266,128,0,0"
                            VerticalAlignment="Top" />
-
+                </Grid>
+            </TabItem>
+            <TabItem Header="管理后台" Name="AdminConsole">
+                <Grid>
+                    <ListBox Name="ManagementToolsList" HorizontalAlignment="Left" Height="298" Margin="10,10,0,0" VerticalAlignment="Top" Width="97"/>
+                    <Frame Name="ManagementToolsPage" Margin="112,10,10,10" Height="298" NavigationUIVisibility="Hidden"/>
                 </Grid>
             </TabItem>
         </TabControl>

@@ -50,7 +50,7 @@ namespace Client
             //    }.Start();
             //}
             var tick = DateTime.Now.Ticks;
-            _random = new Random((int) (tick & 0xffffffffL) | (int) (tick >> 32));
+            _random = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
             try
             {
                 if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
@@ -100,7 +100,7 @@ namespace Client
             LoginGrid.Margin = new Thickness(61, 32, 0, 0);
             CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                 JudgeResult.Visibility = GetFiles.Visibility =
-                    ContentGrid.Visibility = Competitions.Visibility = Visibility.Hidden;
+                    ContentGrid.Visibility = Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
 
             var rtf = new RotateTransform
             {
@@ -129,7 +129,7 @@ namespace Client
         {
             try
             {
-                var info = s.Split(new[] {Divpar}, StringSplitOptions.None);
+                var info = s.Split(new[] { Divpar }, StringSplitOptions.None);
                 var header = info[0];
                 var content = "";
                 for (var i = 1; i < info.Length; i++)
@@ -140,350 +140,415 @@ namespace Client
                 switch (header)
                 {
                     case "Connection":
-                    {
-                        switch (content)
                         {
-                            case "Connected":
+                            switch (content)
                             {
-                                Dispatcher.BeginInvoke(new Action(() =>
-                                {
-                                    LoginButton.IsEnabled = Register.IsEnabled = true;
-                                }));
-                                break;
+                                case "Connected":
+                                    {
+                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            LoginButton.IsEnabled = Register.IsEnabled = true;
+                                        }));
+                                        break;
+                                    }
+                                case "Break":
+                                    {
+                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
+                                                JudgeResult.Visibility =
+                                                    GetFiles.Visibility = ContentGrid.Visibility =
+                                                        Competitions.Visibility = Visibility.Hidden;
+                                            LoginGrid.Visibility = Visibility.Visible;
+                                            OldPassword.Password = NewPassword.Password =
+                                                ConfirmPassword.Password = string.Empty;
+                                            ActiveBox.Items.Clear();
+                                            JudgeInfos.Clear();
+                                            MessagesCollection.Clear();
+                                            Experience.Content = Coins.Content = "0";
+                                            Level.Content = "-";
+                                            WelcomeLabel.Content = "你好，";
+                                            Identity.Content = "身份：";
+                                            CodeBox.Text = string.Empty;
+                                            _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                                            LoginButton.IsEnabled = Register.IsEnabled = false;
+                                            TabControl.SelectedIndex = 0;
+                                        }));
+                                        break;
+                                    }
                             }
-                            case "Break":
-                            {
-                                Dispatcher.BeginInvoke(new Action(() =>
-                                {
-                                    CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                        JudgeResult.Visibility =
-                                            GetFiles.Visibility = ContentGrid.Visibility =
-                                                Competitions.Visibility = Visibility.Hidden;
-                                    LoginGrid.Visibility = Visibility.Visible;
-                                    OldPassword.Password = NewPassword.Password =
-                                        ConfirmPassword.Password = string.Empty;
-                                    ActiveBox.Items.Clear();
-                                    JudgeInfos.Clear();
-                                    MessagesCollection.Clear();
-                                    Experience.Content = Coins.Content = "0";
-                                    Level.Content = "-";
-                                    WelcomeLabel.Content = "你好，";
-                                    Identity.Content = "身份：";
-                                    CodeBox.Text = string.Empty;
-                                    _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                    LoginButton.IsEnabled = Register.IsEnabled = false;
-                                    TabControl.SelectedIndex = 0;
-                                }));
-                                break;
-                            }
+                            break;
                         }
-                        break;
-                    }
                     case "Login":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
-                        if (content == "Succeed")
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
+                            if (content == "Succeed")
+                                Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    _userName = UserName.Text;
+                                    Password.Password = string.Empty;
+                                    _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                                    CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
+                                        JudgeResult.Visibility = Competitions.Visibility =
+                                            GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
+                                    LoginGrid.Visibility = Visibility.Hidden;
+                                    Loading1.Visibility = Visibility.Visible;
+                                    Connection.SendData("RequestProfile", _userName);
+                                    Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
+                                    Connection.SendData("RequestFileList", string.Empty);
+                                    _currentGetJudgeRecordIndex = 20;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
+                                    });
+                                }));
+                            else
+                                MessageBox.Show("登录失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            break;
+                        }
+                    case "Logout":
+                        {
+                            _userName = string.Empty;
+                            _curId = 0;
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                _userName = UserName.Text;
-                                Password.Password = string.Empty;
+                                CodeSubmit.Visibility = Messaging.Visibility =
+                                    Messages.Visibility = JudgeResult.Visibility =
+                                        GetFiles.Visibility = ContentGrid.Visibility =
+                                            Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
+                                LoginGrid.Visibility = Visibility.Visible;
+                                Loading1.Visibility = Visibility.Hidden;
+                                InitManagementTools(0);
+                                OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
+                                ActiveBox.Items.Clear();
+                                JudgeInfos.Clear();
+                                MessagesCollection.Clear();
+                                Experience.Content = Coins.Content = "0";
+                                Level.Content = "-";
+                                WelcomeLabel.Content = "你好，";
+                                Identity.Content = "身份：";
+                                CodeBox.Text = string.Empty;
                                 _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                    JudgeResult.Visibility = Competitions.Visibility =
-                                        GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
-                                LoginGrid.Visibility = Visibility.Hidden;
-                                Loading1.Visibility = Visibility.Visible;
-                                Connection.SendData("RequestProfile", _userName);
-                                Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
-                                Connection.SendData("RequestFileList", string.Empty);
-                                _currentGetJudgeRecordIndex = 20;
-                                ActiveBox.Items.Add(new TextBlock
-                                {
-                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
-                                });
+                                TabControl.SelectedIndex = 0;
+                                FileList.IsEnabled = true;
+                                ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
+                                Loading1.Visibility = Visibility.Hidden;
+                                Loading2.Visibility = Visibility.Hidden;
+                                Loading3.Visibility = Visibility.Hidden;
                             }));
-                        else
-                            MessageBox.Show("登录失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
-                    }
-                    case "Logout":
-                    {
-                        _userName = string.Empty;
-                        _curId = 0;
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            CodeSubmit.Visibility = Messaging.Visibility =
-                                Messages.Visibility = JudgeResult.Visibility =
-                                    GetFiles.Visibility = ContentGrid.Visibility =
-                                        Competitions.Visibility = Visibility.Hidden;
-                            LoginGrid.Visibility = Visibility.Visible;
-                            Loading1.Visibility = Visibility.Hidden;
-                            OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
-                            ActiveBox.Items.Clear();
-                            JudgeInfos.Clear();
-                            MessagesCollection.Clear();
-                            Experience.Content = Coins.Content = "0";
-                            Level.Content = "-";
-                            WelcomeLabel.Content = "你好，";
-                            Identity.Content = "身份：";
-                            CodeBox.Text = string.Empty;
-                            _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                            TabControl.SelectedIndex = 0;
-                            FileList.IsEnabled = true;
-                            ReceivingFile.Visibility = Visibility.Hidden;
-                            ReceivingProcess.Visibility = Visibility.Hidden;
-                            Loading1.Visibility = Visibility.Hidden;
-                            Loading2.Visibility = Visibility.Hidden;
-                            Loading3.Visibility = Visibility.Hidden;
-                        }));
-                        break;
-                    }
+                            break;
+                        }
                     case "Messaging":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到消息"});
-                            MessagesCollection.Insert(0, new Message
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                Content = content,
-                                Direction = "接收",
-                                MessageTime = DateTime.Now
-                            });
-                            var x = new Messaging();
-                            x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
-                            x.Show();
-                        }));
-                        break;
-                    }
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到消息" });
+                                MessagesCollection.Insert(0, new Message
+                                {
+                                    Content = content,
+                                    Direction = "接收",
+                                    MessageTime = DateTime.Now
+                                });
+                                var x = new Messaging();
+                                x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
+                                x.Show();
+                            }));
+                            break;
+                        }
                     case "FileList":
-                    {
-                        var final = content.Split(new[] {Divpar}, StringSplitOptions.None);
-                        if (final.Length < 2) break;
-                        Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            FileInfomations.Clear();
-                            CurrentLocation.Text = final[0];
-                            var flag = true;
-                            for (var i = 1; i < final.Length; i++)
+                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
+                            if (final.Length < 2) break;
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                if (final[i] == "|")
+                                FileInfomations.Clear();
+                                CurrentLocation.Text = final[0];
+                                var flag = true;
+                                for (var i = 1; i < final.Length; i++)
                                 {
-                                    flag = !flag;
-                                    continue;
+                                    if (final[i] == "|")
+                                    {
+                                        flag = !flag;
+                                        continue;
+                                    }
+                                    FileInfomations.Add(new FileInfomation
+                                    {
+                                        Type = flag ? "文件夹" : "文件",
+                                        Name = final[i]
+                                    });
                                 }
-                                FileInfomations.Add(new FileInfomation
-                                {
-                                    Type = flag ? "文件夹" : "文件",
-                                    Name = final[i]
-                                });
-                            }
-                            ReceivingFile.Visibility = Visibility.Hidden;
-                            ReceivingProcess.Visibility = Visibility.Hidden;
-                        }));
-                        break;
-                    }
+                                ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
+                            }));
+                            break;
+                        }
                     case "JudgeResult":
-                    {
-                        var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                        Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ActiveBox.Items.Add(new TextBlock
+                            var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                Text =
-                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}"
-                            });
-                            if (p.ResultSummery == "Accepted")
-                            {
-                                var delta = 4 + _random.Next() % 32;
-                                var delta2 = 16 + _random.Next() % 12;
-                                Connection.SendData("UpdateExperience", delta.ToString());
-                                _experience += delta;
-                                Connection.SendData("UpdateCoins", delta2.ToString());
-                                _coins += delta2;
                                 ActiveBox.Items.Add(new TextBlock
                                 {
-                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
+                                    Text =
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}"
                                 });
-                            }
-                            else if (p.ResultSummery.Contains("Exceeded"))
-                            {
-                                var delta = 2 + _random.Next() % 16;
-                                var delta2 = 8 + _random.Next() % 4;
-                                Connection.SendData("UpdateCoins", delta.ToString());
-                                _coins += delta;
-                                Connection.SendData("UpdateExperience", delta2.ToString());
-                                _experience += delta2;
-                                ActiveBox.Items.Add(new TextBlock
+                                if (p.ResultSummery == "Accepted")
                                 {
-                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
-                                });
-                            }
-                            else
-                            {
-                                var delta = 1 + _random.Next() % 4;
-                                Connection.SendData("UpdateExperience", delta.ToString());
-                                _experience += delta;
-                                ActiveBox.Items.Add(new TextBlock
+                                    var delta = 4 + _random.Next() % 32;
+                                    var delta2 = 16 + _random.Next() % 12;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    Connection.SendData("UpdateCoins", delta2.ToString());
+                                    _coins += delta2;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
+                                    });
+                                }
+                                else if (p.ResultSummery.Contains("Exceeded"))
                                 {
-                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
-                                });
-                            }
-                            JudgeInfos.Insert(0, p);
-                            Coins.Content = _coins;
-                            Experience.Content = _experience;
-                            SetLevel(_experience);
-                            ShowJudgeDetails(p);
-                        }));
-                        break;
-                    }
+                                    var delta = 2 + _random.Next() % 16;
+                                    var delta2 = 8 + _random.Next() % 4;
+                                    Connection.SendData("UpdateCoins", delta.ToString());
+                                    _coins += delta;
+                                    Connection.SendData("UpdateExperience", delta2.ToString());
+                                    _experience += delta2;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
+                                    });
+                                }
+                                else
+                                {
+                                    var delta = 1 + _random.Next() % 4;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
+                                    });
+                                }
+                                JudgeInfos.Insert(0, p);
+                                Coins.Content = _coins;
+                                Experience.Content = _experience;
+                                SetLevel(_experience);
+                                ShowJudgeDetails(p);
+                            }));
+                            break;
+                        }
                     case "ProblemList":
-                    {
-                        var x = JsonConvert.DeserializeObject<Problem[]>(content);
-                        UpdateProblemList(x);
-                        Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
-                        break;
-                    }
+                        {
+                            var x = JsonConvert.DeserializeObject<Problem[]>(content);
+                            UpdateProblemList(x);
+                            Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
+                            break;
+                        }
                     case "Profile":
-                    {
-                        var x = JsonConvert.DeserializeObject<UserInfo>(content);
-                        _curId = x.Type;
-                        Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            WelcomeLabel.Content = $"你好，{x.UserName}";
-                            Identity.Content = $"身份：{x.Type2}";
-                            UserIcon.Source = ByteImageConverter.ByteToImage(!string.IsNullOrEmpty(x.Icon)
-                                ? Convert.FromBase64String(x.Icon)
-                                : Convert.FromBase64String(Properties.Resources.default_user_icon_string));
-                            Coins.Content = _coins = x.Coins;
-                            Experience.Content = _experience = x.Experience;
-                            SetLevel(x.Experience);
-                            Loading1.Visibility = Visibility.Hidden;
-                        }));
-                        break;
-                    }
-                    case "UpdateProfile":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
-                        switch (content)
-                        {
-                            case "Succeed":
-                                MessageBox.Show("修改成功", "提示", MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-                                ActiveBox.Items.Add(
-                                    new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改个人信息"});
-                                break;
-                            case "Failed":
-                                MessageBox.Show("修改失败", "提示", MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                                Connection.SendData("RequestProfile", _userName);
-                                break;
-                        }
-                        break;
-                    }
-                    case "ChangePassword":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
-                        switch (content)
-                        {
-                            case "Succeed":
-                                MessageBox.Show("密码修改成功", "提示", MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-                                ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改密码"});
-                                break;
-                            case "Failed":
-                                MessageBox.Show("密码修改失败", "提示", MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                                break;
-                        }
-                        break;
-                    }
-                    case "JudgeRecord":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
-                        var final = content.Split(new[] {Divpar}, StringSplitOptions.None);
-                        if (final.Length < 3) break;
-                        _currentGetJudgeRecordIndex = Convert.ToInt32(final[0]) + Convert.ToInt32(final[1]);
-                        if (Convert.ToInt32(final[1]) != 20)
-                            _currentGetJudgeRecordIndex = -1;
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
-                                JudgeInfos.Add(i);
-                        }));
-                        break;
-                    }
-                    case "JudgeCode":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
-                        var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                        var j = (from c in JudgeInfos where c.JudgeId == jc.JudgeId select c)
-                            .FirstOrDefault();
-                        if (j == null) break;
-                        j.Code = jc.Code;
-                        Dispatcher.BeginInvoke(new Action(() => { ShowJudgeDetails(j); }));
-                        break;
-                    }
-                    case "FileReceived":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            FileList.IsEnabled = true;
-                            ReceivingFile.Visibility = Visibility.Hidden;
-                            ReceivingProcess.Visibility = Visibility.Hidden;
-                        }));
-                        break;
-                    }
-                    case "FileReceiving":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { ReceivingProcess.Content = content; }));
-                        break;
-                    }
-                    case "ProblemDataSet":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
-                        if (content != "Denied") break;
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            _coins += 500;
-                            Coins.Content = _coins;
-                            ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500"});
-                            MessageBox.Show("抱歉，系统设定不允许获取题目数据，请联系管理员。金币已为您加回。", "提示", MessageBoxButton.OK,
-                                MessageBoxImage.Error);
-                        }));
-
-                        Connection.SendData("UpdateCoins", "500");
-                        break;
-                    }
-                    case "Compiler":
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            LangBox.Items.Clear();
-                            var l = JsonConvert.DeserializeObject<List<Compiler>>(content);
-                            foreach (var m in l)
-                                LangBox.Items.Add(new RadioButton {Content = m.DisplayName});
-                            Loading2.Visibility = Visibility.Hidden;
-                        }));
-                        break;
-                    }
-                    case "Version":
-                    {
-                        if (content != Assembly.GetExecutingAssembly().GetName().Version.ToString())
-                        {
-                            Dispatcher.Invoke(() =>
+                            var x = JsonConvert.DeserializeObject<UserInfo>(content);
+                            _curId = x.Type;
+                            Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                MessageBox.Show($"此版本的 hjudge - Client 无法正常工作，请更新至 {content} 版本", "提示",
-                                    MessageBoxButton.OK, MessageBoxImage.Error);
-                            });
-                            Environment.Exit(0);
+                                WelcomeLabel.Content = $"你好，{x.UserName}";
+                                Identity.Content = $"身份：{x.Type2}";
+                                UserIcon.Source = ByteImageConverter.ByteToImage(!string.IsNullOrEmpty(x.Icon)
+                                    ? Convert.FromBase64String(x.Icon)
+                                    : Convert.FromBase64String(Properties.Resources.default_user_icon_string));
+                                Coins.Content = _coins = x.Coins;
+                                Experience.Content = _experience = x.Experience;
+                                SetLevel(x.Experience);
+                                Loading1.Visibility = Visibility.Hidden;
+                                InitManagementTools(x.Type);
+                                if (x.Type >= 1 && x.Type <= 3)
+                                {
+                                    AdminConsole.Visibility = Visibility.Visible;
+                                }
+                            }));
+                            break;
                         }
-                        break;
-                    }
+                    case "UpdateProfile":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
+                            switch (content)
+                            {
+                                case "Succeed":
+                                    MessageBox.Show("修改成功", "提示", MessageBoxButton.OK,
+                                        MessageBoxImage.Information);
+                                    ActiveBox.Items.Add(
+                                        new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改个人信息" });
+                                    break;
+                                case "Failed":
+                                    MessageBox.Show("修改失败", "提示", MessageBoxButton.OK,
+                                        MessageBoxImage.Error);
+                                    Connection.SendData("RequestProfile", _userName);
+                                    break;
+                            }
+                            break;
+                        }
+                    case "ChangePassword":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
+                            switch (content)
+                            {
+                                case "Succeed":
+                                    MessageBox.Show("密码修改成功", "提示", MessageBoxButton.OK,
+                                        MessageBoxImage.Information);
+                                    ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 修改密码" });
+                                    break;
+                                case "Failed":
+                                    MessageBox.Show("密码修改失败", "提示", MessageBoxButton.OK,
+                                        MessageBoxImage.Error);
+                                    break;
+                            }
+                            break;
+                        }
+                    case "JudgeRecord":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
+                            var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
+                            if (final.Length < 3) break;
+                            _currentGetJudgeRecordIndex = Convert.ToInt32(final[0]) + Convert.ToInt32(final[1]);
+                            if (Convert.ToInt32(final[1]) != 20)
+                                _currentGetJudgeRecordIndex = -1;
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
+                                    JudgeInfos.Add(i);
+                            }));
+                            break;
+                        }
+                    case "JudgeCode":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
+                            var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                            var j = (from c in JudgeInfos where c.JudgeId == jc.JudgeId select c)
+                                .FirstOrDefault();
+                            if (j == null) break;
+                            j.Code = jc.Code;
+                            Dispatcher.BeginInvoke(new Action(() => { ShowJudgeDetails(j); }));
+                            break;
+                        }
+                    case "FileReceived":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                FileList.IsEnabled = true;
+                                ReceivingFile.Visibility = Visibility.Hidden;
+                                ReceivingProcess.Visibility = Visibility.Hidden;
+                            }));
+                            break;
+                        }
+                    case "FileReceiving":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { ReceivingProcess.Content = content; }));
+                            break;
+                        }
+                    case "ProblemDataSet":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
+                            if (content != "Denied") break;
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                _coins += 500;
+                                Coins.Content = _coins;
+                                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500" });
+                                MessageBox.Show("抱歉，系统设定不允许获取题目数据，请联系管理员。金币已为您加回。", "提示", MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                            }));
+
+                            Connection.SendData("UpdateCoins", "500");
+                            break;
+                        }
+                    case "Compiler":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                LangBox.Items.Clear();
+                                var l = JsonConvert.DeserializeObject<List<Compiler>>(content);
+                                foreach (var m in l)
+                                    LangBox.Items.Add(new RadioButton { Content = m.DisplayName });
+                                Loading2.Visibility = Visibility.Hidden;
+                            }));
+                            break;
+                        }
+                    case "Version":
+                        {
+                            if (content != Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    MessageBox.Show($"此版本的 hjudge - Client 无法正常工作，请更新至 {content} 版本", "提示",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                });
+                                Environment.Exit(0);
+                            }
+                            break;
+                        }
                 }
             }
             catch
             {
                 //ignored
+            }
+        }
+
+        private void InitManagementTools(int type)
+        {
+            ManagementToolsPage.Navigate(new ManagementWelcomePage());
+            switch (type)
+            {
+                case 1:
+                case 2:
+                    {
+                        Button[] operationsButton =
+                        {
+                            new Button {Height = 32, Width = 80, Content = "题目管理"},
+                            new Button {Height = 32, Width = 80, Content = "比赛管理"},
+                            new Button {Height = 32, Width = 80, Content = "成员管理"},
+                            new Button {Height = 32, Width = 80, Content = "评测日志"},
+                            new Button {Height = 32, Width = 80, Content = "系统设置"}
+                        };
+                        operationsButton[0].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                        operationsButton[1].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                        operationsButton[2].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new MembersManagementPage());
+                        operationsButton[3].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new JudgingLogsPage());
+                        operationsButton[4].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new SystemSettingsPage());
+                        foreach (var t in operationsButton)
+                            ManagementToolsList.Items.Add(t);
+                        break;
+                    }
+                case 3:
+                    {
+                        Button[] operationsButton =
+                        {
+                            new Button {Height = 32, Width = 80, Content = "题目管理"},
+                            new Button {Height = 32, Width = 80, Content = "比赛管理"},
+                            new Button {Height = 32, Width = 80, Content = "成员管理"},
+                            new Button {Height = 32, Width = 80, Content = "评测日志"}
+                        };
+                        operationsButton[0].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                        operationsButton[1].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                        operationsButton[2].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new MembersManagementPage());
+                        operationsButton[3].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new JudgingLogsPage());
+                        foreach (var t in operationsButton)
+                            ManagementToolsList.Items.Add(t);
+                        break;
+                    }
+                default:
+                    {
+                        ManagementToolsList.Items.Clear();
+                        break;
+                    }
             }
         }
 
@@ -700,11 +765,11 @@ namespace Client
         {
             var x = MyProblemList.SelectedItem as Problem;
             ProblemInfomationList.Items.Clear();
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目 ID：{x?.ProblemId}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目名称：{x?.ProblemName}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目难度：{x?.Level}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"数据组数：{x?.DataSets.Length}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}"});
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目 ID：{x?.ProblemId}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目名称：{x?.ProblemName}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目难度：{x?.Level}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"数据组数：{x?.DataSets.Length}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}" });
         }
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
@@ -742,9 +807,9 @@ namespace Client
                 _coins -= 10;
                 Coins.Content = _coins;
                 Connection.SendData("UpdateCoins", "-10");
-                ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10"});
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
             }
-            ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息"});
+            ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
             MessagesCollection.Insert(0, new Message
             {
                 Content = MessageContent.Text,
@@ -766,7 +831,7 @@ namespace Client
             if (!string.IsNullOrEmpty(CodeBox.Text) && !string.IsNullOrEmpty(type))
             {
                 ActiveBox.Items.Add(
-                    new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}"});
+                    new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}" });
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + type + Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
             }
@@ -821,7 +886,7 @@ namespace Client
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-100");
                         Connection.SendData("RequestJudgeRecord", $"{_currentGetJudgeRecordIndex}{Divpar}20");
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100"});
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -100" });
                         Loading3.Visibility = Visibility.Visible;
                     }
                 }
@@ -857,8 +922,8 @@ namespace Client
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-500");
                         Connection.SendData("RequestProblemDataSet",
-                            ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500"});
+                            ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -500" });
                         Loading2.Visibility = Visibility.Visible;
                     }
                 }
@@ -870,7 +935,7 @@ namespace Client
             else
             {
                 Connection.SendData("RequestProblemDataSet",
-                    ((Problem) MyProblemList.SelectedItem)?.ProblemId.ToString());
+                    ((Problem)MyProblemList.SelectedItem)?.ProblemId.ToString());
                 Loading2.Visibility = Visibility.Visible;
             }
         }
@@ -902,7 +967,7 @@ namespace Client
                         _coins -= 20;
                         Coins.Content = _coins;
                         Connection.SendData("UpdateCoins", "-20");
-                        ActiveBox.Items.Add(new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20"});
+                        ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -20" });
                         Loading3.Visibility = Visibility.Visible;
                     }
                 }

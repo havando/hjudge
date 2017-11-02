@@ -44,9 +44,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\HPSocketCS.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -73,6 +70,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
+    <Compile Include="CompetitionsManagementPage.xaml.cs">
+      <DependentUpon>CompetitionsManagementPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Compiler.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="FileInfomation.cs" />
@@ -81,11 +81,34 @@
       <DependentUpon>JudgeDetails.xaml</DependentUpon>
     </Compile>
     <Compile Include="JudgeInfo.cs" />
+    <Compile Include="JudgingLogsPage.xaml.cs">
+      <DependentUpon>JudgingLogsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ManagementWelcomePage.xaml.cs">
+      <DependentUpon>ManagementWelcomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MembersManagementPage.xaml.cs">
+      <DependentUpon>MembersManagementPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Message.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Problem.cs" />
+    <Compile Include="ProblemsManagementPage.xaml.cs">
+      <DependentUpon>ProblemsManagementPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSettingsPage.xaml.cs">
+      <DependentUpon>SystemSettingsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserInfo.cs" />
+    <Page Include="CompetitionsManagementPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="JudgeDetails.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="JudgingLogsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -104,7 +127,23 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="ManagementWelcomePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MembersManagementPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Messaging.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ProblemsManagementPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SystemSettingsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
