@@ -114,6 +114,10 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="ConnectionDataBase.cs" />
+    <Compile Include="ConnectionInit.cs" />
+    <Compile Include="ConnectionLock.cs" />
+    <Compile Include="ConnectionNetwork.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ExcelUtility.cs" />
     <Compile Include="Judge.cs" />
