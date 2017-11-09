@@ -206,17 +206,38 @@ namespace Server
                         ((t as Grid).FindName($"Output{i + 1}") as
                             TextBox)
                         ?.Text;
-                    problem.DataSets[i].TimeLimit = Convert.ToInt64(
-                        ((t as Grid).FindName($"Time{i + 1}") as TextBox)
-                        ?.Text);
-                    problem.DataSets[i].MemoryLimit = Convert.ToInt64(
-                        ((t as Grid).FindName($"Memory{i + 1}") as
-                            TextBox)
-                        ?.Text);
-                    problem.DataSets[i].Score = Convert.ToSingle(
-                        ((t as Grid).FindName($"Score{i + 1}") as TextBox
-                        )
-                        ?.Text);
+                    try
+                    {
+                        problem.DataSets[i].TimeLimit = Convert.ToInt64(
+                            ((t as Grid).FindName($"Time{i + 1}") as TextBox)
+                            ?.Text);
+                    }
+                    catch
+                    {
+                        problem.DataSets[i].TimeLimit = 0;
+                    }
+                    try
+                    {
+                        problem.DataSets[i].MemoryLimit = Convert.ToInt64(
+                            ((t as Grid).FindName($"Memory{i + 1}") as
+                                TextBox)
+                            ?.Text);
+                    }
+                    catch
+                    {
+                        problem.DataSets[i].MemoryLimit = 0;
+                    }
+                    try
+                    {
+                        problem.DataSets[i].Score = Convert.ToSingle(
+                            ((t as Grid).FindName($"Score{i + 1}") as TextBox
+                            )
+                            ?.Text);
+                    }
+                    catch
+                    {
+                        problem.DataSets[i].Score = 0;
+                    }
                 }
             }
             Connection.UpdateProblem(problem);

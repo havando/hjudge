@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,10 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using HPSocketCS;
+using Newtonsoft.Json;
 
 namespace Client
 {
-    public static class Connection
+    public static partial class Connection
     {
         private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
@@ -108,7 +110,7 @@ namespace Client
                     {
                         if (PkgInfo.IsHeader)
                         {
-                            var header = (PkgHeader) Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
                         }
                         else
@@ -240,23 +242,23 @@ namespace Client
                             switch (operation)
                             {
                                 case "&":
-                                {
-                                    _isConnecting = true;
-                                    break;
-                                }
-                                default:
-                                {
-                                    Task.Run(() =>
                                     {
-                                        temp2.RemoveAt(0);
-                                        Operations.Enqueue(new ObjOperation
+                                        _isConnecting = true;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Task.Run(() =>
                                         {
-                                            Operation = operation,
-                                            Content = temp2
+                                            temp2.RemoveAt(0);
+                                            Operations.Enqueue(new ObjOperation
+                                            {
+                                                Operation = operation,
+                                                Content = temp2
+                                            });
                                         });
-                                    });
-                                    break;
-                                }
+                                        break;
+                                    }
                             }
                         }
                     }
@@ -277,215 +279,254 @@ namespace Client
                             switch (res.Operation)
                             {
                                 case "Login":
-                                {
-                                    var x = Encoding.Unicode.GetString(res.Content[0]);
-                                    switch (x)
                                     {
-                                        case "Succeed":
+                                        var x = Encoding.Unicode.GetString(res.Content[0]);
+                                        switch (x)
                                         {
-                                            _updateMainPage.Invoke($"Login{Divpar}Succeed");
-                                            break;
+                                            case "Succeed":
+                                                {
+                                                    _updateMainPage.Invoke($"Login{Divpar}Succeed");
+                                                    break;
+                                                }
+                                            case "Incorrect":
+                                                {
+                                                    _updateMainPage.Invoke($"Login{Divpar}Incorrect");
+                                                    break;
+                                                }
+                                            case "Unknown":
+                                                {
+                                                    _updateMainPage.Invoke($"Login{Divpar}Unknown");
+                                                    break;
+                                                }
                                         }
-                                        case "Incorrect":
-                                        {
-                                            _updateMainPage.Invoke($"Login{Divpar}Incorrect");
-                                            break;
-                                        }
-                                        case "Unknown":
-                                        {
-                                            _updateMainPage.Invoke($"Login{Divpar}Unknown");
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                                case "Logout":
-                                {
-                                    lock (BytesLock)
-                                    {
-                                        Recv.Clear();
-                                    }
-                                    _updateMainPage.Invoke($"Logout{Divpar}Succeed");
-                                    break;
-                                }
-                                case "ProblemDataSet":
-                                {
-                                    if (Encoding.Unicode.GetString(res.Content[0]) == "Denied")
-                                    {
-                                        _updateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
                                         break;
                                     }
-                                    _updateMainPage.Invoke($"ProblemDataSet{Divpar}Accepted");
-                                    var problemId = Encoding.Unicode.GetString(res.Content[0]);
-                                    var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
-                                    File.WriteAllBytes(
-                                        $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                        res.Content[1]);
-                                    Process.Start("explorer.exe",
-                                        $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                    break;
-                                }
-                                case "Messaging":
-                                {
-                                    _updateMainPage.Invoke(
-                                        $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-
-                                    break;
-                                }
-                                case "FileList":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke($"FileList{Divpar}{x}");
-
-                                    break;
-                                }
-                                case "File":
-                                {
-                                    var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                    var fileId = Encoding.Unicode.GetString(res.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
-                                    if (FrInfo.Any(i => i.FileId == fileId))
+                                case "Logout":
                                     {
-                                        var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
-                                        var x = new List<byte>();
-                                        for (var i = 3; i < res.Content.Count; i++)
+                                        lock (BytesLock)
+                                        {
+                                            Recv.Clear();
+                                        }
+                                        _updateMainPage.Invoke($"Logout{Divpar}Succeed");
+                                        break;
+                                    }
+                                case "ProblemDataSet":
+                                    {
+                                        if (Encoding.Unicode.GetString(res.Content[0]) == "Denied")
+                                        {
+                                            _updateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
+                                            break;
+                                        }
+                                        _updateMainPage.Invoke($"ProblemDataSet{Divpar}Accepted");
+                                        var problemId = Encoding.Unicode.GetString(res.Content[0]);
+                                        var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
+                                        File.WriteAllBytes(
+                                            $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                            res.Content[1]);
+                                        Process.Start("explorer.exe",
+                                            $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                        break;
+                                    }
+                                case "Messaging":
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+
+                                        break;
+                                    }
+                                case "FileList":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
                                             if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke($"FileList{Divpar}{x}");
+
+                                        break;
+                                    }
+                                case "File":
+                                    {
+                                        var fileName = Encoding.Unicode.GetString(res.Content[0]);
+                                        var fileId = Encoding.Unicode.GetString(res.Content[1]);
+                                        var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                        if (FrInfo.Any(i => i.FileId == fileId))
+                                        {
+                                            var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                            var x = new List<byte>();
+                                            for (var i = 3; i < res.Content.Count; i++)
+                                                if (i != res.Content.Count - 1)
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                    x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                }
+                                                else
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                }
+                                            fs.Fs.Position = length;
+                                            fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                            fs.CurrentLength += x.Count;
+                                            if (fs.CurrentLength >= fs.TotLength)
                                             {
-                                                x.AddRange(res.Content[i]);
-                                                x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                fs.Fs.Close();
+                                                fs.Fs.Dispose();
+                                                FrInfo.Remove(fs);
+                                                Process.Start("explorer.exe",
+                                                    $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                                _updateMainPage($"FileReceived{Divpar}Done");
                                             }
                                             else
                                             {
-                                                x.AddRange(res.Content[i]);
+                                                _updateMainPage(
+                                                    $"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
                                             }
-                                        fs.Fs.Position = length;
-                                        fs.Fs.Write(x.ToArray(), 0, x.Count);
-                                        fs.CurrentLength += x.Count;
-                                        if (fs.CurrentLength >= fs.TotLength)
-                                        {
-                                            fs.Fs.Close();
-                                            fs.Fs.Dispose();
-                                            FrInfo.Remove(fs);
-                                            Process.Start("explorer.exe",
-                                                $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                            _updateMainPage($"FileReceived{Divpar}Done");
                                         }
                                         else
                                         {
-                                            _updateMainPage(
-                                                $"FileReceiving{Divpar}{Math.Round((double) fs.CurrentLength * 100 / fs.TotLength, 1)} %");
+                                            FrInfo.Add(new FileRecvInfo
+                                            {
+                                                CurrentLength = 0,
+                                                FileId = fileId,
+                                                FileName = fileName,
+                                                Fs = new FileStream(
+                                                    $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                                    FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
+                                                TotLength = length
+                                            });
                                         }
+                                        break;
                                     }
-                                    else
-                                    {
-                                        FrInfo.Add(new FileRecvInfo
-                                        {
-                                            CurrentLength = 0,
-                                            FileId = fileId,
-                                            FileName = fileName,
-                                            Fs = new FileStream(
-                                                $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                                FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
-                                            TotLength = length
-                                        });
-                                    }
-                                    break;
-                                }
                                 case "JudgeResult":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke(
-                                        $"JudgeResult{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"JudgeResult{Divpar}{x}");
+                                        break;
+                                    }
                                 case "ProblemList":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke(
-                                        $"ProblemList{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"ProblemList{Divpar}{x}");
+                                        break;
+                                    }
                                 case "Profile":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke(
-                                        $"Profile{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"Profile{Divpar}{x}");
+                                        break;
+                                    }
                                 case "ChangePassword":
-                                {
-                                    _updateMainPage.Invoke(
-                                        $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
 
-                                    break;
-                                }
+                                        break;
+                                    }
                                 case "UpdateProfile":
-                                {
-                                    _updateMainPage.Invoke(
-                                        $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
 
-                                    break;
-                                }
+                                        break;
+                                    }
                                 case "JudgeRecord":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke($"JudgeRecord{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke($"JudgeRecord{Divpar}{x}");
+                                        break;
+                                    }
                                 case "Compiler":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke(
-                                        $"Compiler{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"Compiler{Divpar}{x}");
+                                        break;
+                                    }
                                 case "JudgeCode":
-                                {
-                                    var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
-                                    break;
-                                }
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
+                                        break;
+                                    }
                                 case "Version":
-                                {
-                                    _updateMainPage.Invoke(
-                                        $"Version{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                    break;
-                                }
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"Version{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        break;
+                                    }
+                                case "AddProblem":
+                                    {
+                                        _addProblemResult = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        break;
+                                    }
+                                case "DeleteProblem":
+                                    {
+                                        _deleteProblemResult = true;
+                                        break;
+                                    }
+                                case "UpdateProblem":
+                                    {
+                                        _updateProblemResult = true;
+                                        break;
+                                    }
+                                case "QueryProblems":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _queryProblemsResult = JsonConvert.DeserializeObject<ObservableCollection<Problem>>(x);
+                                        _queryProblemsResultState = true;
+                                        break;
+                                    }
+                                case "QueryJudgeLogs":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _queryJudgeLogResult = JsonConvert.DeserializeObject<ObservableCollection<JudgeInfo>>(x);
+                                        _queryJudgeLogResultState = true;
+                                        break;
+                                    }
                             }
                         }
                         catch

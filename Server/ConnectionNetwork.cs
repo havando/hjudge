@@ -736,6 +736,63 @@ namespace Server
                                             }));
                                             break;
                                         }
+                                    case "AddProblem":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            SendData("AddProblem", NewProblem().ToString(), u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "DeleteProblem":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                            SendData("DeleteProblem", string.Empty, u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "UpdateProblem":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            var x = string.Empty;
+                                            for (var i = 0; i < res.Content.Count; i++)
+                                                if (i != res.Content.Count - 1)
+                                                    x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                                else
+                                                    x += Encoding.Unicode.GetString(res.Content[i]);
+                                            var p = JsonConvert.DeserializeObject<Problem>(x);
+                                            UpdateProblem(p);
+                                            SendData("UpdateProblem", string.Empty, u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "QueryProblems":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            SendData("QueryProblems", JsonConvert.SerializeObject(QueryProblems()), u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "QueryJudgeLogs":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            SendData("QueryJudgeLogs", JsonConvert.SerializeObject(QueryJudgeLog()), u.Info.ConnId);
+                                            break;
+                                        }
+                                    case "ClearJudgingLogs":
+                                        {
+                                            if (u.Info.UserId == 0) break;
+                                            var t = GetUser(u.Info.UserId);
+                                            if (t.Type <= 0 || t.Type >= 4) break;
+                                            ClearJudgeLog();
+                                            break;
+                                        }
                                 }
                             }
                             catch

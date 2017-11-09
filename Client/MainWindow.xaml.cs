@@ -37,18 +37,6 @@ namespace Client
 
         public MainWindow()
         {
-            //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
-            //{
-            //    new Process
-            //    {
-            //        StartInfo =
-            //        {
-            //            FileName = $"{Environment.CurrentDirectory}\\Updater.exe",
-            //            Arguments =
-            //                $"Client {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{Environment.CurrentDirectory}\""
-            //        }
-            //    }.Start();
-            //}
             var tick = DateTime.Now.Ticks;
             _random = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
             try
@@ -507,6 +495,7 @@ namespace Client
                             new Button {Height = 32, Width = 80, Content = "比赛管理"},
                             new Button {Height = 32, Width = 80, Content = "成员管理"},
                             new Button {Height = 32, Width = 80, Content = "评测日志"},
+                            new Button {Height = 32, Width = 80, Content = "文件管理"},
                             new Button {Height = 32, Width = 80, Content = "系统设置"}
                         };
                         operationsButton[0].Click += (sender, args) =>
@@ -518,6 +507,8 @@ namespace Client
                         operationsButton[3].Click += (sender, args) =>
                             ManagementToolsPage.Navigate(new JudgingLogsPage());
                         operationsButton[4].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new FilesManagementPage());
+                        operationsButton[5].Click += (sender, args) =>
                             ManagementToolsPage.Navigate(new SystemSettingsPage());
                         foreach (var t in operationsButton)
                             ManagementToolsList.Items.Add(t);
@@ -530,7 +521,8 @@ namespace Client
                             new Button {Height = 32, Width = 80, Content = "题目管理"},
                             new Button {Height = 32, Width = 80, Content = "比赛管理"},
                             new Button {Height = 32, Width = 80, Content = "成员管理"},
-                            new Button {Height = 32, Width = 80, Content = "评测日志"}
+                            new Button {Height = 32, Width = 80, Content = "评测日志"},
+                            new Button {Height = 32, Width = 80, Content = "文件管理"}
                         };
                         operationsButton[0].Click += (sender, args) =>
                             ManagementToolsPage.Navigate(new ProblemsManagementPage());
@@ -540,6 +532,8 @@ namespace Client
                             ManagementToolsPage.Navigate(new MembersManagementPage());
                         operationsButton[3].Click += (sender, args) =>
                             ManagementToolsPage.Navigate(new JudgingLogsPage());
+                        operationsButton[4].Click += (sender, args) =>
+                            ManagementToolsPage.Navigate(new FilesManagementPage());
                         foreach (var t in operationsButton)
                             ManagementToolsList.Items.Add(t);
                         break;

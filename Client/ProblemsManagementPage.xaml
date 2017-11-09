@@ -6,10 +6,107 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d" 
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="ProblemsManagementPage">
+      Title="ProblemsManagementPage" Loaded="Page_Loaded">
 
     <Grid>
-        <Label Content="题目管理，正在开发中" HorizontalAlignment="Left" Margin="230,127,0,0" VerticalAlignment="Top"/>
-
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="298" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" VerticalAlignment="Top" Width="166" SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}" />
+                    <GridViewColumn Header="题目名称" Width="150" DisplayMemberBinding="{Binding Path=ProblemName}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <TabControl HorizontalAlignment="Left" Height="298" Margin="171,0,0,0" VerticalAlignment="Top" Width="346">
+            <TabItem Header="基本信息">
+                <Grid>
+                    <Label Content="题目名称：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="61" />
+                    <Label Content="添加时间：" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="61" />
+                    <Label Content="题目难度：" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top" Width="61" />
+                    <Label Content="比较程序：" HorizontalAlignment="Left" Margin="10,103,0,0" VerticalAlignment="Top" Width="61" />
+                    <Label Content="额外文件：" HorizontalAlignment="Left" Margin="10,134,0,0" VerticalAlignment="Top" Width="61" />
+                    <Label Content="输入文件名：" HorizontalAlignment="Left" Margin="10,165,0,0" VerticalAlignment="Top" Width="72" />
+                    <Label Content="输出文件名：" HorizontalAlignment="Left" Margin="175,165,0,0" VerticalAlignment="Top" Width="72" />
+                    <Label Content="编译参数：" HorizontalAlignment="Left" Margin="10,196,0,0" VerticalAlignment="Top" Width="61" />
+                    <TextBox x:Name="ProblemName" HorizontalAlignment="Left" Height="23" Margin="76,13,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="253" />
+                    <TextBox x:Name="SpecialJudge" HorizontalAlignment="Left" Height="23" Margin="76,106,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="253" />
+                    <TextBox x:Name="ExtraFiles" HorizontalAlignment="Left" Height="23" Margin="76,137,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="253" />
+                    <TextBox x:Name="InputFileName" HorizontalAlignment="Left" Height="23" Margin="86,168,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="78" />
+                    <TextBox x:Name="OutputFileName" HorizontalAlignment="Left" Height="23" Margin="251,168,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="78" />
+                    <TextBox x:Name="CompileCommand" HorizontalAlignment="Left" Height="61" Margin="76,199,0,0"
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="253"
+                        HorizontalScrollBarVisibility="Auto" />
+                    <Label x:Name="AddDate" HorizontalAlignment="Left" Margin="76,41,0,0" VerticalAlignment="Top"
+                        Width="146" />
+                    <Slider x:Name="Level" HorizontalAlignment="Left" Margin="76,72,0,0" VerticalAlignment="Top"
+                        Width="228" Height="29" SmallChange="1" Minimum="1" Value="1" TickPlacement="Both"
+                        ValueChanged="Level_ValueChanged" Ticks="1 2 3 4 5 6 7 8 9 10" IsSnapToTickEnabled="True" />
+                    <Label x:Name="LevelShow" Content="1" HorizontalAlignment="Left" Margin="304,75,0,0"
+                        VerticalAlignment="Top" Width="25" HorizontalContentAlignment="Right" />
+                    <Label Content="数据组数：" HorizontalAlignment="Left" Margin="227,41,0,0" VerticalAlignment="Top" Width="61" />
+                    <TextBox x:Name="DataSetsNumber" HorizontalAlignment="Left" Height="23" Margin="293,44,0,0"
+                        TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="36" KeyDown="TextBox_KeyDown" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="数据设置">
+                <Grid>
+                    <ComboBox x:Name="ComboBox" Margin="0,0,52,246" IsEditable="True" SelectedIndex="0">
+                        <TextBlock><Run Text="${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10"/></TextBlock>
+                        <TextBlock><Run Text="${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10"/></TextBlock>
+                    </ComboBox>
+                    <Button Content="填充" HorizontalAlignment="Left" Margin="288,0,0,0" VerticalAlignment="Top"
+                        Width="52" Height="24" Click="Button_Click" />
+                    <ListBox x:Name="ListBox" Margin="0,24,0,0" SelectionMode="Single" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="使用帮助">
+                <Grid>
+                    <ListBox>
+                        <Label Content="*注：添加题目时请先点击添加，修改后务必点保存" HorizontalAlignment="Left" VerticalAlignment="Top"
+                           Foreground="Red" />
+                        <Label Content="额外文件注意事项：" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Blue" />
+                        <Label Content="多个额外文件请用 | 分隔开" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="评测时会自动以原文件名复制所有额外文件到测试工作目录下。" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="数据设置方法：" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Blue" />
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap"
+                               Text="修改数据时，请先在基本信息中修改数据数量，按下回车键即可生效。在数据设置中，可以使用上方组合框中的套用模板进行批量设置，套用模板中可以使用预定宏来减少工作量。"
+                               VerticalAlignment="Top" Width="349" />
+                        <Label Content="套用模板格式：" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Blue" />
+                        <Label Content="输入文件|输出文件|时间限制|内存限制|分数" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="如果某一个域为 * 代表维持不变，例如：*|*|1000|*|5" HorizontalAlignment="Left"
+                           VerticalAlignment="Top" />
+                        <Label Content="比较程序、额外文件、编译参数、套用模板适用预定宏：" HorizontalAlignment="Left" VerticalAlignment="Top"
+                           Foreground="Blue" />
+                        <Label Content="${file} 源代码文件" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="${targetfile} 编译出的 exe 文件" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="${workingdir} 测试程序工作目录" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="${datadir} Data 目录" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="${index} 从 1 开始的测试点序号，仅在套用模板中生效" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="${index0} 从 0 开始的测试点序号，仅在套用模板中生效" HorizontalAlignment="Left"
+                           VerticalAlignment="Top" />
+                        <Label Content="${name} 题目名称（仅取英文和数字部分）" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="如：例子_example2蛤33h蛤hh 中只会取example233hhh" HorizontalAlignment="Left"
+                           VerticalAlignment="Top" />
+                        <Label Content="关于比较程序：" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Blue" />
+                        <Label Content="如无需自定义比较请留空，否则请填写比较程序路径" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Label Content="内置比较方法为删除行末空格、文末空行后全文比较" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap"
+                               Text="若指定了自定义比较程序，评测时 hjudge 会向比较程序传入 4 个参数，分别是：标准输入文件路径、标准输出文件路径、选手程序输出文件路径、比较结果文件输出路径。比较程序需要将结果写入比较结果文件（未提前创建），结果为一个 0~1 的小数，代表该测试点所得分数占该测试点满分的百分比。"
+                               VerticalAlignment="Top" Width="349" />
+                    </ListBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Button Content="添加" HorizontalAlignment="Left" Margin="522,22,0,0" VerticalAlignment="Top" Width="53"
+            Height="31" Click="Button_Click_1"/>
+        <Button Content="删除" HorizontalAlignment="Left" Margin="522,58,0,0" VerticalAlignment="Top" Width="53"
+            Height="31" Click="Button_Click_2"/>
+        <Button Content="保存" HorizontalAlignment="Left" Margin="522,267,0,0" VerticalAlignment="Top" Width="53"
+            Height="31" Click="Button_Click_3"/>
     </Grid>
 </Page>
