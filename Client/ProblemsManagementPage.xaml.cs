@@ -298,14 +298,59 @@ namespace Client
                         MessageBox.Show("数据包大小不能超过 512 MB", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    Connection.UploadDataFileResult = false;
+                    Connection.UploadFileResult = false;
                     IsEnabled = false;
                     Task.Run(() =>
                     {
                         Connection.CanSwitch = false;
                         Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
-                        Connection.SendFile(ofg.FileName);
-                        while (!Connection.UploadDataFileResult)
+                        Connection.SendFile(ofg.FileName, "DataFile");
+                        while (!Connection.UploadFileResult)
+                        {
+                            Thread.Sleep(10);
+                        }
+                        Dispatcher.Invoke(() =>
+                        {
+                            Dealing.Visibility = Visibility.Hidden;
+                            IsEnabled = true;
+                        });
+                        Connection.CanSwitch = true;
+                    });
+                }
+            }
+        }
+
+        private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
+        {
+            var ofg = new OpenFileDialog
+            {
+                Title = "选择共享文件包（自动解压）：",
+                Filter = "共享文件包 (.zip)|*.zip",
+                Multiselect = false
+            };
+            if (ofg.ShowDialog() == true)
+            {
+                if (Path.GetExtension(ofg.FileName).ToLower() != ".zip")
+                {
+                    MessageBox.Show("不是标准的共享文件包文件", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (!string.IsNullOrEmpty(ofg.FileName))
+                {
+                    var fi = new FileInfo(ofg.FileName);
+                    if (fi.Length > 512 * 1048576)
+                    {
+                        MessageBox.Show("共享文件包大小不能超过 512 MB", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    Connection.UploadFileResult = false;
+                    IsEnabled = false;
+                    Task.Run(() =>
+                    {
+                        Connection.CanSwitch = false;
+                        Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
+                        Connection.SendFile(ofg.FileName, "PublicFile");
+                        while (!Connection.UploadFileResult)
                         {
                             Thread.Sleep(10);
                         }
@@ -328,7 +373,7 @@ namespace Client
         private static bool _updateProblemResult;
         private static bool _queryProblemsResultState;
         private static ObservableCollection<Problem> _queryProblemsResult;
-        public static bool UploadDataFileResult;
+        public static bool UploadFileResult;
 
         public static IEnumerable<Problem> QueryProblems()
         {

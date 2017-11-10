@@ -141,10 +141,10 @@ namespace Client
         #region Network
 
 
-        public static void SendFile(string fileName)
+        public static void SendFile(string fileName, string title)
         {
             var fileId = Guid.NewGuid().ToString();
-            var temp = Encoding.Unicode.GetBytes("DataFile" + Divpar
+            var temp = Encoding.Unicode.GetBytes(title + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
                                                  + fileId + Divpar
                                                  + new FileInfo(fileName).Length);
@@ -157,7 +157,7 @@ namespace Client
                 {
                     var bytes = new byte[131072];
                     long cnt = fs.Read(bytes, 0, 131072);
-                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes("DataFile" + Divpar
+                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
                         .Concat(bytes.Take((int)cnt)).ToArray());
@@ -515,6 +515,7 @@ namespace Client
                                         break;
                                     }
                                 case "DataFile":
+                                case "PublicFile":
                                     {
                                         switch (Encoding.Unicode.GetString(res.Content[0]))
                                         {
@@ -526,12 +527,12 @@ namespace Client
                                             }
                                             default:
                                             {
-                                                MessageBox.Show("上传失败", "提示", MessageBoxButton.OK,
+                                                MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
                                                     MessageBoxImage.Error);
                                                 break;
                                             }
                                         }
-                                        UploadDataFileResult = true;
+                                        UploadFileResult = true;
                                         break;
                                     }
                                 case "Register":

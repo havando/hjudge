@@ -833,6 +833,17 @@ namespace Server
                                                     SendData("DataFile", "Failed", res.Client.ConnId);
                                                     continue;
                                                 }
+                                                finally
+                                                {
+                                                    try
+                                                    {
+                                                        File.Delete(filePath);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
                                                 SendData("DataFile", "Succeeded", res.Client.ConnId);
                                             }
                                         }
@@ -857,6 +868,89 @@ namespace Server
                                             catch
                                             {
                                                 SendData("DataFile", "Failed", res.Client.ConnId);
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                case "PublicFile":
+                                    {
+
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var fileName = Encoding.Unicode.GetString(res.Content[0]);
+                                        var fileId = Encoding.Unicode.GetString(res.Content[1]);
+                                        var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                        if (FrInfo.Any(i => i.FileId == fileId))
+                                        {
+                                            var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                            var x = new List<byte>();
+                                            for (var i = 3; i < res.Content.Count; i++)
+                                                if (i != res.Content.Count - 1)
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                    x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                }
+                                                else
+                                                {
+                                                    x.AddRange(res.Content[i]);
+                                                }
+                                            fs.Fs.Position = length;
+                                            fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                            fs.CurrentLength += x.Count;
+                                            if (fs.CurrentLength >= fs.TotLength)
+                                            {
+                                                var filePath =
+                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}";
+                                                fs.Fs.Close();
+                                                fs.Fs.Dispose();
+                                                FrInfo.Remove(fs);
+                                                try
+                                                {
+                                                    System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
+                                                        $"{Environment.CurrentDirectory}\\Files");
+                                                }
+                                                catch
+                                                {
+                                                    SendData("PublicFile", "Failed", res.Client.ConnId);
+                                                    continue;
+                                                }
+                                                finally
+                                                {
+                                                    try
+                                                    {
+                                                        File.Delete(filePath);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
+                                                SendData("PublicFile", "Succeeded", res.Client.ConnId);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            try
+                                            {
+                                                if (!Directory.Exists($"{Environment.GetEnvironmentVariable("temp")}\\{fileId}"))
+                                                    Directory.CreateDirectory(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}");
+                                                FrInfo.Add(new FileRecvInfo
+                                                {
+                                                    CurrentLength = 0,
+                                                    FileId = fileId,
+                                                    FileName = fileName,
+                                                    Fs = new FileStream(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}",
+                                                        FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
+                                                    TotLength = length
+                                                });
+                                            }
+                                            catch
+                                            {
+                                                SendData("PublicFile", "Failed", res.Client.ConnId);
                                             }
                                         }
                                         break;
