@@ -33,7 +33,7 @@ namespace Client
             }
         }
 
-        public float FullScore;
+        public float FullScore => Score?.Sum() ?? 0;
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }
