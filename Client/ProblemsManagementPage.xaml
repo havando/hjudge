@@ -38,7 +38,7 @@
                         TextWrapping="Wrap" VerticalAlignment="Top" Width="78" />
                     <TextBox x:Name="OutputFileName" HorizontalAlignment="Left" Height="23" Margin="251,168,0,0"
                         TextWrapping="Wrap" VerticalAlignment="Top" Width="78" />
-                    <TextBox x:Name="CompileCommand" HorizontalAlignment="Left" Height="61" Margin="76,199,0,0"
+                    <TextBox x:Name="CompileCommand" HorizontalAlignment="Left" Height="44" Margin="76,199,0,0"
                         TextWrapping="Wrap" VerticalAlignment="Top" Width="253"
                         HorizontalScrollBarVisibility="Auto" />
                     <Label x:Name="AddDate" HorizontalAlignment="Left" Margin="76,41,0,0" VerticalAlignment="Top"
@@ -51,6 +51,8 @@
                     <Label Content="数据组数：" HorizontalAlignment="Left" Margin="227,41,0,0" VerticalAlignment="Top" Width="61" />
                     <TextBox x:Name="DataSetsNumber" HorizontalAlignment="Left" Height="23" Margin="293,44,0,0"
                         TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="36" KeyDown="TextBox_KeyDown" />
+                    <Label Content="点击此处上传题目数据包" HorizontalAlignment="Left" Margin="183,243,0,0"
+                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown" />
                 </Grid>
             </TabItem>
             <TabItem Header="数据设置">
@@ -108,5 +110,8 @@
             Height="31" Click="Button_Click_2"/>
         <Button Content="保存" HorizontalAlignment="Left" Margin="522,267,0,0" VerticalAlignment="Top" Width="53"
             Height="31" Click="Button_Click_3"/>
+
+        <Image Name="Dealing" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
+               Margin="526,217,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
     </Grid>
 </Page>

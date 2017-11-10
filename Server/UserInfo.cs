@@ -35,6 +35,7 @@ namespace Server
                     case 2: return "管理员";
                     case 3: return "教师";
                     case 4: return "选手";
+                    case 5: return "待审核";
                 }
                 return "未知";
             }

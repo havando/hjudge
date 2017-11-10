@@ -87,9 +87,6 @@
     <Compile Include="ExcelUtility.cs" />
     <Compile Include="FileInfomation.cs" />
     <Compile Include="FileRecvInfo.cs" />
-    <Compile Include="FilesManagementPage.xaml.cs">
-      <DependentUpon>FilesManagementPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="JudgeDetails.xaml.cs">
       <DependentUpon>JudgeDetails.xaml</DependentUpon>
     </Compile>
@@ -114,10 +111,6 @@
     </Compile>
     <Compile Include="UserInfo.cs" />
     <Page Include="CompetitionsManagementPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FilesManagementPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

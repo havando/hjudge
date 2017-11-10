@@ -30,7 +30,7 @@ namespace Client
         public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
         public readonly ObservableCollection<Message> MessagesCollection = new ObservableCollection<Message>();
 
-        public readonly ObservableCollection<Problem> Problems = new ObservableCollection<Problem>();
+        private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
         private int _coins, _experience, _currentGetJudgeRecordIndex;
         private int _curId;
         private string _userName;
@@ -57,7 +57,7 @@ namespace Client
             }
             InitializeComponent();
 
-            MyProblemList.ItemsSource = Problems;
+            MyProblemList.ItemsSource = _problems;
             JudgeList.ItemsSource = JudgeInfos;
             MessageList.ItemsSource = MessagesCollection;
             FileList.ItemsSource = FileInfomations;
@@ -141,15 +141,18 @@ namespace Client
                                     }
                                 case "Break":
                                     {
+                                        _userName = string.Empty;
+                                        _curId = 0;
                                         Dispatcher.BeginInvoke(new Action(() =>
                                         {
-                                            CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
-                                                JudgeResult.Visibility =
+                                            CodeSubmit.Visibility = Messaging.Visibility =
+                                                Messages.Visibility = JudgeResult.Visibility =
                                                     GetFiles.Visibility = ContentGrid.Visibility =
-                                                        Competitions.Visibility = Visibility.Hidden;
+                                                        Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
                                             LoginGrid.Visibility = Visibility.Visible;
-                                            OldPassword.Password = NewPassword.Password =
-                                                ConfirmPassword.Password = string.Empty;
+                                            Loading1.Visibility = Visibility.Hidden;
+                                            InitManagementTools(0);
+                                            OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
                                             ActiveBox.Items.Clear();
                                             JudgeInfos.Clear();
                                             MessagesCollection.Clear();
@@ -159,8 +162,13 @@ namespace Client
                                             Identity.Content = "身份：";
                                             CodeBox.Text = string.Empty;
                                             _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                            LoginButton.IsEnabled = Register.IsEnabled = false;
                                             TabControl.SelectedIndex = 0;
+                                            FileList.IsEnabled = true;
+                                            ReceivingFile.Visibility = Visibility.Hidden;
+                                            ReceivingProcess.Visibility = Visibility.Hidden;
+                                            Loading1.Visibility = Visibility.Hidden;
+                                            Loading2.Visibility = Visibility.Hidden;
+                                            Loading3.Visibility = Visibility.Hidden;
                                         }));
                                         break;
                                     }
@@ -190,8 +198,11 @@ namespace Client
                                         Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
                                     });
                                 }));
-                            else
-                                MessageBox.Show("登录失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            else if (content == "NeedReview")
+                            {
+                                MessageBox.Show("注册还未通过审核，请耐心等待", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else MessageBox.Show("登录失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                             break;
                         }
                     case "Logout":
@@ -225,6 +236,27 @@ namespace Client
                                 Loading2.Visibility = Visibility.Hidden;
                                 Loading3.Visibility = Visibility.Hidden;
                             }));
+                            break;
+                        }
+                    case "Register":
+                        {
+                            Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
+                            if (content == "Succeeded")
+                            {
+                                MessageBox.Show("注册成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else if (content == "NeedReview")
+                            {
+                                MessageBox.Show("注册请求已提交，等待管理员审核通过后方可登陆", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else if (content == "Duplicate")
+                            {
+                                MessageBox.Show("该用户名已被注册", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                            else
+                            {
+                                MessageBox.Show("注册失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                             break;
                         }
                     case "Messaging":
@@ -484,6 +516,7 @@ namespace Client
         private void InitManagementTools(int type)
         {
             ManagementToolsPage.Navigate(new ManagementWelcomePage());
+            Connection.CanSwitch = true;
             switch (type)
             {
                 case 1:
@@ -495,21 +528,37 @@ namespace Client
                             new Button {Height = 32, Width = 80, Content = "比赛管理"},
                             new Button {Height = 32, Width = 80, Content = "成员管理"},
                             new Button {Height = 32, Width = 80, Content = "评测日志"},
-                            new Button {Height = 32, Width = 80, Content = "文件管理"},
                             new Button {Height = 32, Width = 80, Content = "系统设置"}
                         };
                         operationsButton[0].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                        {
+                            if (Connection.CanSwitch) ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[1].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[2].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new MembersManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new MembersManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[3].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new JudgingLogsPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new JudgingLogsPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[4].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new FilesManagementPage());
-                        operationsButton[5].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new SystemSettingsPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new SystemSettingsPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         foreach (var t in operationsButton)
                             ManagementToolsList.Items.Add(t);
                         break;
@@ -521,19 +570,32 @@ namespace Client
                             new Button {Height = 32, Width = 80, Content = "题目管理"},
                             new Button {Height = 32, Width = 80, Content = "比赛管理"},
                             new Button {Height = 32, Width = 80, Content = "成员管理"},
-                            new Button {Height = 32, Width = 80, Content = "评测日志"},
-                            new Button {Height = 32, Width = 80, Content = "文件管理"}
+                            new Button {Height = 32, Width = 80, Content = "评测日志"}
                         };
                         operationsButton[0].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new ProblemsManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[1].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new CompetitionsManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[2].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new MembersManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new MembersManagementPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         operationsButton[3].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new JudgingLogsPage());
-                        operationsButton[4].Click += (sender, args) =>
-                            ManagementToolsPage.Navigate(new FilesManagementPage());
+                        {
+                            if (Connection.CanSwitch)
+                                ManagementToolsPage.Navigate(new JudgingLogsPage());
+                            else MessageBox.Show("目前无法切换，请等待当前操作完成", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        };
                         foreach (var t in operationsButton)
                             ManagementToolsList.Items.Add(t);
                         break;
@@ -681,9 +743,9 @@ namespace Client
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                Problems.Clear();
+                _problems.Clear();
                 foreach (var i in x)
-                    Problems.Add(i);
+                    _problems.Add(i);
             }));
         }
 
@@ -1004,9 +1066,8 @@ namespace Client
                 if (MessageBox.Show("你输入的密码是：" + Password.Password + "，确认无误？", "提示", MessageBoxButton.OKCancel,
                         MessageBoxImage.Question) == MessageBoxResult.OK)
                 {
+                    Loading0.Visibility = Visibility.Visible;
                     Connection.SendData("Register", UserName.Text + Divpar + Password.Password);
-                    MessageBox.Show("注册请求已提交，等待审核。审核完毕后你将可以登录。请勿重复注册。", "提示", MessageBoxButton.OK,
-                        MessageBoxImage.Information);
                 }
             }
             else

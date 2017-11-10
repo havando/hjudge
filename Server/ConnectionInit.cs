@@ -134,10 +134,7 @@ namespace Server
                     }
                 };
                 HServer.SetExtra(id, clientInfo);
-                lock (BytesLock)
-                {
-                    Recv.Add(new ClientData { Info = clientInfo });
-                }
+                Recv.Add(new ClientData { Info = clientInfo });
                 SendData("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), id);
                 return HandleResult.Ok;
             };
@@ -145,11 +142,8 @@ namespace Server
             {
                 HServer.RemoveExtra(id);
                 var t = (from c in Recv where c.Info.ConnId == id select c).FirstOrDefault();
-                lock (BytesLock)
-                {
-                    if (t != null)
-                        Recv.Remove(t);
-                }
+                if (t != null)
+                    Recv.Remove(t);
                 return HandleResult.Ok;
             };
             HServer.OnReceive += HServerOnOnReceive;

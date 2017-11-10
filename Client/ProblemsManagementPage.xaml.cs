@@ -11,7 +11,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Xml;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace Client
@@ -259,6 +262,62 @@ namespace Client
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
                 }
             });
+            var rtf = new RotateTransform
+            {
+                CenterX = Dealing.ActualWidth * 0.5,
+                CenterY = Dealing.ActualHeight * 0.5
+            };
+            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Dealing.RenderTransform = rtf;
+            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
+        }
+
+        private void Label_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var ofg = new OpenFileDialog
+            {
+                Title = "选择数据包：",
+                Filter = "数据包文件 (.zip)|*.zip",
+                Multiselect = false
+            };
+            if (ofg.ShowDialog() == true)
+            {
+                if (Path.GetExtension(ofg.FileName).ToLower() != ".zip")
+                {
+                    MessageBox.Show("不是标准的数据包文件", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (!string.IsNullOrEmpty(ofg.FileName))
+                {
+                    var fi = new FileInfo(ofg.FileName);
+                    if (fi.Length > 512 * 1048576)
+                    {
+                        MessageBox.Show("数据包大小不能超过 512 MB", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    Connection.UploadDataFileResult = false;
+                    IsEnabled = false;
+                    Task.Run(() =>
+                    {
+                        Connection.CanSwitch = false;
+                        Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
+                        Connection.SendFile(ofg.FileName);
+                        while (!Connection.UploadDataFileResult)
+                        {
+                            Thread.Sleep(10);
+                        }
+                        Dispatcher.Invoke(() =>
+                        {
+                            Dealing.Visibility = Visibility.Hidden;
+                            IsEnabled = true;
+                        });
+                        Connection.CanSwitch = true;
+                    });
+                }
+            }
         }
     }
 
@@ -269,6 +328,7 @@ namespace Client
         private static bool _updateProblemResult;
         private static bool _queryProblemsResultState;
         private static ObservableCollection<Problem> _queryProblemsResult;
+        public static bool UploadDataFileResult;
 
         public static IEnumerable<Problem> QueryProblems()
         {

@@ -6,7 +6,6 @@ using System.Data.SQLite;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using Newtonsoft.Json;
 
 namespace Server
@@ -93,7 +92,7 @@ namespace Server
             return ji.ToArray();
         }
 
-        private static bool RegisterUser(string userName, string password)
+        private static bool RegisterUser(string userName, string password, bool requestReview)
         {
             if (CheckUser(userName) != 0)
                 return false;
@@ -119,7 +118,7 @@ namespace Server
                         parameters[0].Value = userName;
                         parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                         parameters[2].Value = password;
-                        parameters[3].Value = 4;
+                        parameters[3].Value = requestReview ? 5 : 4;
                         parameters[4].Value = string.Empty;
                         parameters[5].Value = string.Empty;
                         parameters[6].Value = 0;
@@ -136,12 +135,12 @@ namespace Server
             return true;
         }
 
-        private static void RemoteRegister(string userName, string password)
+        private static bool RemoteRegister(string userName, string password)
         {
-            if (Configuration.Configurations.RegisterMode == 0) return;
+            if (Configuration.Configurations.RegisterMode == 0) return false;
 
             if (CheckUser(userName) != 0)
-                return;
+                return false;
             SHA256 s = new SHA256CryptoServiceProvider();
             var retVal = s.ComputeHash(Encoding.Unicode.GetBytes(password));
             var sb = new StringBuilder();
@@ -149,24 +148,23 @@ namespace Server
                 sb.Append(t.ToString("x2"));
             if (Configuration.Configurations.RegisterMode == 1)
             {
-                if (MessageBox.Show($"用户 {userName} 请求注册 hjudge，是否同意？", "提示", MessageBoxButton.YesNo,
-                        MessageBoxImage.Question) == MessageBoxResult.Yes)
-                    if (RegisterUser(userName, sb.ToString()))
-                    {
-                        UserHelper.GetUserBelongs();
-                        UpdateMainPageState(
-                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {userName} 注册了");
-                    }
+                if (RegisterUser(userName, sb.ToString(), true))
+                {
+                    UserHelper.GetUserBelongs();
+                    UpdateMainPageState(
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {userName} 注册待审核");
+                }
             }
             else
             {
-                if (RegisterUser(userName, sb.ToString()))
+                if (RegisterUser(userName, sb.ToString(), false))
                 {
                     UserHelper.GetUserBelongs();
                     UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {userName} 注册了");
                 }
             }
+            return true;
         }
 
         private static bool RemoteChangePassword(string userName, string oldPassword, string newPassword)
@@ -360,14 +358,13 @@ namespace Server
                     parameters[0].Value = userName;
                     cmd.Parameters.AddRange(parameters);
                     var reader = cmd.ExecuteReader();
-                    if (reader.HasRows)
-                        while (reader.Read())
-                            return sb.ToString() == reader.GetString(3) && reader.GetInt32(0) != 1 ? 0 : 1;
-                    else
-                        return 1;
+                    if (!reader.HasRows) return 2;
+                    if (!reader.Read()) return 1;
+                    if (sb.ToString() != reader.GetString(3)) return 1;
+                    if (reader.GetInt32(4) == 5) return 3;
+                    return reader.GetInt32(0) != 1 ? 0 : 1;
                 }
             }
-            return 2;
         }
 
         public static string Logout()

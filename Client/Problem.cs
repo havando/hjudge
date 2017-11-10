@@ -18,6 +18,8 @@ namespace Client
             }
         }
 
+        public string ProblemIndex => $"({ProblemId}) {ProblemName}";
+
         public string AddDate { get; set; }
         public int Level { get; set; }
         public Data[] DataSets { get; set; }

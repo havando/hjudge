@@ -120,6 +120,7 @@
     <Compile Include="ConnectionNetwork.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ExcelUtility.cs" />
+    <Compile Include="FileRecvInfo.cs" />
     <Compile Include="Judge.cs" />
     <Compile Include="JudgeLogs.xaml.cs">
       <DependentUpon>JudgeLogs.xaml</DependentUpon>

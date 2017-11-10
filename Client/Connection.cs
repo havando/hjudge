@@ -17,10 +17,8 @@ namespace Client
 {
     public static partial class Connection
     {
-        private const string Divtot = "<|h~|split|~j|>";
         private const string Divpar = "<h~|~j>";
-        private static readonly object BytesLock = new object();
-        private static readonly List<byte> Recv = new List<byte>();
+        private static readonly ConcurrentQueue<List<byte>> Recv = new ConcurrentQueue<List<byte>>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullClient HClient = new TcpPullClient();
         private static bool _isConnecting;
@@ -34,6 +32,7 @@ namespace Client
         private static int _id;
         private static string _ip;
         private static ushort _port;
+        public static bool CanSwitch = true;
 
         public static bool Init(string ip, ushort port, Action<string> updateMainPage)
         {
@@ -117,10 +116,9 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            lock (BytesLock)
-                            {
-                                Recv.AddRange(buffer);
-                            }
+                            _isReceiving = false;
+                            _updateMainPage.Invoke($"ReceivingFile{Divpar}Done");
+                            Recv.Enqueue(buffer.ToList());
                             required = PkgHeaderSize;
                         }
                         PkgInfo.IsHeader = !PkgInfo.IsHeader;
@@ -133,8 +131,6 @@ namespace Client
                 }
                 finally
                 {
-                    _isReceiving = false;
-                    _updateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                     if (bufferPtr != IntPtr.Zero)
                         Marshal.FreeHGlobal(bufferPtr);
                 }
@@ -144,19 +140,46 @@ namespace Client
 
         #region Network
 
+
+        public static void SendFile(string fileName)
+        {
+            var fileId = Guid.NewGuid().ToString();
+            var temp = Encoding.Unicode.GetBytes("DataFile" + Divpar
+                                                 + Path.GetFileName(fileName) + Divpar
+                                                 + fileId + Divpar
+                                                 + new FileInfo(fileName).Length);
+            var final = GetSendBuffer(temp);
+            HClient.Send(final, final.Length);
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                long tot = 0;
+                while (tot != fs.Length)
+                {
+                    var bytes = new byte[131072];
+                    long cnt = fs.Read(bytes, 0, 131072);
+                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes("DataFile" + Divpar
+                                                                        + Path.GetFileName(fileName) + Divpar
+                                                                        + fileId + Divpar + tot + Divpar)
+                        .Concat(bytes.Take((int)cnt)).ToArray());
+                    tot += cnt;
+                    HClient.Send(tempc, tempc.Length);
+                }
+                fs.Close();
+            }
+        }
+
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
-            temp = temp.Concat(Encoding.Unicode.GetBytes(Divtot)).ToArray();
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
         }
 
         public static void SendData(string operation, string sendString)
         {
-            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString + Divtot);
+            var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
         }
@@ -218,48 +241,33 @@ namespace Client
             {
                 while (!IsExited)
                 {
-                    lock (BytesLock)
+                    if (Recv.TryDequeue(out var temp))
                     {
-                        if (Recv.Count == 0)
-                        {
-                            Thread.Sleep(10);
+                        if (IsExited) break;
+                        var temp2 = Bytespilt(temp, Encoding.Unicode.GetBytes(Divpar));
+                        if (temp2.Count == 0)
                             continue;
-                        }
-                        var temp = Bytespilt(Recv.ToArray(), Encoding.Unicode.GetBytes(Divtot));
-                        if (temp.Count != 0)
+                        var operation = Encoding.Unicode.GetString(temp2[0]);
+                        switch (operation)
                         {
-                            Recv.Clear();
-                            Recv.AddRange(temp[temp.Count - 1]);
-                        }
-                        temp.RemoveAt(temp.Count - 1);
-                        foreach (var i in temp)
-                        {
-                            if (IsExited) break;
-                            var temp2 = Bytespilt(i, Encoding.Unicode.GetBytes(Divpar));
-                            if (temp2.Count == 0)
-                                continue;
-                            var operation = Encoding.Unicode.GetString(temp2[0]);
-                            switch (operation)
-                            {
-                                case "&":
+                            case "&":
+                                {
+                                    _isConnecting = true;
+                                    break;
+                                }
+                            default:
+                                {
+                                    Task.Run(() =>
                                     {
-                                        _isConnecting = true;
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        Task.Run(() =>
+                                        temp2.RemoveAt(0);
+                                        Operations.Enqueue(new ObjOperation
                                         {
-                                            temp2.RemoveAt(0);
-                                            Operations.Enqueue(new ObjOperation
-                                            {
-                                                Operation = operation,
-                                                Content = temp2
-                                            });
+                                            Operation = operation,
+                                            Content = temp2
                                         });
-                                        break;
-                                    }
-                            }
+                                    });
+                                    break;
+                                }
                         }
                     }
                     Thread.Sleep(10);
@@ -280,33 +288,12 @@ namespace Client
                             {
                                 case "Login":
                                     {
-                                        var x = Encoding.Unicode.GetString(res.Content[0]);
-                                        switch (x)
-                                        {
-                                            case "Succeed":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Succeed");
-                                                    break;
-                                                }
-                                            case "Incorrect":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Incorrect");
-                                                    break;
-                                                }
-                                            case "Unknown":
-                                                {
-                                                    _updateMainPage.Invoke($"Login{Divpar}Unknown");
-                                                    break;
-                                                }
-                                        }
+                                        _updateMainPage.Invoke($"Login{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
                                 case "Logout":
                                     {
-                                        lock (BytesLock)
-                                        {
-                                            Recv.Clear();
-                                        }
+                                        while (Recv.TryDequeue(out var temp)) { temp.Clear(); }
                                         _updateMainPage.Invoke($"Logout{Divpar}Succeed");
                                         break;
                                     }
@@ -525,6 +512,17 @@ namespace Client
                                                 x += Encoding.Unicode.GetString(res.Content[i]);
                                         _queryJudgeLogResult = JsonConvert.DeserializeObject<ObservableCollection<JudgeInfo>>(x);
                                         _queryJudgeLogResultState = true;
+                                        break;
+                                    }
+                                case "DataFile":
+                                    {
+                                        UploadDataFileResult = true;
+                                        break;
+                                    }
+                                case "Register":
+                                    {
+                                        _updateMainPage.Invoke(
+                                            $"Register{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
                             }

@@ -74,13 +74,13 @@ namespace Server
                                 if (Connection.CurJudgingCnt < 3)
                                     flag = true;
                             }
-                            Thread.Sleep(3000);
+                            Thread.Sleep(100);
                         }
                     }
                     else
                     {
                         while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
-                            Thread.Sleep(3000);
+                            Thread.Sleep(100);
                     }
                 }
                 catch
@@ -445,15 +445,7 @@ namespace Server
                             }
                             catch
                             {
-                                try
-                                {
-                                    execute?.Kill();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
-                                _isexited = true;
+                                //ignored
                             }
                             if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
                             {
@@ -508,7 +500,7 @@ namespace Server
                         {
                             //ignored 
                         }
-                        Thread.Sleep(10);
+                        Thread.Sleep(1);
                         if (_problem.InputFileName != "stdin")
                         {
                             if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
@@ -681,32 +673,32 @@ namespace Server
 
         private void Exithandler(object sender, EventArgs e)
         {
-            if (_isexited)
-                return;
-            var process = sender as Process;
-            try
+            if (sender is Process process)
             {
-                JudgeResult.Exitcode[_cur] = process?.ExitCode ?? 0;
+                try
+                {
+                    JudgeResult.Exitcode[_cur] = process.ExitCode;
+                }
+                catch
+                {
+                    JudgeResult.Exitcode[_cur] = 0;
+                }
+                if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
+                {
+                    JudgeResult.Result[_cur] = "Runtime Error";
+                    JudgeResult.Score[_cur] = 0;
+                    _isfault = true;
+                }
+                try
+                {
+                    process.Kill();
+                }
+                catch
+                {
+                    // ignored
+                }
+                _isexited = true;
             }
-            catch
-            {
-                JudgeResult.Exitcode[_cur] = 0;
-            }
-            if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
-            {
-                JudgeResult.Result[_cur] = "Runtime Error";
-                JudgeResult.Score[_cur] = 0;
-                _isfault = true;
-            }
-            try
-            {
-                process?.Kill();
-            }
-            catch
-            {
-                // ignored
-            }
-            _isexited = true;
         }
 
         private void Killwerfault()
