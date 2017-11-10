@@ -516,6 +516,21 @@ namespace Client
                                     }
                                 case "DataFile":
                                     {
+                                        switch (Encoding.Unicode.GetString(res.Content[0]))
+                                        {
+                                            case "Succeeded":
+                                            {
+                                                MessageBox.Show("上传成功", "提示", MessageBoxButton.OK,
+                                                    MessageBoxImage.Information);
+                                                break;
+                                            }
+                                            default:
+                                            {
+                                                MessageBox.Show("上传失败", "提示", MessageBoxButton.OK,
+                                                    MessageBoxImage.Error);
+                                                break;
+                                            }
+                                        }
                                         UploadDataFileResult = true;
                                         break;
                                     }
