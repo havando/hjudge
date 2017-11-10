@@ -255,12 +255,15 @@ namespace Client
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             ListView.ItemsSource = _problems;
+            _problems.Clear();
             Task.Run(() =>
             {
+                Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
                 foreach (var queryProblem in Connection.QueryProblems())
                 {
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
                 }
+                Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
             });
             var rtf = new RotateTransform
             {
