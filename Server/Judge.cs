@@ -65,13 +65,13 @@ namespace Server
                                         .Concat(new long[] { 0 })
                                         .Max();
                                     if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
-                                        Connection.CurJudgingCnt < 3)
+                                        Connection.CurJudgingCnt < 5)
                                         flag = true;
                                 }
                             }
                             catch
                             {
-                                if (Connection.CurJudgingCnt < 3)
+                                if (Connection.CurJudgingCnt < 5)
                                     flag = true;
                             }
                             Thread.Sleep(100);
@@ -404,136 +404,102 @@ namespace Server
                     Task<string> res = null;
                     _isfault = false;
                     _isexited = false;
-                    lock (Connection.JudgePointLock)
+                    try
+                    {
+                        execute.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
+                        JudgeResult.Exitcode[_cur] = 0;
+                        JudgeResult.Score[_cur] = 0;
+                        JudgeResult.Timeused[_cur] = 0;
+                        JudgeResult.Memoryused[_cur] = 0;
+                        continue;
+                    }
+
+                    var inputStream = execute.StandardInput;
+                    if (_problem.InputFileName == "stdin")
+                    {
+                        //Thread.Sleep(10);
+                        var outputStream = execute.StandardOutput;
+                        res = outputStream.ReadToEndAsync();
+                        inputStream.AutoFlush = true;
+                        inputStream.WriteAsync(
+                                File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) + "\0")
+                            .ContinueWith(o =>
+                            {
+                                try
+                                {
+                                    inputStream.Close();
+                                    inputStream.Dispose();
+                                }
+                                catch
+                                {
+                                        //ignored
+                                    }
+                            });
+                    }
+                    else
                     {
                         try
                         {
-                            execute.Start();
-                        }
-                        catch (Exception ex)
-                        {
-                            JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                            JudgeResult.Exitcode[_cur] = 0;
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Timeused[_cur] = 0;
-                            JudgeResult.Memoryused[_cur] = 0;
-                            continue;
-                        }
-
-                        var inputStream = execute.StandardInput;
-                        if (_problem.InputFileName == "stdin")
-                        {
-                            //Thread.Sleep(10);
-                            var outputStream = execute.StandardOutput;
-                            res = outputStream.ReadToEndAsync();
-                            inputStream.AutoFlush = true;
-                            inputStream.WriteAsync(
-                                    File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) + "\0")
-                                .ContinueWith(o =>
-                                {
-                                    try
-                                    {
-                                        inputStream.Close();
-                                        inputStream.Dispose();
-                                    }
-                                    catch
-                                    {
-                                        //ignored
-                                    }
-                                });
-                        }
-                        else
-                        {
-                            try
-                            {
-                                inputStream.Close();
-                                inputStream.Dispose();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        }
-                        while (!_isexited)
-                        {
-                            try
-                            {
-                                execute?.Refresh();
-                                JudgeResult.Timeused[_cur] =
-                                    Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
-                                JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                            if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
-                            {
-                                _isfault = true;
-                                try
-                                {
-                                    execute?.Kill();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
-                                _isexited = true;
-                                JudgeResult.Result[_cur] = "Time Limit Exceeded";
-                                JudgeResult.Score[_cur] = 0;
-                                JudgeResult.Exitcode[_cur] = 0;
-                            }
-                            if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
-                            {
-                                _isfault = true;
-                                try
-                                {
-                                    execute?.Kill();
-                                }
-                                catch
-                                {
-                                    //ignored 
-                                }
-                                _isexited = true;
-                                JudgeResult.Result[_cur] = "Memory Limit Exceeded";
-                                JudgeResult.Score[_cur] = 0;
-                                JudgeResult.Exitcode[_cur] = 0;
-                            }
-                        }
-                        if (_isfault)
-                        {
-                            try
-                            {
-                                execute?.Close();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                            continue;
-                        }
-                        try
-                        {
-                            execute?.Kill();
+                            inputStream.Close();
+                            inputStream.Dispose();
                         }
                         catch
                         {
-                            //ignored 
+                            //ignored
                         }
-                        Thread.Sleep(1);
-                        if (_problem.InputFileName != "stdin")
+                    }
+                    while (!_isexited)
+                    {
+                        try
                         {
-                            if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
+                            execute?.Refresh();
+                            JudgeResult.Timeused[_cur] =
+                                Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                            JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
+                        {
+                            _isfault = true;
+                            try
                             {
-                                JudgeResult.Result[_cur] = "Output File Error";
-                                JudgeResult.Score[_cur] = 0;
-                                continue;
+                                execute?.Kill();
                             }
+                            catch
+                            {
+                                //ignored 
+                            }
+                            _isexited = true;
+                            JudgeResult.Result[_cur] = "Time Limit Exceeded";
+                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Exitcode[_cur] = 0;
                         }
-                        else
+                        if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
                         {
-                            File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp", res?.Result ?? string.Empty, Encoding.Default);
+                            _isfault = true;
+                            try
+                            {
+                                execute?.Kill();
+                            }
+                            catch
+                            {
+                                //ignored 
+                            }
+                            _isexited = true;
+                            JudgeResult.Result[_cur] = "Memory Limit Exceeded";
+                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Exitcode[_cur] = 0;
                         }
+                    }
+                    if (_isfault)
+                    {
                         try
                         {
                             execute?.Close();
@@ -542,6 +508,37 @@ namespace Server
                         {
                             //ignored
                         }
+                        continue;
+                    }
+                    try
+                    {
+                        execute?.Kill();
+                    }
+                    catch
+                    {
+                        //ignored 
+                    }
+                    Thread.Sleep(1);
+                    if (_problem.InputFileName != "stdin")
+                    {
+                        if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
+                        {
+                            JudgeResult.Result[_cur] = "Output File Error";
+                            JudgeResult.Score[_cur] = 0;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp", res?.Result ?? string.Empty, Encoding.Default);
+                    }
+                    try
+                    {
+                        execute?.Close();
+                    }
+                    catch
+                    {
+                        //ignored
                     }
                     Thread.Sleep(1);
                     lock (Connection.ComparingLock)
