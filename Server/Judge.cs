@@ -332,20 +332,40 @@ namespace Server
                 else
                 {
                     if (_problem.InputFileName != "stdin")
+                    {
                         try
                         {
                             File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
                                 true);
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                            JudgeResult.Exitcode[_cur] = 0;
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Timeused[_cur] = 0;
-                            JudgeResult.Memoryused[_cur] = 0;
-                            continue;
+                            Thread.Sleep(1000);
+                            try
+                            {
+                                File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                                    true);
+                            }
+                            catch
+                            {
+                                Thread.Sleep(1000);
+                                try
+                                {
+                                    File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                                        true);
+                                }
+                                catch (Exception ex)
+                                {
+                                    JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
+                                    JudgeResult.Exitcode[_cur] = 0;
+                                    JudgeResult.Score[_cur] = 0;
+                                    JudgeResult.Timeused[_cur] = 0;
+                                    JudgeResult.Memoryused[_cur] = 0;
+                                    continue;
+                                }
+                            }
                         }
+                    }
                     if (_problem.InputFileName == "stdin")
                         try
                         {
