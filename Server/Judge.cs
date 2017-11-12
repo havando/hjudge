@@ -523,7 +523,7 @@ namespace Server
                             //ignored
                         }
                     }
-                    //Thread.Sleep(10);
+                    Thread.Sleep(1);
                     lock (Connection.ComparingLock)
                     {
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
