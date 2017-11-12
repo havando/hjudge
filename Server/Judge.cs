@@ -558,7 +558,7 @@ namespace Server
                                             WindowStyle = ProcessWindowStyle.Hidden
                                         };
                                         Process.Start(xx)?.WaitForExit();
-                                        //Thread.Sleep(10);
+                                        Thread.Sleep(1);
                                         if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                         {
                                             JudgeResult.Result[_cur] = "Special Judge Error";
@@ -596,7 +596,6 @@ namespace Server
                         }
                         else
                         {
-                            //Thread.Sleep(10);
                             try
                             {
                                 var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open,
