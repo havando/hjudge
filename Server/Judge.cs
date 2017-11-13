@@ -338,7 +338,7 @@ namespace Server
                         }
                         catch
                         {
-                            Thread.Sleep(1000);
+                            Thread.Sleep(2000);
                             try
                             {
                                 File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
@@ -346,7 +346,7 @@ namespace Server
                             }
                             catch
                             {
-                                Thread.Sleep(1000);
+                                Thread.Sleep(3000);
                                 try
                                 {
                                     File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
@@ -398,7 +398,6 @@ namespace Server
                         EnableRaisingEvents = true
                     };
                     execute.Exited += (sender, e) => _isExited = true;
-
                     Task<string> res = null;
                     _isFault = false;
                     _isExited = false;
@@ -415,7 +414,7 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
-
+                    Thread.Sleep(1);
                     var inputStream = execute.StandardInput;
                     var outputStream = execute.StandardOutput;
                     if (_problem.InputFileName == "stdin")
@@ -423,52 +422,33 @@ namespace Server
                         //Thread.Sleep(10);
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
-                        Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    await inputStream.WriteAsync(
-                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0\x01A");
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                                try
+                        try
+                        {
+                            inputStream.WriteAsync(
+                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0").
+                                GetAwaiter().OnCompleted(() =>
                                 {
                                     inputStream.Close();
                                     inputStream.Dispose();
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                            });
+                                });
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
                     else
                     {
-                        inputStream.AutoFlush = true;
-                        Task.Run(async () =>
+                        try
                         {
-
-                            try
-                            {
-                                await inputStream.WriteAsync("\0\x01A");
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                            try
-                            {
-                                inputStream.Close();
-                                inputStream.Dispose();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        });
+                            inputStream.Write("\0");
+                            inputStream.Close();
+                            inputStream.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
                     while (!_isExited)
                     {
@@ -515,6 +495,14 @@ namespace Server
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
+                        try
+                        {
+                            execute?.CloseMainWindow();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                         Thread.Sleep(1);
                     }
                     try
@@ -544,6 +532,7 @@ namespace Server
                         try
                         {
                             execute?.Close();
+                            execute?.Dispose();
                         }
                         catch
                         {
@@ -585,6 +574,7 @@ namespace Server
                     try
                     {
                         execute?.Close();
+                        execute?.Dispose();
                     }
                     catch
                     {
@@ -732,7 +722,7 @@ namespace Server
                         }
                     }
                 }
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}", textBlock);
