@@ -23,6 +23,18 @@ namespace Server
 
         public Judge(int problemId, int userId, string code, string type, bool isStdio)
         {
+            while (true)
+            {
+                if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
+                        ? Configuration.ProcessorCount
+                        : Configuration.Configurations.MutiThreading))
+                {
+                    lock (Connection.JudgeListCntLock)
+                        Connection.CurJudgingCnt++;
+                    break;
+                }
+                Thread.Sleep(100);
+            }
             _isFinished = false;
             try
             {
@@ -44,54 +56,37 @@ namespace Server
                 var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
-                try
+                if (Configuration.Configurations.MutiThreading == 0)
                 {
-                    if (Configuration.Configurations.MutiThreading == 0)
+                    while (true)
                     {
-                        var flag = false;
-                        while (!flag)
+                        try
                         {
-                            try
+                            lock (Connection.ResourceLoadingLock)
                             {
-                                lock (Connection.ResourceLoadingLock)
+                                var cpuCounter = new PerformanceCounter
                                 {
-                                    var cpuCounter = new PerformanceCounter
-                                    {
-                                        CategoryName = "Processor",
-                                        CounterName = "% Processor Time",
-                                        InstanceName = "_Total"
-                                    };
-                                    var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
-                                    var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                        .Concat(new long[] { 0 })
-                                        .Max();
-                                    if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
-                                        Connection.CurJudgingCnt < Configuration.ProcessorCount)
-                                        flag = true;
+                                    CategoryName = "Processor",
+                                    CounterName = "% Processor Time",
+                                    InstanceName = "_Total"
+                                };
+                                var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
+                                var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
+                                    .Concat(new long[] { 0 })
+                                    .Max();
+                                if (cpuCounter.NextValue() <= 75 &&
+                                    ramCounter.NextValue() > maxMemoryNeeded + 262144)
+                                {
+                                    break;
                                 }
                             }
-                            catch
-                            {
-                                if (Connection.CurJudgingCnt < Configuration.ProcessorCount)
-                                    flag = true;
-                            }
-                            Thread.Sleep(1000);
                         }
+                        catch
+                        {
+                            //ignored
+                        }
+                        Thread.Sleep(100);
                     }
-                    else
-                    {
-                        while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
-                            Thread.Sleep(1000);
-                    }
-                }
-                catch
-                {
-                    //ignored
-                }
-
-                lock (Connection.JudgeListCntLock)
-                {
-                    Connection.CurJudgingCnt++;
                 }
 
                 new Thread(Killwerfault).Start();
@@ -191,10 +186,7 @@ namespace Server
                 //ignored
             }
             _isFinished = true;
-            lock (Connection.JudgeListCntLock)
-            {
-                Connection.CurJudgingCnt--;
-            }
+            lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
         }
 
         public static string GetEngName(string origin)
@@ -491,6 +483,15 @@ namespace Server
                     }
                     else
                     {
+                        try
+                        {
+                            inputStream.AutoFlush = true;
+                            inputStream.WriteAsync("\0");
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                         try
                         {
                             inputStream.Close();

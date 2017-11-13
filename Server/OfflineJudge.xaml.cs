@@ -85,7 +85,6 @@ namespace Server
             {
                 var all = members.Count * _problems.Count(t => t.IsChecked);
                 var cur = -1;
-                var cnt = 0;
                 var myJudgeTask = new List<Task>();
                 var cntLock = new object();
                 foreach (var t in members)
@@ -138,7 +137,6 @@ namespace Server
                         {
                             continue;
                         }
-                        cnt++;
                         myJudgeTask.Add(Task.Run(() =>
                         {
                             if (_stop) return;
@@ -150,28 +148,28 @@ namespace Server
                                 });
                             });
                             var j = new Judge(m.ProblemId, 1, code, type, isStdInOut);
-                                p.Result.Add(j.JudgeResult);
-                                Dispatcher.Invoke(() =>
+                            p.Result.Add(j.JudgeResult);
+                            Dispatcher.Invoke(() =>
+                            {
+                                lock (cntLock)
                                 {
-                                    lock (cntLock)
-                                    {
-                                        cur++;
-                                        JudgingProcess.Value = (double)cur * 100 / all;
-                                    }
-                                    JudgingLog.Items.Add(new Label
-                                    {
-                                        Content =
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}"
-                                    });
+                                    cur++;
+                                    JudgingProcess.Value = (double)cur * 100 / all;
+                                }
+                                JudgingLog.Items.Add(new Label
+                                {
+                                    Content =
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}"
                                 });
-                            })
-                        );
-                        Thread.Sleep(100);
-                        if (cnt % (Configuration.Configurations.MutiThreading == 0
-                                ? Configuration.ProcessorCount
-                                : Configuration.Configurations.MutiThreading) != 0) continue;
-                        foreach (var task in myJudgeTask)
-                            task?.Wait(10000);
+                            });
+                        }));
+                        while (true)
+                        {
+                            if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
+                                    ? Configuration.ProcessorCount
+                                    : Configuration.Configurations.MutiThreading)) break;
+                            Thread.Sleep(100);
+                        }
                     }
                     Dispatcher.Invoke(() =>
                     {
