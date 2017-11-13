@@ -423,7 +423,7 @@ namespace Server
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
                         inputStream.WriteAsync(
-                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0\x01A")
                             .ContinueWith(o =>
                             {
                                 try
@@ -442,7 +442,7 @@ namespace Server
                         try
                         {
                             inputStream.AutoFlush = true;
-                            inputStream.WriteAsync("\0");
+                            inputStream.WriteAsync("\0\x01A");
                         }
                         catch
                         {
