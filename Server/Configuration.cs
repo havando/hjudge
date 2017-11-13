@@ -14,7 +14,7 @@ namespace Server
 
         static Configuration()
         {
-            if (ProcessorCount == 0) ProcessorCount = 2;
+            if (ProcessorCount <= 0) ProcessorCount = 2;
         }
 
         public static void Init()
