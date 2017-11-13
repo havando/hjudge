@@ -497,6 +497,7 @@ namespace Server
                             JudgeResult.Score[_cur] = 0;
                             JudgeResult.Exitcode[_cur] = 0;
                         }
+                        Thread.Sleep(1);
                     }
                     if (_isfault)
                     {
