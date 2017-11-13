@@ -396,51 +396,7 @@ namespace Server
                         },
                         EnableRaisingEvents = true
                     };
-
-                    var curx = cur;
-                    execute.Exited += (sender, e) =>
-                    {
-                        if (sender is Process process)
-                        {
-                            if (curx < _problem.DataSets.Length && curx >= 0)
-                            {
-                                try
-                                {
-                                    JudgeResult.Exitcode[curx] = process.ExitCode;
-                                }
-                                catch
-                                {
-                                    JudgeResult.Exitcode[curx] = 0;
-                                }
-                                if (JudgeResult.Exitcode[curx] != 0 && !_isFault)
-                                {
-                                    JudgeResult.Result[curx] = "Runtime Error";
-                                    JudgeResult.Score[curx] = 0;
-                                    _isFault = true;
-                                }
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    if (process.ExitCode != 0 && !_isFault) _isFault = true;
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                            }
-                            try
-                            {
-                                process.Kill();
-                            }
-                            catch
-                            {
-                                // ignored
-                            }
-                            _isExited = true;
-                        }
-                    };
+                    execute.Exited += (sender, e) => _isExited = true;
 
                     Task<string> res = null;
                     _isFault = false;
@@ -548,6 +504,28 @@ namespace Server
                             JudgeResult.Exitcode[cur] = 0;
                         }
                         Thread.Sleep(1);
+                    }
+                    try
+                    {
+                        execute?.Kill();
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
+                    try
+                    {
+                        JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
+                        if (JudgeResult.Exitcode[cur] != 0)
+                        {
+                            JudgeResult.Result[cur] = "Runtime Error";
+                            JudgeResult.Score[cur] = 0;
+                            _isFault = true;
+                        }
+                    }
+                    catch
+                    {
+                        //ignored
                     }
                     if (_isFault)
                     {

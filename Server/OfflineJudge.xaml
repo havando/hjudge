@@ -44,7 +44,7 @@
                             VerticalAlignment="Top" Width="46" Height="26" Click="JudgeButton_Click" />
                     <Label Content="评测状态：" HorizontalAlignment="Left" Margin="257,100,0,0" VerticalAlignment="Top" />
                     <Label Name="CurrentState" Content="尚未评测" HorizontalAlignment="Left" Margin="332,100,0,0"
-                           VerticalAlignment="Top" Width="364" />
+                           VerticalAlignment="Top" Width="81" />
                     <Label Content="评测日志：" HorizontalAlignment="Left" Margin="225,130,0,0" VerticalAlignment="Top"
                            RenderTransformOrigin="0.895,0.577" />
                     <ListBox Name="JudgingLog" HorizontalAlignment="Left" Height="126" Margin="225,160,0,0"
@@ -59,6 +59,12 @@
                                  VerticalAlignment="Top" />
                     <CheckBox Name="StdInOut" Content="使用标准输入输出" HorizontalAlignment="Left" Margin="580,46,0,0"
                               VerticalAlignment="Top" />
+                    <Label Content="平均速度：" HorizontalAlignment="Left" Margin="418,100,0,0" VerticalAlignment="Top" />
+                    <Label x:Name="JudgingSpeed" Content="0 题/分钟" HorizontalAlignment="Left" Margin="494,100,0,0"
+                        VerticalAlignment="Top" Width="80" />
+                    <Label Content="已用时间：" HorizontalAlignment="Left" Margin="579,100,0,0" VerticalAlignment="Top" />
+                    <Label x:Name="TimeConsume" Content="0:0:0" HorizontalAlignment="Left" Margin="654,100,0,0"
+                        VerticalAlignment="Top" Width="81" />
                 </Grid>
             </TabItem>
             <TabItem Header="评测结果">

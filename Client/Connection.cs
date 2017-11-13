@@ -23,7 +23,8 @@ namespace Client
         private static readonly TcpPullClient HClient = new TcpPullClient();
         private static bool _isConnecting;
         private static bool _isConnected;
-        private static bool _isReceiving;
+        private static bool _isReceivingData;
+        private static bool _isSendingData;
         public static bool IsExited;
         private static Action<string> _updateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
@@ -95,7 +96,7 @@ namespace Client
 
         private static HandleResult HClientOnOnReceive(TcpPullClient sender, int length)
         {
-            _isReceiving = true;
+            _isReceivingData = true;
             var required = PkgInfo.Length;
             var remain = length;
             while (remain >= required)
@@ -116,7 +117,7 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            _isReceiving = false;
+                            _isReceivingData = false;
                             _updateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                             Recv.Enqueue(buffer.ToList());
                             required = PkgHeaderSize;
@@ -143,6 +144,7 @@ namespace Client
 
         public static void SendFile(string fileName, string title)
         {
+            _isSendingData = true;
             var fileId = Guid.NewGuid().ToString();
             var temp = Encoding.Unicode.GetBytes(title + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
@@ -166,22 +168,27 @@ namespace Client
                 }
                 fs.Close();
             }
+            _isSendingData = false;
         }
 
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
+            _isSendingData = true;
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
+            _isSendingData = false;
         }
 
         public static void SendData(string operation, string sendString)
         {
+            _isSendingData = true;
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
+            _isSendingData = false;
         }
 
         public static void SendMsg(string sendString)
@@ -520,17 +527,17 @@ namespace Client
                                         switch (Encoding.Unicode.GetString(res.Content[0]))
                                         {
                                             case "Succeeded":
-                                            {
-                                                MessageBox.Show("上传成功", "提示", MessageBoxButton.OK,
-                                                    MessageBoxImage.Information);
-                                                break;
-                                            }
+                                                {
+                                                    MessageBox.Show("上传成功", "提示", MessageBoxButton.OK,
+                                                        MessageBoxImage.Information);
+                                                    break;
+                                                }
                                             default:
-                                            {
-                                                MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
-                                                    MessageBoxImage.Error);
-                                                break;
-                                            }
+                                                {
+                                                    MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
+                                                        MessageBoxImage.Error);
+                                                    break;
+                                                }
                                         }
                                         UploadFileResult = true;
                                         break;
@@ -562,7 +569,7 @@ namespace Client
                 {
                     SendData("@", string.Empty);
                     Thread.Sleep(30000);
-                    while (_isReceiving)
+                    while (_isReceivingData || _isSendingData)
                         Thread.Sleep(5000);
                     if (_isConnecting)
                     {

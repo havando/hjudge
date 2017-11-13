@@ -24,6 +24,7 @@ namespace Server
         private ObservableCollection<Problem> _problems;
 
         private bool _stop;
+        private bool _isFinished;
 
         public OfflineJudge()
         {
@@ -63,6 +64,7 @@ namespace Server
                 if (members == null)
                     return;
                 _stop = false;
+                _isFinished = false;
                 ExportButton.IsEnabled = false;
                 JudgingLog.Items.Clear();
                 _results.Clear();
@@ -81,6 +83,21 @@ namespace Server
 
         private void StartJudge(IReadOnlyCollection<string> members, string dirPath, bool dirPlan, bool isStdInOut)
         {
+            Task.Run(() =>
+            {
+                var start = DateTime.Now;
+                while (!_isFinished)
+                {
+                    var dTime = DateTime.Now - start;
+                    Dispatcher.Invoke(() =>
+                    {
+                        TimeConsume.Content = $"{dTime.Hours}:{dTime.Minutes}:{dTime.Seconds}";
+                        JudgingSpeed.Content =
+                            $"{Math.Round(Convert.ToInt32(JudgingLog.Items.Count / 2) / (Math.Abs(dTime.TotalMinutes) < 1 ? 1 : dTime.TotalMinutes), MidpointRounding.AwayFromZero)} 题/分钟";
+                    });
+                    Thread.Sleep(1000);
+                }
+            });
             Task.Run(() =>
             {
                 var all = members.Count * _problems.Count(t => t.IsChecked);
@@ -142,10 +159,11 @@ namespace Server
                             if (_stop) return;
                             Dispatcher.Invoke(() =>
                             {
-                                JudgingLog.Items.Add(new Label
+                                JudgingLog.Items.Add(new TextBlock
                                 {
-                                    Content = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测，题目：{m.ProblemName}，评测选手：{t}"
+                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测，题目：{m.ProblemName}，评测选手：{t}"
                                 });
+                                JudgingLog.ScrollIntoView(JudgingLog.Items[JudgingLog.Items.Count - 1]);
                             });
                             var j = new Judge(m.ProblemId, 1, code, type, isStdInOut);
                             p.Result.Add(j.JudgeResult);
@@ -156,11 +174,12 @@ namespace Server
                                     cur++;
                                     JudgingProcess.Value = (double)cur * 100 / all;
                                 }
-                                JudgingLog.Items.Add(new Label
+                                JudgingLog.Items.Add(new TextBlock
                                 {
-                                    Content =
+                                    Text =
                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}"
                                 });
+                                JudgingLog.ScrollIntoView(JudgingLog.Items[JudgingLog.Items.Count - 1]);
                             });
                         }));
                         while (true)
@@ -179,6 +198,7 @@ namespace Server
                 }
                 foreach (var task in myJudgeTask)
                     task?.Wait();
+                _isFinished = true;
                 Dispatcher.Invoke(() =>
                 {
                     CurrentState.Content = "评测完毕";
