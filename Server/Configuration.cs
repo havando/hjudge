@@ -10,7 +10,12 @@ namespace Server
     {
         public static Config Configurations;
         public static bool IsHidden;
-        public static int processorCount = Environment.ProcessorCount;
+        public static readonly int ProcessorCount = Environment.ProcessorCount;
+
+        static Configuration()
+        {
+            if (ProcessorCount == 0) ProcessorCount = 2;
+        }
 
         public static void Init()
         {
@@ -30,7 +35,7 @@ namespace Server
             var rdr =
                 new StringReader(
                     File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
-            Configurations = (Config) xmlDeserializer.Deserialize(rdr);
+            Configurations = (Config)xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
                 EnvironmentVariableTarget.Process);

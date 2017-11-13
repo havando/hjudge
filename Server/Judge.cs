@@ -65,13 +65,13 @@ namespace Server
                                         .Concat(new long[] { 0 })
                                         .Max();
                                     if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
-                                        Connection.CurJudgingCnt < Configuration.processorCount)
+                                        Connection.CurJudgingCnt < Configuration.ProcessorCount)
                                         flag = true;
                                 }
                             }
                             catch
                             {
-                                if (Connection.CurJudgingCnt < Configuration.processorCount)
+                                if (Connection.CurJudgingCnt < Configuration.ProcessorCount)
                                     flag = true;
                             }
                             Thread.Sleep(1000);
