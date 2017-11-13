@@ -314,8 +314,10 @@ namespace Server
 
         private void Judging(UIElement textBlock)
         {
-            for (_cur = 0; _cur < _problem.DataSets.Length; _cur++)
+            _cur = -1;
+            while (_cur < _problem.DataSets.Length - 1)
             {
+                _cur++;
                 if (_cur != 0)
                 {
                     Connection.UpdateMainPageState(
@@ -436,8 +438,8 @@ namespace Server
                                 }
                                 catch
                                 {
-                                        //ignored
-                                    }
+                                    //ignored
+                                }
                             });
                     }
                     else
@@ -701,19 +703,33 @@ namespace Server
         {
             if (sender is Process process)
             {
-                try
+                if (_cur < _problem.DataSets.Length && _cur >= 0)
                 {
-                    JudgeResult.Exitcode[_cur] = process.ExitCode;
+                    try
+                    {
+                        JudgeResult.Exitcode[_cur] = process.ExitCode;
+                    }
+                    catch
+                    {
+                        JudgeResult.Exitcode[_cur] = 0;
+                    }
+                    if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
+                    {
+                        JudgeResult.Result[_cur] = "Runtime Error";
+                        JudgeResult.Score[_cur] = 0;
+                        _isfault = true;
+                    }
                 }
-                catch
+                else
                 {
-                    JudgeResult.Exitcode[_cur] = 0;
-                }
-                if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
-                {
-                    JudgeResult.Result[_cur] = "Runtime Error";
-                    JudgeResult.Score[_cur] = 0;
-                    _isfault = true;
+                    try
+                    {
+                        if (process.ExitCode != 0 && !_isfault) _isfault = true;
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                 }
                 try
                 {
@@ -770,7 +786,7 @@ namespace Server
                     CreateNoWindow = true
                 };
                 Process.Start(a)?.WaitForExit();
-                //Thread.Sleep(10);
+                Thread.Sleep(10);
                 return File.Exists(_workingdir + "\\test_hjudge.exe");
             }
             catch
