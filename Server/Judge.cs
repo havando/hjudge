@@ -419,10 +419,10 @@ namespace Server
                     }
 
                     var inputStream = execute.StandardInput;
+                    var outputStream = execute.StandardOutput;
                     if (_problem.InputFileName == "stdin")
                     {
                         //Thread.Sleep(10);
-                        var outputStream = execute.StandardOutput;
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
                         inputStream.WriteAsync(
@@ -531,6 +531,15 @@ namespace Server
                     else
                     {
                         File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp", res?.Result ?? string.Empty, Encoding.Default);
+                    }
+                    try
+                    {
+                        outputStream?.Close();
+                        outputStream?.Dispose();
+                    }
+                    catch
+                    {
+                        //ignored
                     }
                     try
                     {
