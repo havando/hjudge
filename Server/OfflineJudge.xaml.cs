@@ -168,7 +168,7 @@ namespace Server
                         );
                         Thread.Sleep(100);
                         if (cnt % (Configuration.Configurations.MutiThreading == 0
-                                ? Environment.ProcessorCount
+                                ? Configuration.processorCount
                                 : Configuration.Configurations.MutiThreading) != 0) continue;
                         foreach (var task in myJudgeTask)
                             task?.Wait(10000);
