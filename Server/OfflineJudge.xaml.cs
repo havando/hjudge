@@ -166,10 +166,10 @@ namespace Server
                         );
                         Thread.Sleep(100);
                         if (cnt % (Configuration.Configurations.MutiThreading == 0
-                                ? 5
+                                ? Environment.ProcessorCount
                                 : Configuration.Configurations.MutiThreading) != 0) continue;
                         foreach (var task in myJudgeTask)
-                            task?.Wait(20000);
+                            task?.Wait(10000);
                     }
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
