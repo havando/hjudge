@@ -269,13 +269,13 @@ namespace Server
                     var sr = new StreamReader(fs);
                     if ((sr.ReadLine()?.Trim() ?? string.Empty) != "ok")
                     {
-                        for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                        for (var i = 0; i < JudgeResult.Result.Length; i++)
                         {
-                            JudgeResult.Result[_cur] = "Runtime Error";
-                            JudgeResult.Exitcode[_cur] = 0;
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Timeused[_cur] = 0;
-                            JudgeResult.Memoryused[_cur] = 0;
+                            JudgeResult.Result[i] = "Runtime Error";
+                            JudgeResult.Exitcode[i] = 0;
+                            JudgeResult.Score[i] = 0;
+                            JudgeResult.Timeused[i] = 0;
+                            JudgeResult.Memoryused[i] = 0;
                         }
                         sr.Close();
                         fs.Close();
