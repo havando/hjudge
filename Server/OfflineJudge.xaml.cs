@@ -85,7 +85,7 @@ namespace Server
             {
                 Thread.Sleep(1000);
                 var all = members.Count * _problems.Count(t => t.IsChecked);
-                int[] cur = {-1};
+                var cur = -1;
                 var cnt = 0;
                 var myJudgeTask = new List<Task>();
                 foreach (var t in members)
@@ -154,8 +154,8 @@ namespace Server
                                 p.Result.Add(j.JudgeResult);
                                 Dispatcher.BeginInvoke(new Action(() =>
                                 {
-                                    cur[0]++;
-                                    JudgingProcess.Value = (double) cur[0] * 100 / all;
+                                    cur++;
+                                    JudgingProcess.Value = (double) cur * 100 / all;
                                     JudgingLog.Items.Add(new Label
                                     {
                                         Content =
