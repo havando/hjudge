@@ -10,6 +10,7 @@ namespace Server
     {
         public static Config Configurations;
         public static bool IsHidden;
+        public static int processorCount = Environment.ProcessorCount;
 
         public static void Init()
         {

@@ -65,22 +65,22 @@ namespace Server
                                         .Concat(new long[] { 0 })
                                         .Max();
                                     if (cpuCounter.NextValue() <= 75 && ramCounter.NextValue() > maxMemoryNeeded + 262144 &&
-                                        Connection.CurJudgingCnt < Environment.ProcessorCount)
+                                        Connection.CurJudgingCnt < Configuration.processorCount)
                                         flag = true;
                                 }
                             }
                             catch
                             {
-                                if (Connection.CurJudgingCnt < Environment.ProcessorCount)
+                                if (Connection.CurJudgingCnt < Configuration.processorCount)
                                     flag = true;
                             }
-                            Thread.Sleep(100);
+                            Thread.Sleep(1000);
                         }
                     }
                     else
                     {
                         while (Connection.CurJudgingCnt >= Configuration.Configurations.MutiThreading)
-                            Thread.Sleep(100);
+                            Thread.Sleep(1000);
                     }
                 }
                 catch
