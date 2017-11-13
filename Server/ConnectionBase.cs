@@ -11,6 +11,7 @@ namespace Server
         public static bool IsExited;
         private static Func<string, UIElement, bool, UIElement> _updateMain;
         private static int _id;
+        public static bool CanPostJudgTask;
         
         private static readonly ConcurrentQueue<Task> ActionList = new ConcurrentQueue<Task>();
 

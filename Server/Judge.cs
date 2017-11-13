@@ -35,6 +35,7 @@ namespace Server
                 }
                 Thread.Sleep(100);
             }
+            Connection.CanPostJudgTask = true;
             _isFinished = false;
             try
             {
@@ -422,10 +423,17 @@ namespace Server
                         //Thread.Sleep(10);
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
-                        inputStream.WriteAsync(
-                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0\x01A")
-                            .ContinueWith(o =>
+                        Task.Run(async () =>
                             {
+                                try
+                                {
+                                    await inputStream.WriteAsync(
+                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0\x01A");
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
                                 try
                                 {
                                     inputStream.Close();
@@ -439,24 +447,28 @@ namespace Server
                     }
                     else
                     {
-                        try
+                        inputStream.AutoFlush = true;
+                        Task.Run(async () =>
                         {
-                            inputStream.AutoFlush = true;
-                            inputStream.WriteAsync("\0\x01A");
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                        try
-                        {
-                            inputStream.Close();
-                            inputStream.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+
+                            try
+                            {
+                                await inputStream.WriteAsync("\0\x01A");
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
+                            try
+                            {
+                                inputStream.Close();
+                                inputStream.Dispose();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
+                        });
                     }
                     while (!_isExited)
                     {

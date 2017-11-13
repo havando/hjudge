@@ -154,6 +154,7 @@ namespace Server
                         {
                             continue;
                         }
+                        Connection.CanPostJudgTask = false;
                         myJudgeTask.Add(Task.Run(() =>
                         {
                             if (_stop) return;
@@ -186,7 +187,7 @@ namespace Server
                         {
                             if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
                                     ? Configuration.ProcessorCount
-                                    : Configuration.Configurations.MutiThreading)) break;
+                                    : Configuration.Configurations.MutiThreading)&& Connection.CanPostJudgTask) break;
                             Thread.Sleep(100);
                         }
                     }
