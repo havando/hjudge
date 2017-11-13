@@ -16,7 +16,6 @@ namespace Server
         private readonly string _workingdir;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
-        private int _cur;
         private bool _isexited;
 
         private bool _isfault;
@@ -236,7 +235,7 @@ namespace Server
                     .FirstOrDefault(i => i.DisplayName == JudgeResult.Type)?.ExtName.Split(' ');
                 if (extList == null || extList.Length == 0)
                 {
-                    for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                    for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                     {
                         JudgeResult.Result[_cur] = "Compile Error";
                         JudgeResult.Exitcode[_cur] = 0;
@@ -270,7 +269,7 @@ namespace Server
                     var sr = new StreamReader(fs);
                     if ((sr.ReadLine()?.Trim() ?? string.Empty) != "ok")
                     {
-                        for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                        for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                         {
                             JudgeResult.Result[_cur] = "Runtime Error";
                             JudgeResult.Exitcode[_cur] = 0;
@@ -288,7 +287,7 @@ namespace Server
             }
             catch (Exception ex)
             {
-                for (_cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
                 {
                     JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
                     JudgeResult.Exitcode[_cur] = 0;
@@ -314,22 +313,22 @@ namespace Server
 
         private void Judging(UIElement textBlock)
         {
-            _cur = -1;
-            while (_cur < _problem.DataSets.Length - 1)
+            var cur = -1;
+            while (cur < _problem.DataSets.Length - 1)
             {
-                _cur++;
-                if (_cur != 0)
+                cur++;
+                if (cur != 0)
                 {
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_cur - 1]}", textBlock);
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[cur - 1]}", textBlock);
                 }
-                if (!File.Exists(_problem.DataSets[_cur].InputFile) || !File.Exists(_problem.DataSets[_cur].OutputFile))
+                if (!File.Exists(_problem.DataSets[cur].InputFile) || !File.Exists(_problem.DataSets[cur].OutputFile))
                 {
-                    JudgeResult.Result[_cur] = "Problem Configuration Error";
-                    JudgeResult.Exitcode[_cur] = 0;
-                    JudgeResult.Score[_cur] = 0;
-                    JudgeResult.Timeused[_cur] = 0;
-                    JudgeResult.Memoryused[_cur] = 0;
+                    JudgeResult.Result[cur] = "Problem Configuration Error";
+                    JudgeResult.Exitcode[cur] = 0;
+                    JudgeResult.Score[cur] = 0;
+                    JudgeResult.Timeused[cur] = 0;
+                    JudgeResult.Memoryused[cur] = 0;
                 }
                 else
                 {
@@ -337,7 +336,7 @@ namespace Server
                     {
                         try
                         {
-                            File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                            File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
                                 true);
                         }
                         catch
@@ -345,7 +344,7 @@ namespace Server
                             Thread.Sleep(1000);
                             try
                             {
-                                File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                                File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
                                     true);
                             }
                             catch
@@ -353,16 +352,16 @@ namespace Server
                                 Thread.Sleep(1000);
                                 try
                                 {
-                                    File.Copy(_problem.DataSets[_cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                                    File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
                                         true);
                                 }
                                 catch (Exception ex)
                                 {
-                                    JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                                    JudgeResult.Exitcode[_cur] = 0;
-                                    JudgeResult.Score[_cur] = 0;
-                                    JudgeResult.Timeused[_cur] = 0;
-                                    JudgeResult.Memoryused[_cur] = 0;
+                                    JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                                    JudgeResult.Exitcode[cur] = 0;
+                                    JudgeResult.Score[cur] = 0;
+                                    JudgeResult.Timeused[cur] = 0;
+                                    JudgeResult.Memoryused[cur] = 0;
                                     continue;
                                 }
                             }
@@ -401,7 +400,51 @@ namespace Server
                         },
                         EnableRaisingEvents = true
                     };
-                    execute.Exited += Exithandler;
+
+                    var curx = cur;
+                    execute.Exited += (sender, e) =>
+                    {
+                        if (sender is Process process)
+                        {
+                            if (curx < _problem.DataSets.Length && curx >= 0)
+                            {
+                                try
+                                {
+                                    JudgeResult.Exitcode[curx] = process.ExitCode;
+                                }
+                                catch
+                                {
+                                    JudgeResult.Exitcode[curx] = 0;
+                                }
+                                if (JudgeResult.Exitcode[curx] != 0 && !_isfault)
+                                {
+                                    JudgeResult.Result[curx] = "Runtime Error";
+                                    JudgeResult.Score[curx] = 0;
+                                    _isfault = true;
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    if (process.ExitCode != 0 && !_isfault) _isfault = true;
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
+                            }
+                            try
+                            {
+                                process.Kill();
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                            _isexited = true;
+                        }
+                    };
 
                     Task<string> res = null;
                     _isfault = false;
@@ -412,11 +455,11 @@ namespace Server
                     }
                     catch (Exception ex)
                     {
-                        JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                        JudgeResult.Exitcode[_cur] = 0;
-                        JudgeResult.Score[_cur] = 0;
-                        JudgeResult.Timeused[_cur] = 0;
-                        JudgeResult.Memoryused[_cur] = 0;
+                        JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                        JudgeResult.Exitcode[cur] = 0;
+                        JudgeResult.Score[cur] = 0;
+                        JudgeResult.Timeused[cur] = 0;
+                        JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
 
@@ -428,7 +471,7 @@ namespace Server
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
                         inputStream.WriteAsync(
-                                File.ReadAllText(_problem.DataSets[_cur].InputFile, Encoding.Default) + "\0")
+                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
                             .ContinueWith(o =>
                             {
                                 try
@@ -459,15 +502,15 @@ namespace Server
                         try
                         {
                             execute?.Refresh();
-                            JudgeResult.Timeused[_cur] =
+                            JudgeResult.Timeused[cur] =
                                 Convert.ToInt64(execute.UserProcessorTime.TotalMilliseconds);
-                            JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
+                            JudgeResult.Memoryused[cur] = execute.PeakWorkingSet64 / 1024;
                         }
                         catch
                         {
                             //ignored
                         }
-                        if (JudgeResult.Timeused[_cur] > _problem.DataSets[_cur].TimeLimit)
+                        if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                         {
                             _isfault = true;
                             try
@@ -479,11 +522,11 @@ namespace Server
                                 //ignored 
                             }
                             _isexited = true;
-                            JudgeResult.Result[_cur] = "Time Limit Exceeded";
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Exitcode[_cur] = 0;
+                            JudgeResult.Result[cur] = "Time Limit Exceeded";
+                            JudgeResult.Score[cur] = 0;
+                            JudgeResult.Exitcode[cur] = 0;
                         }
-                        if (JudgeResult.Memoryused[_cur] > _problem.DataSets[_cur].MemoryLimit)
+                        if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
                         {
                             _isfault = true;
                             try
@@ -495,9 +538,9 @@ namespace Server
                                 //ignored 
                             }
                             _isexited = true;
-                            JudgeResult.Result[_cur] = "Memory Limit Exceeded";
-                            JudgeResult.Score[_cur] = 0;
-                            JudgeResult.Exitcode[_cur] = 0;
+                            JudgeResult.Result[cur] = "Memory Limit Exceeded";
+                            JudgeResult.Score[cur] = 0;
+                            JudgeResult.Exitcode[cur] = 0;
                         }
                         Thread.Sleep(1);
                     }
@@ -526,8 +569,8 @@ namespace Server
                     {
                         if (!File.Exists(_workingdir + "\\" + _problem.OutputFileName))
                         {
-                            JudgeResult.Result[_cur] = "Output File Error";
-                            JudgeResult.Score[_cur] = 0;
+                            JudgeResult.Result[cur] = "Output File Error";
+                            JudgeResult.Score[cur] = 0;
                             continue;
                         }
                     }
@@ -577,8 +620,8 @@ namespace Server
                                             UseShellExecute = true,
                                             CreateNoWindow = true,
                                             FileName = _problem.SpecialJudge,
-                                            Arguments = Dn(_problem.DataSets[_cur].InputFile) + " " +
-                                                        Dn(_problem.DataSets[_cur].OutputFile) + " " +
+                                            Arguments = Dn(_problem.DataSets[cur].InputFile) + " " +
+                                                        Dn(_problem.DataSets[cur].OutputFile) + " " +
                                                         (_problem.InputFileName != "stdin"
                                                             ? Dn(_workingdir + "\\" + _problem.OutputFileName)
                                                             : Dn(_workingdir + "\\" + _problem.OutputFileName + ".htmp")
@@ -590,44 +633,44 @@ namespace Server
                                         Thread.Sleep(1);
                                         if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                         {
-                                            JudgeResult.Result[_cur] = "Special Judge Error";
-                                            JudgeResult.Score[_cur] = 0;
+                                            JudgeResult.Result[cur] = "Special Judge Error";
+                                            JudgeResult.Score[cur] = 0;
                                         }
                                         else
                                         {
                                             var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
                                             p = Regex.Replace(p, @"\s", string.Empty);
                                             var gs = Convert.ToSingle(p);
-                                            JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score * gs;
+                                            JudgeResult.Score[cur] = _problem.DataSets[cur].Score * gs;
                                             if (Math.Abs(gs - 1) > 0.000001)
-                                                JudgeResult.Result[_cur] = "Wrong Answer";
+                                                JudgeResult.Result[cur] = "Wrong Answer";
                                             else
-                                                JudgeResult.Result[_cur] = "Correct";
+                                                JudgeResult.Result[cur] = "Correct";
                                         }
                                     }
                                     catch
                                     {
-                                        JudgeResult.Result[_cur] = "Special Judge Error";
-                                        JudgeResult.Score[_cur] = 0;
+                                        JudgeResult.Result[cur] = "Special Judge Error";
+                                        JudgeResult.Score[cur] = 0;
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                                    JudgeResult.Score[_cur] = 0;
+                                    JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                                    JudgeResult.Score[cur] = 0;
                                 }
                             }
                             else
                             {
-                                JudgeResult.Result[_cur] = "Special Judge Error";
-                                JudgeResult.Score[_cur] = 0;
+                                JudgeResult.Result[cur] = "Special Judge Error";
+                                JudgeResult.Score[cur] = 0;
                             }
                         }
                         else
                         {
                             try
                             {
-                                var fs1 = new FileStream(_problem.DataSets[_cur].OutputFile, FileMode.Open,
+                                var fs1 = new FileStream(_problem.DataSets[cur].OutputFile, FileMode.Open,
                                     FileAccess.Read,
                                     FileShare.ReadWrite);
                                 var fs2 = new FileStream(
@@ -666,11 +709,11 @@ namespace Server
                                     s2 = s2.TrimEnd(' ');
                                     if (s1 == s2) continue;
                                     iswrong = true;
-                                    JudgeResult.Result[_cur] = "Wrong Answer";
-                                    JudgeResult.Score[_cur] = 0;
+                                    JudgeResult.Result[cur] = "Wrong Answer";
+                                    JudgeResult.Score[cur] = 0;
                                     if (Regex.Replace(s1, @"\s", string.Empty) ==
                                         Regex.Replace(s2, @"\s", string.Empty))
-                                        JudgeResult.Result[_cur] = "Presentation Error";
+                                        JudgeResult.Result[cur] = "Presentation Error";
                                     else break;
                                 } while (!(sr1.EndOfStream && sr2.EndOfStream));
                                 sr1.Close();
@@ -683,13 +726,13 @@ namespace Server
                                 fs2.Dispose();
                                 if (iswrong)
                                     continue;
-                                JudgeResult.Result[_cur] = "Correct";
-                                JudgeResult.Score[_cur] = _problem.DataSets[_cur].Score;
+                                JudgeResult.Result[cur] = "Correct";
+                                JudgeResult.Score[cur] = _problem.DataSets[cur].Score;
                             }
                             catch (Exception ex)
                             {
-                                JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                                JudgeResult.Score[_cur] = 0;
+                                JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                                JudgeResult.Score[cur] = 0;
                             }
                         }
                     }
@@ -697,50 +740,6 @@ namespace Server
             }
             Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}", textBlock);
-        }
-
-        private void Exithandler(object sender, EventArgs e)
-        {
-            if (sender is Process process)
-            {
-                if (_cur < _problem.DataSets.Length && _cur >= 0)
-                {
-                    try
-                    {
-                        JudgeResult.Exitcode[_cur] = process.ExitCode;
-                    }
-                    catch
-                    {
-                        JudgeResult.Exitcode[_cur] = 0;
-                    }
-                    if (JudgeResult.Exitcode[_cur] != 0 && !_isfault)
-                    {
-                        JudgeResult.Result[_cur] = "Runtime Error";
-                        JudgeResult.Score[_cur] = 0;
-                        _isfault = true;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        if (process.ExitCode != 0 && !_isfault) _isfault = true;
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
-                }
-                try
-                {
-                    process.Kill();
-                }
-                catch
-                {
-                    // ignored
-                }
-                _isexited = true;
-            }
         }
 
         private void Killwerfault()
