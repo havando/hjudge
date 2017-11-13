@@ -458,7 +458,7 @@ namespace Server
                         {
                             execute?.Refresh();
                             JudgeResult.Timeused[_cur] =
-                                Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                                Convert.ToInt64(execute.UserProcessorTime.TotalMilliseconds);
                             JudgeResult.Memoryused[_cur] = execute.PeakWorkingSet64 / 1024;
                         }
                         catch
