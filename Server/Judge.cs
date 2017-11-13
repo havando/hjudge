@@ -235,13 +235,13 @@ namespace Server
                     .FirstOrDefault(i => i.DisplayName == JudgeResult.Type)?.ExtName.Split(' ');
                 if (extList == null || extList.Length == 0)
                 {
-                    for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                    for (var i = 0; i < JudgeResult.Result.Length; i++)
                     {
-                        JudgeResult.Result[_cur] = "Compile Error";
-                        JudgeResult.Exitcode[_cur] = 0;
-                        JudgeResult.Score[_cur] = 0;
-                        JudgeResult.Timeused[_cur] = 0;
-                        JudgeResult.Memoryused[_cur] = 0;
+                        JudgeResult.Result[i] = "Compile Error";
+                        JudgeResult.Exitcode[i] = 0;
+                        JudgeResult.Score[i] = 0;
+                        JudgeResult.Timeused[i] = 0;
+                        JudgeResult.Memoryused[i] = 0;
                     }
                     return;
                 }
@@ -287,13 +287,13 @@ namespace Server
             }
             catch (Exception ex)
             {
-                for (var _cur = 0; _cur < JudgeResult.Result.Length; _cur++)
+                for (var i = 0; i < JudgeResult.Result.Length; i++)
                 {
-                    JudgeResult.Result[_cur] = $"Unknown Error: {ex.Message}";
-                    JudgeResult.Exitcode[_cur] = 0;
-                    JudgeResult.Score[_cur] = 0;
-                    JudgeResult.Timeused[_cur] = 0;
-                    JudgeResult.Memoryused[_cur] = 0;
+                    JudgeResult.Result[i] = $"Unknown Error: {ex.Message}";
+                    JudgeResult.Exitcode[i] = 0;
+                    JudgeResult.Score[i] = 0;
+                    JudgeResult.Timeused[i] = 0;
+                    JudgeResult.Memoryused[i] = 0;
                 }
                 return;
             }
