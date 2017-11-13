@@ -16,12 +16,14 @@ namespace Server
         private readonly string _workingdir;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
-        private bool _isexited;
+        private bool _isExited;
+        private readonly bool _isFinished;
 
-        private bool _isfault;
+        private bool _isFault;
 
         public Judge(int problemId, int userId, string code, string type, bool isStdio)
         {
+            _isFinished = false;
             try
             {
                 _problem = Connection.GetProblem(problemId);
@@ -89,11 +91,10 @@ namespace Server
 
                 lock (Connection.JudgeListCntLock)
                 {
-                    if (Connection.CurJudgingCnt == 0)
-                        new Thread(Killwerfault).Start();
                     Connection.CurJudgingCnt++;
                 }
 
+                new Thread(Killwerfault).Start();
                 Connection.UpdateJudgeInfo(JudgeResult);
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
 
@@ -112,6 +113,7 @@ namespace Server
 
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
+                    _isFinished = true;
                     return;
                 }
                 var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -129,6 +131,7 @@ namespace Server
 
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
+                    _isFinished = true;
                     return;
                 }
 
@@ -187,6 +190,7 @@ namespace Server
             {
                 //ignored
             }
+            _isFinished = true;
             lock (Connection.JudgeListCntLock)
             {
                 Connection.CurJudgingCnt--;
@@ -416,18 +420,18 @@ namespace Server
                                 {
                                     JudgeResult.Exitcode[curx] = 0;
                                 }
-                                if (JudgeResult.Exitcode[curx] != 0 && !_isfault)
+                                if (JudgeResult.Exitcode[curx] != 0 && !_isFault)
                                 {
                                     JudgeResult.Result[curx] = "Runtime Error";
                                     JudgeResult.Score[curx] = 0;
-                                    _isfault = true;
+                                    _isFault = true;
                                 }
                             }
                             else
                             {
                                 try
                                 {
-                                    if (process.ExitCode != 0 && !_isfault) _isfault = true;
+                                    if (process.ExitCode != 0 && !_isFault) _isFault = true;
                                 }
                                 catch
                                 {
@@ -442,13 +446,13 @@ namespace Server
                             {
                                 // ignored
                             }
-                            _isexited = true;
+                            _isExited = true;
                         }
                     };
 
                     Task<string> res = null;
-                    _isfault = false;
-                    _isexited = false;
+                    _isFault = false;
+                    _isExited = false;
                     try
                     {
                         execute.Start();
@@ -497,7 +501,7 @@ namespace Server
                             //ignored
                         }
                     }
-                    while (!_isexited)
+                    while (!_isExited)
                     {
                         try
                         {
@@ -512,7 +516,7 @@ namespace Server
                         }
                         if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                         {
-                            _isfault = true;
+                            _isFault = true;
                             try
                             {
                                 execute?.Kill();
@@ -521,14 +525,14 @@ namespace Server
                             {
                                 //ignored 
                             }
-                            _isexited = true;
+                            _isExited = true;
                             JudgeResult.Result[cur] = "Time Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
                         if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
                         {
-                            _isfault = true;
+                            _isFault = true;
                             try
                             {
                                 execute?.Kill();
@@ -537,14 +541,14 @@ namespace Server
                             {
                                 //ignored 
                             }
-                            _isexited = true;
+                            _isExited = true;
                             JudgeResult.Result[cur] = "Memory Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
                         Thread.Sleep(1);
                     }
-                    if (_isfault)
+                    if (_isFault)
                     {
                         try
                         {
@@ -745,7 +749,7 @@ namespace Server
 
         private void Killwerfault()
         {
-            while (Connection.CurJudgingCnt != 0)
+            while (!_isFinished)
             {
                 try
                 {
