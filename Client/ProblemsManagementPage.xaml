@@ -51,10 +51,12 @@
                     <Label Content="数据组数：" HorizontalAlignment="Left" Margin="227,41,0,0" VerticalAlignment="Top" Width="61" />
                     <TextBox x:Name="DataSetsNumber" HorizontalAlignment="Left" Height="23" Margin="293,44,0,0"
                         TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="36" KeyDown="TextBox_KeyDown" />
-                    <Label Content="点击此处上传题目数据包" HorizontalAlignment="Right" Margin="0,243,11,0"
+                    <Label Content="上传题目数据包" HorizontalAlignment="Left" Margin="136,243,0,0"
                         VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown" />
-                    <Label Content="点击此处上传共享文件包" HorizontalAlignment="Left" Margin="10,243,0,0"
+                    <Label Content="上传共享文件包" HorizontalAlignment="Left" Margin="37,243,0,0"
                         VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown_1" />
+                    <Label Content="清空此题目数据" HorizontalAlignment="Left" Margin="235,243,0,0"
+                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown_2" />
                 </Grid>
             </TabItem>
             <TabItem Header="数据设置">

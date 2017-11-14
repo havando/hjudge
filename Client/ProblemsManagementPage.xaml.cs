@@ -367,6 +367,19 @@ namespace Client
                 }
             }
         }
+
+        private void Label_MouseDown_2(object sender, MouseButtonEventArgs e)
+        {
+            if (!(ListView.SelectedItem is Problem problem)) return;
+            if (MessageBox.Show("删除后不可恢复，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                Connection.SendData("ClearData", problem.ProblemId.ToString());
+                if (problem.ExtraFiles.Length > 0&& MessageBox.Show("是否删除额外文件？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    Connection.SendData("DeleteExtra", problem.ProblemId.ToString());
+                if (!string.IsNullOrEmpty(problem.SpecialJudge)&& MessageBox.Show("是否删除比较程序？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    Connection.SendData("DeleteJudge", problem.ProblemId.ToString());
+            }
+        }
     }
 
     public static partial class Connection

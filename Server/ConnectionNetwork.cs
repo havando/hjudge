@@ -823,28 +823,31 @@ namespace Server
                                                 fs.Fs.Close();
                                                 fs.Fs.Dispose();
                                                 FrInfo.Remove(fs);
-                                                try
-                                                {
-                                                    System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                        $"{Environment.CurrentDirectory}\\Data");
-                                                }
-                                                catch
-                                                {
-                                                    SendData("DataFile", "Failed", res.Client.ConnId);
-                                                    continue;
-                                                }
-                                                finally
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     try
                                                     {
-                                                        File.Delete(filePath);
+                                                        System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
+                                                            $"{Environment.CurrentDirectory}\\Data");
                                                     }
                                                     catch
                                                     {
-                                                        //ignored
+                                                        SendData("DataFile", "Failed", res.Client.ConnId);
+                                                        return;
                                                     }
-                                                }
-                                                SendData("DataFile", "Succeeded", res.Client.ConnId);
+                                                    finally
+                                                    {
+                                                        try
+                                                        {
+                                                            File.Delete(filePath);
+                                                        }
+                                                        catch
+                                                        {
+                                                            //ignored
+                                                        }
+                                                    }
+                                                    SendData("DataFile", "Succeeded", res.Client.ConnId);
+                                                }));
                                             }
                                         }
                                         else
@@ -875,7 +878,6 @@ namespace Server
 
                                 case "PublicFile":
                                     {
-
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
@@ -906,28 +908,31 @@ namespace Server
                                                 fs.Fs.Close();
                                                 fs.Fs.Dispose();
                                                 FrInfo.Remove(fs);
-                                                try
-                                                {
-                                                    System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                        $"{Environment.CurrentDirectory}\\Files");
-                                                }
-                                                catch
-                                                {
-                                                    SendData("PublicFile", "Failed", res.Client.ConnId);
-                                                    continue;
-                                                }
-                                                finally
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     try
                                                     {
-                                                        File.Delete(filePath);
+                                                        System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
+                                                            $"{Environment.CurrentDirectory}\\Files");
                                                     }
                                                     catch
                                                     {
-                                                        //ignored
+                                                        SendData("PublicFile", "Failed", res.Client.ConnId);
+                                                        return;
                                                     }
-                                                }
-                                                SendData("PublicFile", "Succeeded", res.Client.ConnId);
+                                                    finally
+                                                    {
+                                                        try
+                                                        {
+                                                            File.Delete(filePath);
+                                                        }
+                                                        catch
+                                                        {
+                                                            //ignored
+                                                        }
+                                                    }
+                                                    SendData("PublicFile", "Succeeded", res.Client.ConnId);
+                                                }));
                                             }
                                         }
                                         else
@@ -953,6 +958,146 @@ namespace Server
                                                 SendData("PublicFile", "Failed", res.Client.ConnId);
                                             }
                                         }
+                                        break;
+                                    }
+                                case "ClearData":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            string GetEngName(string origin)
+                                            {
+                                                var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                    (current, ti) => current + ti);
+                                            }
+
+                                            string GetRealString(string origin, string problemName, int cur)
+                                            {
+                                                return origin
+                                                    .Replace("${datadir}",
+                                                        Environment.CurrentDirectory + "\\Data")
+                                                    .Replace("${name}", GetEngName(problemName))
+                                                    .Replace("${index0}", cur.ToString())
+                                                    .Replace("${index}", (cur + 1).ToString());
+                                            }
+
+                                            var p = GetProblem(tid);
+                                            if (p.ProblemId == 0) return;
+                                            for (var cnt = 0; cnt < p.DataSets.Length; cnt++)
+                                            {
+                                                var fin = GetRealString(p.DataSets[cnt].InputFile, p.ProblemName, cnt);
+                                                var fout = GetRealString(p.DataSets[cnt].OutputFile, p.ProblemName, cnt);
+                                                if (!string.IsNullOrEmpty(fin))
+                                                {
+                                                    try
+                                                    {
+                                                        File.Delete(fin);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
+                                                if (!string.IsNullOrEmpty(fout))
+                                                {
+                                                    try
+                                                    {
+                                                        File.Delete(fout);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
+                                            }
+                                        }));
+                                        break;
+                                    }
+                                case "DeleteExtra":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            string GetEngName(string origin)
+                                            {
+                                                var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                    (current, ti) => current + ti);
+                                            }
+
+                                            string GetRealString(string origin, string problemName)
+                                            {
+                                                return origin
+                                                    .Replace("${datadir}",
+                                                        Environment.CurrentDirectory + "\\Data")
+                                                    .Replace("${name}", GetEngName(problemName));
+                                            }
+
+                                            var p = GetProblem(tid);
+                                            if (p.ProblemId == 0) return;
+                                            foreach (var f in p.ExtraFiles)
+                                            {
+                                                var fr = GetRealString(f, p.ProblemName);
+                                                if (!string.IsNullOrEmpty(fr))
+                                                {
+                                                    try
+                                                    {
+                                                        File.Delete(fr);
+                                                    }
+                                                    catch
+                                                    {
+                                                        //ignored
+                                                    }
+                                                }
+                                            }
+                                        }));
+                                        break;
+                                    }
+                                case "DeleteJudge":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            string GetEngName(string origin)
+                                            {
+                                                var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                                return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                    (current, ti) => current + ti);
+                                            }
+
+                                            string GetRealString(string origin, string problemName)
+                                            {
+                                                return origin
+                                                    .Replace("${datadir}",
+                                                        Environment.CurrentDirectory + "\\Data")
+                                                    .Replace("${name}", GetEngName(problemName));
+                                            }
+
+                                            var p = GetProblem(tid);
+                                            if (p.ProblemId == 0) return;
+                                            var f = GetRealString(p.SpecialJudge, p.ProblemName);
+                                            if (!string.IsNullOrEmpty(f))
+                                            {
+                                                try
+                                                {
+                                                    File.Delete(f);
+                                                }
+                                                catch
+                                                {
+                                                    //ignored
+                                                }
+                                            }
+                                        }));
                                         break;
                                     }
                             }
