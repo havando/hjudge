@@ -677,7 +677,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = UserHelper.CurrentUser.Type != 4
+                    cmd.CommandText = UserHelper.CurrentUser.Type < 4
                         ? "SELECT * From Judge"
                         : $"SELECT * From Judge Where UserId={UserHelper.CurrentUser.UserId}";
                     var reader = cmd.ExecuteReader();

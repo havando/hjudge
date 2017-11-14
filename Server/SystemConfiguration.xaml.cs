@@ -19,6 +19,7 @@ namespace Server
             CurCompCnt.Content = $"当前数量：{Configuration.Configurations.Compiler.Count}";
             EnvironmentValue.Text = Configuration.Configurations.EnvironmentValues;
             AllowCheckBox.IsChecked = Configuration.Configurations.AllowRequestDataSet;
+            AllowMessagingCheckBox.IsChecked = Configuration.Configurations.AllowCompetitorMessaging;
             MutiThreading.Text = Configuration.Configurations.MutiThreading.ToString();
             Address.Text = Configuration.Configurations.IpAddress;
             if (Configuration.Configurations.RegisterMode == 0)
@@ -51,6 +52,7 @@ namespace Server
         {
             Configuration.Configurations.EnvironmentValues = EnvironmentValue.Text;
             Configuration.Configurations.AllowRequestDataSet = AllowCheckBox.IsChecked ?? false;
+            Configuration.Configurations.AllowCompetitorMessaging = AllowMessagingCheckBox.IsChecked ?? false;
             try
             {
                 if (Configuration.Configurations.IpAddress != Address.Text)

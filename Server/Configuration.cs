@@ -27,6 +27,7 @@ namespace Server
                 Configurations.AllowRequestDataSet = true;
                 Configurations.MutiThreading = 0;
                 Configurations.IpAddress = "::";
+                Configurations.AllowCompetitorMessaging = true;
                 Configurations.RegisterMode = 0;
                 File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
                     SerializeToXmlString(Configurations), Encoding.UTF8);

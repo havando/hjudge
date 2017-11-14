@@ -18,7 +18,7 @@ namespace Client
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 Contents.Text = msg;
-                SendInfo.Content = $"（来自：{sendUser}，发送时间：{sendDate}）";
+                SendInfo.Content = $"（用户名：{sendUser}，发送时间：{sendDate}）";
             }));
         }
     }

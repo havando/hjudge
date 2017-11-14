@@ -1153,8 +1153,21 @@ namespace Server
                                 case "RequestMsgTargetUser":
                                     {
                                         if (res.Client.UserId == 0) break;
+                                        var x = GetUser(res.Client.UserId);
                                         var t = GetSpecialTypeUser(1);
-                                        t.AddRange(GetUsersBelongs(1));
+                                        if (x.Type >= 4)
+                                        {
+                                            t.AddRange(GetSpecialTypeUser(2));
+                                            t.AddRange(GetSpecialTypeUser(3));
+                                            if (Configuration.Configurations.AllowCompetitorMessaging)
+                                            {
+                                                t.AddRange(GetSpecialTypeUser(4));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            t.AddRange(GetUsersBelongs(1));
+                                        }
                                         var p = new List<string>();
                                         p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
                                         SendData("RequestMsgTargetUser", JsonConvert.SerializeObject(p), res.Client.ConnId);
