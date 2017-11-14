@@ -53,7 +53,7 @@ namespace Server
         public static List<UserInfo> GetSpecialTypeUser(int userType)
         {
             var a = new List<UserInfo>();
-            if (userType <= 0 || userType >= 4) return a;
+            if (userType <= 0 || userType > 5) return a;
             lock (DataBaseLock)
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
@@ -753,7 +753,7 @@ namespace Server
                         {
                             if (withContent)
                                 t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
-                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Substring(0, 30) + "...", Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
                         }
                         catch
                         {
