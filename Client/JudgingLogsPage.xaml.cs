@@ -192,6 +192,7 @@ namespace Client
             Dealing.RenderTransform = rtf;
             rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
             Dealing.Visibility = Visibility.Visible;
+            _curJudgeInfo.Clear();
             ListView.ItemsSource = _curJudgeInfo;
             Task.Run(() =>
             {
