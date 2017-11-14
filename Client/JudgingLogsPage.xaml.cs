@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using System.Windows.Media.Animation;
 
 namespace Client
 {
@@ -179,6 +180,17 @@ namespace Client
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            var rtf = new RotateTransform
+            {
+                CenterX = Dealing.ActualWidth * 0.5,
+                CenterY = Dealing.ActualHeight * 0.5
+            };
+            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Dealing.RenderTransform = rtf;
+            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
             Dealing.Visibility = Visibility.Visible;
             ListView.ItemsSource = _curJudgeInfo;
             Task.Run(() =>
