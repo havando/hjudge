@@ -137,6 +137,8 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Width="50" Header="方向" DisplayMemberBinding="{Binding Path=Direction}" />
+                                <GridViewColumn Width="100" Header="用户名"
+                                                DisplayMemberBinding="{Binding Path=User}" />
                                 <GridViewColumn Width="150" Header="发送时间"
                                                 DisplayMemberBinding="{Binding Path=DisplayDateTime}" />
                                 <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Path=Summery}" />
