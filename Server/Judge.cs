@@ -26,7 +26,7 @@ namespace Server
             while (true)
             {
                 if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
-                        ? Configuration.ProcessorCount
+                        ? Configuration.ProcessorCount + Connection.IntelligentAdditionWorkingThread
                         : Configuration.Configurations.MutiThreading))
                 {
                     lock (Connection.JudgeListCntLock)
@@ -311,6 +311,8 @@ namespace Server
         private void Judging(UIElement textBlock)
         {
             var cur = -1;
+            var noRespondingTime = new int[_problem.DataSets.Length];
+            var noRespondingState = false;
             while (cur < _problem.DataSets.Length - 1)
             {
                 cur++;
@@ -450,6 +452,9 @@ namespace Server
                             //ignored
                         }
                     }
+                    long lastDt = 0;
+                    var noChangeTime = DateTime.Now;
+                    var isNoResponding = false;
                     while (!_isExited)
                     {
                         try
@@ -458,6 +463,20 @@ namespace Server
                             JudgeResult.Timeused[cur] =
                                 Convert.ToInt64(execute.UserProcessorTime.TotalMilliseconds);
                             JudgeResult.Memoryused[cur] = execute.PeakWorkingSet64 / 1024;
+                            if (lastDt == Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds))
+                            {
+                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit * Connection.CurJudgingCnt * 60)
+                                {
+                                    _isExited = true;
+                                    isNoResponding = true;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                noChangeTime = DateTime.Now;
+                                lastDt = Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                            }
                         }
                         catch
                         {
@@ -527,6 +546,29 @@ namespace Server
                     {
                         //ignored
                     }
+                    if (isNoResponding)
+                    {
+                        JudgeResult.Result[cur] = "Unknown Error";
+                        JudgeResult.Score[cur] = 0;
+                        noRespondingTime[cur]++;
+                        if (!noRespondingState)
+                        {
+                            lock (Connection.AdditionWorkingThreadLock)
+                                Connection.IntelligentAdditionWorkingThread++;
+                            noRespondingState = true;
+                        }
+                        try
+                        {
+                            execute?.Close();
+                            execute?.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                        if (noRespondingTime[cur] < 3) cur--;
+                        continue;
+                    }
                     if (_isFault)
                     {
                         try
@@ -539,14 +581,6 @@ namespace Server
                             //ignored
                         }
                         continue;
-                    }
-                    try
-                    {
-                        execute?.Kill();
-                    }
-                    catch
-                    {
-                        //ignored 
                     }
                     Thread.Sleep(1);
                     if (_problem.InputFileName != "stdin")
@@ -723,6 +757,11 @@ namespace Server
                     }
                 }
                 Thread.Sleep(1);
+            }
+            if (noRespondingState)
+            {
+                lock (Connection.AdditionWorkingThreadLock)
+                    Connection.IntelligentAdditionWorkingThread--;
             }
             Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}", textBlock);
