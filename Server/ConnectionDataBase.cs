@@ -752,8 +752,8 @@ namespace Server
                         try
                         {
                             if (withContent)
-                                t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
-                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                                t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
                         }
                         catch
                         {
@@ -817,7 +817,7 @@ namespace Server
             return userName;
         }
 
-        private static int GetUserId(string userName)
+        public static int GetUserId(string userName)
         {
             var userId = 0;
             lock (DataBaseLock)

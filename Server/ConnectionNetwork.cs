@@ -115,28 +115,8 @@ namespace Server
             HServer.Send(connId, final, final.Length);
         }
 
-        public static void SendMsg(string sendString, IntPtr connId, int fromUserId)
+        public static void SendMsg(string sendString, IntPtr connId)
         {
-            lock (DataBaseLock)
-            {
-                using (var cmd = new SQLiteCommand(_sqLite))
-                {
-                    cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
-                    SQLiteParameter[] parameters =
-                    {
-                        new SQLiteParameter("@1", DbType.Int32),
-                        new SQLiteParameter("@2", DbType.Int32),
-                        new SQLiteParameter("@3", DbType.String),
-                        new SQLiteParameter("@4", DbType.String)
-                    };
-                    parameters[0].Value = fromUserId;
-                    parameters[1].Value = Recv.FirstOrDefault(i => i.Info.ConnId == connId)?.Info.UserId ?? 0;
-                    parameters[2].Value = DateTime.Now;
-                    parameters[3].Value = sendString;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                }
-            }
             var t = new Message { Content = sendString, MessageTime = DateTime.Now, Direction = "接收", User = GetUserName(1) };
             SendData("Messaging", JsonConvert.SerializeObject(t), connId);
         }
@@ -573,30 +553,27 @@ namespace Server
                                         if (t.User == GetUserName(1))
                                             UpdateMainPageState(
                                                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 发来了消息");
-                                        ActionList.Enqueue(new Task(() =>
+                                        lock (DataBaseLock)
                                         {
-                                            lock (DataBaseLock)
+                                            using (var cmd = new SQLiteCommand(_sqLite))
                                             {
-                                                using (var cmd = new SQLiteCommand(_sqLite))
+                                                cmd.CommandText =
+                                                    "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                                                SQLiteParameter[] parameters =
                                                 {
-                                                    cmd.CommandText =
-                                                        "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
-                                                    SQLiteParameter[] parameters =
-                                                    {
                                                         new SQLiteParameter("@1", DbType.Int32),
                                                         new SQLiteParameter("@2", DbType.Int32),
                                                         new SQLiteParameter("@3", DbType.String),
                                                         new SQLiteParameter("@4", DbType.String)
                                                     };
-                                                    parameters[0].Value = res.Client.UserId;
-                                                    parameters[1].Value = GetUserId(t.User);
-                                                    parameters[2].Value = DateTime.Now;
-                                                    parameters[3].Value = t.Content;
-                                                    cmd.Parameters.AddRange(parameters);
-                                                    cmd.ExecuteNonQuery();
-                                                }
+                                                parameters[0].Value = res.Client.UserId;
+                                                parameters[1].Value = GetUserId(t.User);
+                                                parameters[2].Value = DateTime.Now;
+                                                parameters[3].Value = t.Content;
+                                                cmd.Parameters.AddRange(parameters);
+                                                cmd.ExecuteNonQuery();
                                             }
-                                        }));
+                                        }
                                         if (t.User == GetUserName(1))
                                             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                             {
@@ -605,7 +582,7 @@ namespace Server
                                                     res.Client.ConnId, res.Client.UserName);
                                                 y.Show();
                                             }));
-                                        else SendMsg(t.Content, Recv.Where(i => i.Info.UserName == t.User)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ?? IntPtr.Zero, res.Client.UserId);
+                                        else SendMsg(t.Content, Recv.Where(i => i.Info.UserName == t.User)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ?? IntPtr.Zero);
                                         break;
                                     }
                                 case "RequestProblemList":

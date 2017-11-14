@@ -8,7 +8,7 @@ namespace Server
     /// </summary>
     public partial class Messaging : Window
     {
-        private IntPtr _id = IntPtr.Zero;
+        private int _userId;
 
         public Messaging()
         {
@@ -23,7 +23,7 @@ namespace Server
                 SendDate.Content = $"发送时间：{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
                 SendUser.Content = $"发送用户：{userName}";
             }));
-            _id = id;
+            _userId = Connection.GetUserId(userName);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -38,7 +38,7 @@ namespace Server
                 MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            Connection.SendMsg($"回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", _id, 1);
+            Connection.SendMsg($"回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", _userId);
             Close();
         }
     }
