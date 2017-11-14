@@ -49,11 +49,20 @@
                Margin="279,118,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
         <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <Label Content="题目：" HorizontalAlignment="Left" Margin="39,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="ProblemFilter" HorizontalAlignment="Left" Margin="90,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
-        <Label Content="用户：" HorizontalAlignment="Left" Margin="207,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="UserFilter" HorizontalAlignment="Left" Margin="258,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
-        <Label Content="时间：" HorizontalAlignment="Left" Margin="375,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="TimeFilter" HorizontalAlignment="Left" Margin="426,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
-        <Button Content="重置" HorizontalAlignment="Left" Margin="543,2,0,0" VerticalAlignment="Top" Width="32" Height="22"/>
+        <ComboBox Name="ProblemFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="90,3,0,0" VerticalAlignment="Top" Width="96" Height="21"/>
+        <Label Content="用户：" HorizontalAlignment="Left" Margin="191,0,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="UserFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="242,3,0,0" VerticalAlignment="Top" Width="96" Height="21"/>
+        <Label Content="时间：" HorizontalAlignment="Left" Margin="343,0,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="TimeFilter" HorizontalAlignment="Left" Margin="394,3,0,0" VerticalAlignment="Top" Width="96" Height="21">
+            <ComboBoxItem Content="今天"/>
+            <ComboBoxItem Content="近三天"/>
+            <ComboBoxItem Content="近一周"/>
+            <ComboBoxItem Content="近一个月"/>
+            <ComboBoxItem Content="近三个月"/>
+            <ComboBoxItem Content="近半年"/>
+            <ComboBoxItem Content="近一年"/>
+        </ComboBox>
+        <Button Content="重置" HorizontalAlignment="Left" Margin="537,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="Button_Click"/>
+        <Button Content="确定" HorizontalAlignment="Left" Margin="495,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="Button_Click_1"/>
     </Grid>
 </Page>

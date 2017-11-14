@@ -33,7 +33,6 @@ namespace Client
             InitializeComponent();
         }
 
-
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (MessageBox.Show("你确定要清空数据吗？清空后不可恢复！", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
@@ -117,7 +116,7 @@ namespace Client
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -144,7 +143,7 @@ namespace Client
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -178,6 +177,9 @@ namespace Client
             CheckBox.IsChecked = p == _curJudgeInfo.Count;
         }
 
+        private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
+        private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             var rtf = new RotateTransform
@@ -193,15 +195,100 @@ namespace Client
             rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
             Dealing.Visibility = Visibility.Visible;
             _curJudgeInfo.Clear();
+            _problemFilter.Clear();
+            _userFilter.Clear();
             ListView.ItemsSource = _curJudgeInfo;
+            ProblemFilter.ItemsSource = _problemFilter;
+            UserFilter.ItemsSource = _userFilter;
             Task.Run(() =>
             {
-                foreach (var judgeInfo in Connection.QueryJudgeLog())
+                var t = Connection.QueryJudgeLog();
+                foreach (var judgeInfo in t)
                 {
-                    Dispatcher.Invoke(() => _curJudgeInfo.Add(judgeInfo));
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(judgeInfo);
+                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                        if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                    });
                 }
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
             });
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
+            ListView.ItemsSource = _curJudgeInfo;
+            ListView.Items.Refresh();
+        }
+
+        private void Filter()
+        {
+            var filterJudgeInfo = new ObservableCollection<JudgeInfo>();
+            ListView.ItemsSource = filterJudgeInfo;
+            filterJudgeInfo.Clear();
+            var pf = ProblemFilter.SelectedItem as string ?? null;
+            var uf = UserFilter.SelectedItem as string ?? null;
+            var tf = TimeFilter.SelectedIndex;
+            Task.Run(() =>
+            {
+                var now = DateTime.Now;
+                foreach (var p in _curJudgeInfo)
+                {
+                    var flag = true;
+                    if (pf != null) if (p.ProblemName != pf) flag = false;
+                    if (uf != null) if (p.UserName != uf) flag = false;
+                    if (tf != -1)
+                    {
+                        var ti = Convert.ToDateTime(p.JudgeDate);
+                        switch (tf)
+                        {
+                            case 0:
+                                {
+                                    if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) flag = false;
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    if ((now - ti).TotalDays > 3) flag = false;
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    if ((now - ti).TotalDays > 7) flag = false;
+                                    break;
+                                }
+                            case 3:
+                                {
+                                    if ((now - ti).TotalDays > 30) flag = false;
+                                    break;
+                                }
+                            case 4:
+                                {
+                                    if ((now - ti).TotalDays > 91) flag = false;
+                                    break;
+                                }
+                            case 5:
+                                {
+                                    if ((now - ti).TotalDays > 182) flag = false;
+                                    break;
+                                }
+                            case 6:
+                                {
+                                    if ((now - ti).TotalDays > 365) flag = false;
+                                    break;
+                                }
+                        }
+                    }
+                    if (flag) Dispatcher.Invoke(() => filterJudgeInfo.Add(p));
+                }
+            });
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Filter();
         }
     }
 
