@@ -191,9 +191,10 @@ namespace Client
             _isSendingData = false;
         }
 
-        public static void SendMsg(string sendString)
+        public static void SendMsg(string sendString, string targetUser)
         {
-            SendData("Messaging", sendString);
+            var t = new Message { Content = sendString, Direction = "发送", MessageTime = DateTime.Now, User = targetUser };
+            SendData("Messaging", JsonConvert.SerializeObject(t));
         }
 
 
@@ -323,9 +324,14 @@ namespace Client
                                     }
                                 case "Messaging":
                                     {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
                                         _updateMainPage.Invoke(
-                                            $"Messaging{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-
+                                            $"Messaging{Divpar}{x}");
                                         break;
                                     }
                                 case "FileList":
@@ -546,6 +552,42 @@ namespace Client
                                     {
                                         _updateMainPage.Invoke(
                                             $"Register{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                        break;
+                                    }
+                                case "RequestMsgTargetUser":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"RequestMsgTargetUser{Divpar}{x}");
+                                        break;
+                                    }
+                                case "RequestMsgList":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"RequestMsgList{Divpar}{x}");
+                                        break;
+                                    }
+                                case "RequestMsg":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                            $"RequestMsg{Divpar}{x}");
                                         break;
                                     }
                             }

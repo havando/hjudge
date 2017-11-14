@@ -179,6 +179,7 @@ namespace Client
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            Dealing.Visibility = Visibility.Visible;
             ListView.ItemsSource = _curJudgeInfo;
             Task.Run(() =>
             {
@@ -186,6 +187,7 @@ namespace Client
                 {
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(judgeInfo));
                 }
+                Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
             });
         }
     }

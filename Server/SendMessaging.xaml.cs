@@ -12,7 +12,7 @@ namespace Server
     /// </summary>
     public partial class SendMessaging : Window
     {
-        private readonly ObservableCollection<ClientInfo> _myClientInfo = Connection.GetAllConnectedClient();
+        private readonly ObservableCollection<UserInfo> _myClientInfo = Connection.GetUsersBelongs(1);
 
         public SendMessaging()
         {
@@ -33,7 +33,7 @@ namespace Server
         {
             var x = from c in _myClientInfo where c.IsChecked select c;
             foreach (var i in x)
-                Connection.SendMsg($"{Msg.Text}", i.ConnId);
+                Connection.SendMsg($"{Msg.Text}", i.UserId);
             Msg.Text = string.Empty;
         }
 
@@ -49,7 +49,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));

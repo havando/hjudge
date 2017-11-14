@@ -129,6 +129,7 @@
     <Compile Include="MembersManagement.xaml.cs">
       <DependentUpon>MembersManagement.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Message.cs" />
     <Compile Include="Messaging.xaml.cs">
       <DependentUpon>Messaging.xaml</DependentUpon>
     </Compile>

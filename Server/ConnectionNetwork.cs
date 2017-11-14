@@ -20,8 +20,6 @@ namespace Server
 {
     public static partial class Connection
     {
-        #region Network
-
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
         private static readonly List<ClientData> Recv = new List<ClientData>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
@@ -117,7 +115,33 @@ namespace Server
             HServer.Send(connId, final, final.Length);
         }
 
-        public static void SendMsg(string sendString, IntPtr connId)
+        public static void SendMsg(string sendString, IntPtr connId, int fromUserId)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.Int32),
+                        new SQLiteParameter("@2", DbType.Int32),
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String)
+                    };
+                    parameters[0].Value = fromUserId;
+                    parameters[1].Value = Recv.FirstOrDefault(i => i.Info.ConnId == connId)?.Info.UserId ?? 0;
+                    parameters[2].Value = DateTime.Now;
+                    parameters[3].Value = sendString;
+                    cmd.Parameters.AddRange(parameters);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            var t = new Message { Content = sendString, MessageTime = DateTime.Now, Direction = "接收", User = GetUserName(1) };
+            SendData("Messaging", JsonConvert.SerializeObject(t), connId);
+        }
+
+        public static void SendMsg(string sendString, int userId)
         {
             lock (DataBaseLock)
             {
@@ -132,14 +156,15 @@ namespace Server
                         new SQLiteParameter("@4", DbType.String)
                     };
                     parameters[0].Value = 1;
-                    parameters[1].Value = Recv.FirstOrDefault(i => i.Info.ConnId == connId)?.Info.UserId ?? 0;
+                    parameters[1].Value = userId;
                     parameters[2].Value = DateTime.Now;
                     parameters[3].Value = sendString;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }
             }
-            SendData("Messaging", sendString, connId);
+            var t = new Message { Content = sendString, MessageTime = DateTime.Now, Direction = "接收", User = GetUserName(1) };
+            SendData("Messaging", JsonConvert.SerializeObject(t), Recv.Where(i => i.Info.UserId == userId)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ?? IntPtr.Zero);
         }
 
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
@@ -537,8 +562,17 @@ namespace Server
                                     {
                                         if (res.Client.UserId == 0)
                                             break;
-                                        UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 发来了消息");
+
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        var t = JsonConvert.DeserializeObject<Message>(x);
+                                        if (t.User == GetUserName(1))
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 发来了消息");
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             lock (DataBaseLock)
@@ -555,22 +589,23 @@ namespace Server
                                                         new SQLiteParameter("@4", DbType.String)
                                                     };
                                                     parameters[0].Value = res.Client.UserId;
-                                                    parameters[1].Value = 1;
+                                                    parameters[1].Value = GetUserId(t.User);
                                                     parameters[2].Value = DateTime.Now;
-                                                    parameters[3].Value = res.Content[0];
+                                                    parameters[3].Value = t.Content;
                                                     cmd.Parameters.AddRange(parameters);
                                                     cmd.ExecuteNonQuery();
                                                 }
                                             }
                                         }));
-                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                        {
-                                            var x = new Messaging();
-                                            x.SetMessage(Encoding.Unicode.GetString(res.Content[0]),
-                                                res.Client.ConnId, res.Client.UserName);
-                                            x.Show();
-                                        }));
-
+                                        if (t.User == GetUserName(1))
+                                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                            {
+                                                var y = new Messaging();
+                                                y.SetMessage(t.Content,
+                                                    res.Client.ConnId, res.Client.UserName);
+                                                y.Show();
+                                            }));
+                                        else SendMsg(t.Content, Recv.Where(i => i.Info.UserName == t.User)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ?? IntPtr.Zero, res.Client.UserId);
                                         break;
                                     }
                                 case "RequestProblemList":
@@ -1100,6 +1135,31 @@ namespace Server
                                         }));
                                         break;
                                     }
+                                case "RequestMsgList":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = QueryMsg(res.Client.UserId, false);
+                                        t.Reverse();
+                                        SendData("RequestMsgList", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                        break;
+                                    }
+                                case "RequestMsg":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = QueryMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                        SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                        break;
+                                    }
+                                case "RequestMsgTargetUser":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetSpecialTypeUser(1);
+                                        t.AddRange(GetUsersBelongs(1));
+                                        var p = new List<string>();
+                                        p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
+                                        SendData("RequestMsgTargetUser", JsonConvert.SerializeObject(p), res.Client.ConnId);
+                                        break;
+                                    }
                             }
                         }
                         catch
@@ -1163,7 +1223,5 @@ namespace Server
                 }
             });
         }
-
-        #endregion
     }
 }

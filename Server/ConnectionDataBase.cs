@@ -50,6 +50,47 @@ namespace Server
             return new JudgeInfo();
         }
 
+        public static List<UserInfo> GetSpecialTypeUser(int userType)
+        {
+            var a = new List<UserInfo>();
+            if (userType <= 0 || userType >= 4) return a;
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "SELECT * From User Where Type=@1";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.Int32)
+                    };
+                    switch (userType)
+                    {
+                        case 1:
+                            parameters[0].Value = 1;
+                            break;
+                        case 2:
+                            parameters[0].Value = 2;
+                            break;
+                        case 3:
+                            parameters[0].Value = 3;
+                            break;
+                    }
+                    cmd.Parameters.AddRange(parameters);
+                    var reader = cmd.ExecuteReader();
+                    if (reader.HasRows)
+                        while (reader.Read())
+                            a.Add(new UserInfo
+                            {
+                                UserId = reader.GetInt32(0),
+                                UserName = reader.GetString(1),
+                                Password = reader.GetString(3),
+                                Type = reader.GetInt32(4)
+                            });
+                    return a;
+                }
+            }
+        }
+
         private static JudgeInfo[] GetJudgeRecord(int userId, int start, int count)
         {
             var ji = new List<JudgeInfo>();
@@ -670,6 +711,57 @@ namespace Server
                 }
             }
             return curJudgeInfo;
+        }
+        public static Message QueryMsg(int msgId)
+        {
+            var t = new Message();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = $"SELECT * From Message Where MessageId={msgId}";
+                    var reader = cmd.ExecuteReader();
+                    if (!reader.HasRows) return t;
+                    if (reader.Read())
+                        try
+                        {
+                            t.MsgId = reader.GetInt32(0);
+                            t.User = GetUserName(reader.GetInt32(1));
+                            t.MessageTime = Convert.ToDateTime(reader.GetString(3));
+                            t.Content = reader.GetString(4);
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                }
+            }
+            return t;
+        }
+        public static List<Message> QueryMsg(int userId, bool withContent)
+        {
+            var t = new List<Message>();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = $"SELECT * From Message Where FromUserId={userId} OR ToUserId={userId}";
+                    var reader = cmd.ExecuteReader();
+                    if (!reader.HasRows) return t;
+                    while (reader.Read())
+                        try
+                        {
+                            if (withContent)
+                                t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Substring(0, 30) + "...", Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                }
+            }
+            return t;
         }
 
         private static int[] CastStringArrToIntArr(IReadOnlyList<string> p)

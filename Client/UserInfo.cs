@@ -58,7 +58,16 @@ namespace Client
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Type2"));
             }
         }
-
+        private bool _isChecked;
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set
+            {
+                _isChecked = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsChecked"));
+            }
+        }
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

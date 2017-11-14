@@ -9,8 +9,8 @@
       Title="JudgingLogsPage" Loaded="Page_Loaded">
 
     <Grid>
-        <ListView x:Name="ListView" HorizontalAlignment="Left" Height="272" VerticalAlignment="Top" Width="214" SelectionChanged="ListView_SelectionChanged"
-            ButtonBase.Click="ListView_Click" SelectionMode="Single">
+        <ListView x:Name="ListView" HorizontalAlignment="Left" Height="246" VerticalAlignment="Top" Width="214" SelectionChanged="ListView_SelectionChanged"
+            ButtonBase.Click="ListView_Click" SelectionMode="Single" Margin="0,26,0,0">
             <ListView.View>
                 <GridView>
                     <GridViewColumn>
@@ -32,10 +32,10 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="113" Margin="217,0,0,0"
+        <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="120" Margin="217,26,0,0"
             TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Auto" />
-        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="183" Margin="217,115,0,0"
+        <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="147" Margin="217,151,0,0"
             TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
         <Label x:Name="Refresh" Content="刷新" HorizontalAlignment="Left" Margin="179,272,0,0" VerticalAlignment="Top"
@@ -44,5 +44,16 @@
             Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown" Height="26" Width="33" />
         <Label x:Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="0,272,0,0" VerticalAlignment="Top"
             Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" Height="26" Width="33" />
+
+        <Image Name="Dealing" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
+               Margin="279,118,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+        <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Label Content="题目：" HorizontalAlignment="Left" Margin="39,0,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="ProblemFilter" HorizontalAlignment="Left" Margin="90,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
+        <Label Content="用户：" HorizontalAlignment="Left" Margin="207,0,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="UserFilter" HorizontalAlignment="Left" Margin="258,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
+        <Label Content="时间：" HorizontalAlignment="Left" Margin="375,0,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="TimeFilter" HorizontalAlignment="Left" Margin="426,3,0,0" VerticalAlignment="Top" Width="112" Height="21"/>
+        <Button Content="重置" HorizontalAlignment="Left" Margin="543,2,0,0" VerticalAlignment="Top" Width="32" Height="22"/>
     </Grid>
 </Page>

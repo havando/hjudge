@@ -13,12 +13,12 @@ namespace Client
             InitializeComponent();
         }
 
-        public void SetMessge(string msg, string sendDate)
+        public void SetMessge(string msg, string sendDate, string sendUser)
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 Contents.Text = msg;
-                SendDate.Content = $"（发送时间：{sendDate}）";
+                SendInfo.Content = $"（来自：{sendUser}，发送时间：{sendDate}）";
             }));
         }
     }

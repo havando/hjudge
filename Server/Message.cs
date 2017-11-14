@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Client
+namespace Server
 {
     public class Message
     {

@@ -103,6 +103,8 @@ namespace Client
             Loading1.RenderTransform = rtf;
             Loading2.RenderTransform = rtf;
             Loading3.RenderTransform = rtf;
+            Loading4.RenderTransform = rtf;
+            Loading5.RenderTransform = rtf;
             ReceivingFile.RenderTransform = rtf;
             rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
         }
@@ -192,6 +194,7 @@ namespace Client
                                     Connection.SendData("RequestProfile", _userName);
                                     Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
                                     Connection.SendData("RequestFileList", string.Empty);
+                                    Connection.SendData("RequestMsgList", string.Empty);
                                     _currentGetJudgeRecordIndex = 20;
                                     ActiveBox.Items.Add(new TextBlock
                                     {
@@ -261,17 +264,19 @@ namespace Client
                         }
                     case "Messaging":
                         {
+                            var t = JsonConvert.DeserializeObject<Message>(content);
                             Dispatcher.BeginInvoke(new Action(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到消息" });
                                 MessagesCollection.Insert(0, new Message
                                 {
-                                    Content = content,
+                                    Content = t.Content,
                                     Direction = "接收",
-                                    MessageTime = DateTime.Now
+                                    MessageTime = t.MessageTime,
+                                    User = t.User
                                 });
                                 var x = new Messaging();
-                                x.SetMessge(content, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
+                                x.SetMessge(t.Content, t.DisplayDateTime, t.User);
                                 x.Show();
                             }));
                             break;
@@ -503,6 +508,48 @@ namespace Client
                                 });
                                 Environment.Exit(0);
                             }
+                            break;
+                        }
+                    case "RequestMsgTargetUser":
+                        {
+                            var t = JsonConvert.DeserializeObject<List<string>>(content);
+                            Dispatcher.Invoke(() =>
+                            {
+                                SendingTarget.Items.Clear();
+                                foreach (var i in t)
+                                {
+                                    SendingTarget.Items.Add(new CheckBox { Content = i });
+                                }
+                                Loading4.Visibility = Visibility.Hidden;
+                            });
+                            break;
+                        }
+                    case "RequestMsgList":
+                        {
+                            var t = JsonConvert.DeserializeObject<List<Message>>(content);
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessagesCollection.Clear();
+                                foreach (var i in t)
+                                {
+                                    MessagesCollection.Add(i);
+                                }
+                                Loading4.Visibility = Visibility.Hidden;
+                            });
+                            break;
+                        }
+                    case "RequestMsg":
+                        {
+                            var t = JsonConvert.DeserializeObject<Message>(content);
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Loading5.Visibility = Visibility.Hidden;
+                                MessagesCollection.Where(i => i.MsgId == t.MsgId).FirstOrDefault().Content = t.Content;
+                                MessageList.Items.Refresh();
+                                var x = new Messaging();
+                                x.SetMessge(t.Content, t.DisplayDateTime, t.User);
+                                x.Show();
+                            }));
                             break;
                         }
                 }
@@ -837,15 +884,35 @@ namespace Client
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(e.Source is TabControl)) return;
-            if ((sender as TabControl)?.SelectedIndex != 1) return;
-            Loading2.Visibility = Visibility.Visible;
-            Connection.SendData("RequestProblemList", string.Empty);
-            Connection.SendData("RequestCompiler", string.Empty);
+            switch ((sender as TabControl)?.SelectedIndex ?? 0)
+            {
+                case 1:
+                    Loading2.Visibility = Visibility.Visible;
+                    Connection.SendData("RequestProblemList", string.Empty);
+                    Connection.SendData("RequestCompiler", string.Empty);
+                    break;
+                case 2:
+                    Loading4.Visibility = Visibility.Visible;
+                    Connection.SendData("RequestMsgTargetUser", string.Empty);
+                    break;
+            }
         }
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(MessageContent.Text)) return;
+            var target = new List<string>();
+            foreach (var i in SendingTarget.Items)
+            {
+                if (i is CheckBox t)
+                {
+                    if (t.IsChecked ?? false)
+                    {
+                        target.Add(t.Content.ToString());
+                    }
+                }
+            }
+            if (target.Count == 0) return;
             if (MessageContent.Text.Length > 1048576)
             {
                 MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -853,26 +920,31 @@ namespace Client
             }
             if (_curId == 0 || _curId == 4)
             {
-                if (_coins < 10)
+                if (_coins < 10 * target.Count)
                 {
                     MessageBox.Show("金币不足，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                if (MessageBox.Show("操此作将花费您 10 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                if (MessageBox.Show($"操此作将花费您 {10 * target.Count} 金币，确定继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
                     MessageBoxResult.Yes) return;
-                _coins -= 10;
+                _coins -= 10 * target.Count;
                 Coins.Content = _coins;
-                Connection.SendData("UpdateCoins", "-10");
-                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -10" });
+                Connection.SendData("UpdateCoins", $"-{10 * target.Count}");
+                ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 -{10 * target.Count}" });
             }
             ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 发送消息" });
-            MessagesCollection.Insert(0, new Message
+
+            foreach (var t in target)
             {
-                Content = MessageContent.Text,
-                Direction = "发送",
-                MessageTime = DateTime.Now
-            });
-            Connection.SendMsg(MessageContent.Text);
+                MessagesCollection.Insert(0, new Message
+                {
+                    Content = MessageContent.Text,
+                    Direction = "发送",
+                    MessageTime = DateTime.Now,
+                    User = t
+                });
+                Connection.SendMsg(MessageContent.Text, t);
+            }
             MessageContent.Text = string.Empty;
         }
 
@@ -999,9 +1071,17 @@ namespace Client
         private void MessageList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (!(MessageList.SelectedItem is Message si)) return;
-            var x = new Messaging();
-            x.SetMessge(si.Content, si.DisplayDateTime);
-            x.Show();
+            if (si.Content.Length == 33)
+            {
+                Loading5.Visibility = Visibility.Visible;
+                Connection.SendData("RequestMsg", si.MsgId.ToString());
+            }
+            else
+            {
+                var x = new Messaging();
+                x.SetMessge(si.Content, si.DisplayDateTime, si.User);
+                x.Show();
+            }
         }
 
         private void JudgeList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1073,6 +1153,28 @@ namespace Client
             else
             {
                 MessageBox.Show("请填写完整的用户名和密码", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Label_MouseDown_2(object sender, MouseButtonEventArgs e)
+        {
+            foreach (var i in SendingTarget.Items)
+            {
+                if (i is CheckBox t)
+                {
+                    t.IsChecked = true;
+                }
+            }
+        }
+
+        private void Label_MouseDown_3(object sender, MouseButtonEventArgs e)
+        {
+            foreach (var i in SendingTarget.Items)
+            {
+                if (i is CheckBox t)
+                {
+                    t.IsChecked = !(t.IsChecked ?? false);
+                }
             }
         }
 
