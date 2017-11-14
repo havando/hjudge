@@ -465,7 +465,7 @@ namespace Server
                             JudgeResult.Memoryused[cur] = execute.PeakWorkingSet64 / 1024;
                             if (lastDt == Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds))
                             {
-                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit * Connection.CurJudgingCnt * 60)
+                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit * (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 60)
                                 {
                                     _isExited = true;
                                     isNoResponding = true;
