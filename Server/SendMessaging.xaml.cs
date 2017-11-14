@@ -33,7 +33,7 @@ namespace Server
         {
             var x = from c in _myClientInfo where c.IsChecked select c;
             foreach (var i in x)
-                Connection.SendMsg($"{Msg.Text}", i.UserId);
+                Connection.SendMsg($"{Msg.Text}", 1, i.UserId);
             Msg.Text = string.Empty;
         }
 
