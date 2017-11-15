@@ -590,6 +590,18 @@ namespace Client
                                             $"RequestMsg{Divpar}{x}");
                                         break;
                                     }
+                                case "RequestCode":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _getJudgeCodeResult = JsonConvert.DeserializeObject<JudgeInfo>(x);
+                                        _getJudgeCodeState = true;
+                                        break;
+                                    }
                             }
                         }
                         catch

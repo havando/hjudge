@@ -106,9 +106,11 @@ namespace Server
                     {
                         CurrentJudgeList.Content = "当前评测线程数量：" + Connection.CurJudgingCnt;
                     }));
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 }
             });
+
+            Connection.ActionExecuter(OverLoad);
         }
 
         private UIElement UpdateListBoxContent(string content, UIElement textBlock, bool remove)

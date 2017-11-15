@@ -33,7 +33,10 @@
                    VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Width="221" />
             <GroupBox Header="动态" HorizontalAlignment="Left" Height="238" Margin="10,31,0,0" VerticalAlignment="Top"
                       Width="482">
-                <ListBox Name="ListBox" SelectionMode="Single" />
+                <Grid>
+                    <ListBox Name="ListBox" SelectionMode="Single" Margin="0,0,0,21" />
+                    <TextBlock Name="OverLoad" HorizontalAlignment="Right" Margin="0,197,0,0" TextWrapping="Wrap" Text="当前负荷：待投递任务：0，待处理任务：0" VerticalAlignment="Top"/>
+                </Grid>
             </GroupBox>
             <GroupBox Header="操作" HorizontalAlignment="Left" Height="238" Margin="497,31,0,0" VerticalAlignment="Top"
                       Width="140">

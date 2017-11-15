@@ -19,6 +19,10 @@ namespace Server
     public partial class JudgeLogs : Window
     {
         private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
+        private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
+        private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
+        private bool _isFilterActivated = false;
 
         public JudgeLogs()
         {
@@ -39,7 +43,7 @@ namespace Server
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
-            _curJudgeInfo = Connection.QueryJudgeLog();
+            _curJudgeInfo = Connection.QueryJudgeLog(true);
             ListView.ItemsSource = _curJudgeInfo;
             ListView.Items.Refresh();
             CheckBox.IsChecked = false;
@@ -61,27 +65,49 @@ namespace Server
         {
             if (UserHelper.CurrentUser.Type >= 3) ClearLabel.Visibility = Visibility.Hidden;
             ListView.ItemsSource = _curJudgeInfo;
+
+            _curJudgeInfo.Clear();
+            _problemFilter.Clear();
+            _userFilter.Clear();
+            ProblemFilter.ItemsSource = _problemFilter;
+            UserFilter.ItemsSource = _userFilter;
             Task.Run(() =>
             {
-                foreach (var judgeInfo in Connection.QueryJudgeLog())
+                var t = Connection.QueryJudgeLog(true);
+                foreach (var judgeInfo in t)
                 {
-                    Dispatcher.Invoke(() => _curJudgeInfo.Add(judgeInfo));
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(judgeInfo);
+                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                        if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                    });
                 }
             });
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ListView.Height = ActualHeight - 82.149;
-            ListView.Width = (ActualWidth - 24) * 0.4;
-            JudgeDetails.Width = Code.Width = (ActualWidth - 48) * 0.6;
-            JudgeDetails.Height = (ActualHeight - 48) * 0.4;
-            Code.Height = (ActualHeight - 72) * 0.6;
-            JudgeDetails.Margin = new Thickness(ListView.Width + 15, 10, 0, 0);
-            Code.Margin = new Thickness(ListView.Width + 15, JudgeDetails.Height + 15, 0, 0);
-            Refresh.Margin = new Thickness(ListView.Width - 20, ListView.Height + 10, 0, 0);
-            ClearLabel.Margin = new Thickness(ListView.Width - 20 - 39, ListView.Height + 10, 0, 0);
-            ExportLabel.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
+            try
+            {
+                ListView.Height = ActualHeight - 82.149;
+                ListView.Width = (ActualWidth - 24) * 0.4;
+                JudgeDetails.Width = Code.Width = FilterDock.Width = (ActualWidth - 48) * 0.6;
+                JudgeDetails.Height = (ActualHeight - 48) * 0.4 - 28;
+                Code.Height = (ActualHeight - 72) * 0.6;
+                FilterDock.Margin = new Thickness(ListView.Width + 15, 10, 0, 0);
+                JudgeDetails.Margin = new Thickness(ListView.Width + 15, 38, 0, 0);
+                Code.Margin = new Thickness(ListView.Width + 15, JudgeDetails.Height + 43, 0, 0);
+                Refresh.Margin = new Thickness(ListView.Width - 20, ListView.Height + 10, 0, 0);
+                ClearLabel.Margin = new Thickness(ListView.Width - 20 - 39, ListView.Height + 10, 0, 0);
+                ExportLabel.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
+                TimeFilter.Width = UserFilter.Width = ProblemFilter.Width = 128 + ((ActualWidth - 48) * 0.6 - 644) / 3;
+            }
+            catch
+            {
+                Width = e.PreviousSize.Width;
+                Height = e.PreviousSize.Height;
+            }
         }
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
@@ -193,6 +219,113 @@ namespace Server
         {
             var p = _curJudgeInfo.Count(i => i.IsChecked);
             CheckBox.IsChecked = p == _curJudgeInfo.Count;
+        }
+        private bool Filter(JudgeInfo p)
+        {
+            var now = DateTime.Now;
+            string pf = null, uf = null;
+            var tf = -1;
+            Dispatcher.Invoke(() =>
+            {
+                pf = ProblemFilter.SelectedItem as string ?? null;
+                uf = UserFilter.SelectedItem as string ?? null;
+                tf = TimeFilter.SelectedIndex;
+            });
+            if (pf != null) if (p.ProblemName != pf) return false;
+            if (uf != null) if (p.UserName != uf) return false;
+            if (tf != -1)
+            {
+                var ti = Convert.ToDateTime(p.JudgeDate);
+                switch (tf)
+                {
+                    case 0:
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
+                    case 1:
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
+                    case 2:
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
+                    case 3:
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
+                    case 4:
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
+                    case 5:
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
+                    case 6:
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
+                }
+            }
+            return true;
+        }
+
+        private void ResetFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox.IsChecked = false;
+            if (_isFilterActivated)
+            {
+                _curJudgeInfo.Clear();
+                foreach (var p in _curJudgeInfoBak)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(p);
+                    });
+                }
+            }
+            _isFilterActivated = false;
+            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
+            ListView.ItemsSource = _curJudgeInfo;
+            ListView.Items.Refresh();
+        }
+
+        private void DoFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox.IsChecked = false;
+            if (_isFilterActivated)
+            {
+                _curJudgeInfo.Clear();
+                foreach (var p in _curJudgeInfoBak)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(p);
+                    });
+                }
+            }
+            _isFilterActivated = true;
+            Task.Run(() =>
+            {
+                Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
+                foreach (var p in _curJudgeInfo)
+                {
+                    Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
+                }
+                Dispatcher.Invoke(() => _curJudgeInfo.Clear());
+                foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
+                {
+                    Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
+                }
+            });
         }
     }
 }

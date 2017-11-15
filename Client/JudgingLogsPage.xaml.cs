@@ -27,6 +27,8 @@ namespace Client
     public partial class JudgingLogsPage : Page
     {
         private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
+        private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private bool _isFilterActivated = false;
 
         public JudgingLogsPage()
         {
@@ -56,13 +58,13 @@ namespace Client
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListView.SelectedItem is JudgeInfo a)) return;
-            Code.Text = "代码：\r\n" + a.Code;
             var details = "详情：\r\n";
             if (a.Result != null)
                 for (var i = 0; i < a.Result.Length; i++)
                     details +=
                         $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
             JudgeDetails.Text = details;
+            Code.Text = "代码：\r\n" + (string.IsNullOrEmpty(a.Code) ? Connection.GetJudgeCode(a.JudgeId)?.Code ?? string.Empty : a.Code);
         }
 
 
@@ -104,7 +106,7 @@ namespace Client
                     dr[6] = i?.FullScore ?? 0;
                     try
                     {
-                        var bytes = Encoding.Default.GetBytes(i?.Code ?? string.Empty);
+                        var bytes = Encoding.Default.GetBytes((string.IsNullOrEmpty(i?.Code ?? string.Empty) ? Connection.GetJudgeCode(i.JudgeId).Code : i.Code));
                         dr[7] = Convert.ToBase64String(bytes);
                     }
                     catch
@@ -129,7 +131,6 @@ namespace Client
                 MessageBox.Show("没有要导出的数据", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         private void ListView_Click(object sender, RoutedEventArgs e)
         {
@@ -216,79 +217,112 @@ namespace Client
             });
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private bool Filter(JudgeInfo p)
         {
+            var now = DateTime.Now;
+            string pf = null, uf = null;
+            var tf = -1;
+            Dispatcher.Invoke(() =>
+            {
+                pf = ProblemFilter.SelectedItem as string ?? null;
+                uf = UserFilter.SelectedItem as string ?? null;
+                tf = TimeFilter.SelectedIndex;
+            });
+            if (pf != null) if (p.ProblemName != pf) return false;
+            if (uf != null) if (p.UserName != uf) return false;
+            if (tf != -1)
+            {
+                var ti = Convert.ToDateTime(p.JudgeDate);
+                switch (tf)
+                {
+                    case 0:
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
+                    case 1:
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
+                    case 2:
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
+                    case 3:
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
+                    case 4:
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
+                    case 5:
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
+                    case 6:
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
+                }
+            }
+            return true;
+        }
+
+        private void ResetFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox.IsChecked = false;
+            if (_isFilterActivated)
+            {
+                _curJudgeInfo.Clear();
+                foreach (var p in _curJudgeInfoBak)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(p);
+                    });
+                }
+            }
+            _isFilterActivated = false;
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             ListView.ItemsSource = _curJudgeInfo;
             ListView.Items.Refresh();
         }
 
-        private void Filter()
+        private void DoFilterButton_Click(object sender, RoutedEventArgs e)
         {
-            var filterJudgeInfo = new ObservableCollection<JudgeInfo>();
-            ListView.ItemsSource = filterJudgeInfo;
-            filterJudgeInfo.Clear();
-            var pf = ProblemFilter.SelectedItem as string ?? null;
-            var uf = UserFilter.SelectedItem as string ?? null;
-            var tf = TimeFilter.SelectedIndex;
+            CheckBox.IsChecked = false;
+            if (_isFilterActivated)
+            {
+                _curJudgeInfo.Clear();
+                foreach (var p in _curJudgeInfoBak)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _curJudgeInfo.Add(p);
+                    });
+                }
+            }
+            _isFilterActivated = true;
             Task.Run(() =>
             {
-                var now = DateTime.Now;
+                Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
                 foreach (var p in _curJudgeInfo)
                 {
-                    var flag = true;
-                    if (pf != null) if (p.ProblemName != pf) flag = false;
-                    if (uf != null) if (p.UserName != uf) flag = false;
-                    if (tf != -1)
-                    {
-                        var ti = Convert.ToDateTime(p.JudgeDate);
-                        switch (tf)
-                        {
-                            case 0:
-                                {
-                                    if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) flag = false;
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    if ((now - ti).TotalDays > 3) flag = false;
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    if ((now - ti).TotalDays > 7) flag = false;
-                                    break;
-                                }
-                            case 3:
-                                {
-                                    if ((now - ti).TotalDays > 30) flag = false;
-                                    break;
-                                }
-                            case 4:
-                                {
-                                    if ((now - ti).TotalDays > 91) flag = false;
-                                    break;
-                                }
-                            case 5:
-                                {
-                                    if ((now - ti).TotalDays > 182) flag = false;
-                                    break;
-                                }
-                            case 6:
-                                {
-                                    if ((now - ti).TotalDays > 365) flag = false;
-                                    break;
-                                }
-                        }
-                    }
-                    if (flag) Dispatcher.Invoke(() => filterJudgeInfo.Add(p));
+                    Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
+                }
+                Dispatcher.Invoke(() => _curJudgeInfo.Clear());
+                foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
+                {
+                    Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
                 }
             });
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            Filter();
         }
     }
 
@@ -296,6 +330,8 @@ namespace Client
     {
         private static bool _queryJudgeLogResultState;
         private static ObservableCollection<JudgeInfo> _queryJudgeLogResult;
+        private static bool _getJudgeCodeState;
+        private static JudgeInfo _getJudgeCodeResult;
         public static ObservableCollection<JudgeInfo> QueryJudgeLog()
         {
             _queryJudgeLogResultState = false;
@@ -306,6 +342,16 @@ namespace Client
                 Thread.Sleep(10);
             }
             return _queryJudgeLogResult;
+        }
+        public static JudgeInfo GetJudgeCode(int judgeId)
+        {
+            _getJudgeCodeState = false;
+            SendData("RequestCode", judgeId.ToString());
+            while (!_getJudgeCodeState)
+            {
+                Thread.Sleep(10);
+            }
+            return _getJudgeCodeResult;
         }
     }
 }

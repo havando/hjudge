@@ -670,7 +670,7 @@ namespace Server
             }
         }
 
-        public static ObservableCollection<JudgeInfo> QueryJudgeLog()
+        public static ObservableCollection<JudgeInfo> QueryJudgeLog(bool withCode)
         {
             var curJudgeInfo = new ObservableCollection<JudgeInfo>();
             lock (DataBaseLock)
@@ -691,7 +691,7 @@ namespace Server
                                 UserId = reader.GetInt32(1),
                                 JudgeDate = reader.GetString(2),
                                 ProblemId = reader.GetInt32(3),
-                                Code = reader.GetString(4),
+                                Code = withCode ? reader.GetString(4) : string.Empty,
                                 Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
                                 Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
                                 Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),

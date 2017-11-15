@@ -62,7 +62,7 @@
             <ComboBoxItem Content="近半年"/>
             <ComboBoxItem Content="近一年"/>
         </ComboBox>
-        <Button Content="重置" HorizontalAlignment="Left" Margin="537,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="Button_Click"/>
-        <Button Content="确定" HorizontalAlignment="Left" Margin="495,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="Button_Click_1"/>
+        <Button Content="确定" HorizontalAlignment="Left" Margin="495,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="DoFilterButton_Click"/>
+        <Button Content="重置" HorizontalAlignment="Left" Margin="537,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="ResetFilterButton_Click"/>
     </Grid>
 </Page>

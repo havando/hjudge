@@ -154,7 +154,6 @@ namespace Server
                 MessageBox.Show("服务端网络初始化失败，请检查系统设置", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             DealingBytes();
             DealingOperations();
-            ActionExecuter();
 
             #endregion
         }

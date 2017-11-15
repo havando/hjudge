@@ -34,7 +34,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="232" Margin="402,10,0,0"
+        <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="201" Margin="402,41,0,0"
                  TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto"
                  HorizontalScrollBarVisibility="Auto" />
         <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0"
@@ -46,6 +46,25 @@
                Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown" />
         <Label Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="10,594,0,0" VerticalAlignment="Top"
                Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" />
+        <DockPanel Name="FilterDock" HorizontalAlignment="Left" Height="26" Margin="402,10,0,0" VerticalAlignment="Top" Width="644">
+            <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Label Content="题目：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <ComboBox x:Name="ProblemFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Width="128" Height="21"/>
+            <Label Content="用户：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <ComboBox x:Name="UserFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Width="128" Height="21"/>
+            <Label Content="时间：" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <ComboBox x:Name="TimeFilter" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Width="128" Height="21">
+                <ComboBoxItem Content="今天"/>
+                <ComboBoxItem Content="近三天"/>
+                <ComboBoxItem Content="近一周"/>
+                <ComboBoxItem Content="近一个月"/>
+                <ComboBoxItem Content="近三个月"/>
+                <ComboBoxItem Content="近半年"/>
+                <ComboBoxItem Content="近一年"/>
+            </ComboBox>
+            <Button x:Name="DoFilterButton" Content="确定" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Width="44" Height="22" Click="DoFilterButton_Click"/>
+            <Button x:Name="ResetFilterButton" Content="重置" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Width="44" Height="22" Click="ResetFilterButton_Click"/>
+        </DockPanel>
 
     </Grid>
 </Window>

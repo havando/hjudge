@@ -745,7 +745,10 @@ namespace Server
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
-                                        SendData("AddProblem", NewProblem().ToString(), res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("AddProblem", NewProblem().ToString(), res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "DeleteProblem":
@@ -753,8 +756,11 @@ namespace Server
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
-                                        DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
-                                        SendData("DeleteProblem", string.Empty, res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                            SendData("DeleteProblem", string.Empty, res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "UpdateProblem":
@@ -769,8 +775,11 @@ namespace Server
                                             else
                                                 x += Encoding.Unicode.GetString(res.Content[i]);
                                         var p = JsonConvert.DeserializeObject<Problem>(x);
-                                        UpdateProblem(p);
-                                        SendData("UpdateProblem", string.Empty, res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            UpdateProblem(p);
+                                            SendData("UpdateProblem", string.Empty, res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "QueryProblems":
@@ -778,7 +787,10 @@ namespace Server
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
-                                        SendData("QueryProblems", JsonConvert.SerializeObject(QueryProblems()), res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("QueryProblems", JsonConvert.SerializeObject(QueryProblems()), res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "QueryJudgeLogs":
@@ -786,7 +798,22 @@ namespace Server
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
-                                        SendData("QueryJudgeLogs", JsonConvert.SerializeObject(QueryJudgeLog()), res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("QueryJudgeLogs", JsonConvert.SerializeObject(QueryJudgeLog(false)), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "RequestCode":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var x = GetJudgeInfo(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                            SendData("RequestCode", JsonConvert.SerializeObject(new JudgeInfo { Code = x.Code }), res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "ClearJudgingLogs":
@@ -794,7 +821,7 @@ namespace Server
                                         if (res.Client.UserId == 0) break;
                                         var t = GetUser(res.Client.UserId);
                                         if (t.Type <= 0 || t.Type >= 4) break;
-                                        ClearJudgeLog();
+                                        ActionList.Enqueue(new Task(() => ClearJudgeLog()));
                                         break;
                                     }
                                 case "DataFile":
@@ -1109,39 +1136,45 @@ namespace Server
                                 case "RequestMsgList":
                                     {
                                         if (res.Client.UserId == 0) break;
-                                        var t = QueryMsg(res.Client.UserId, false);
-                                        t.Reverse();
-                                        SendData("RequestMsgList", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var t = QueryMsg(res.Client.UserId, false);
+                                            t.Reverse();
+                                            SendData("RequestMsgList", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                                 case "RequestMsg":
                                     {
                                         if (res.Client.UserId == 0) break;
                                         var t = QueryMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
-                                        SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                        ActionList.Enqueue(new Task(() => SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId)));
                                         break;
                                     }
                                 case "RequestMsgTargetUser":
                                     {
                                         if (res.Client.UserId == 0) break;
-                                        var x = GetUser(res.Client.UserId);
-                                        var t = GetSpecialTypeUser(1);
-                                        if (x.Type >= 4)
+                                        ActionList.Enqueue(new Task(() =>
                                         {
-                                            t.AddRange(GetSpecialTypeUser(2));
-                                            t.AddRange(GetSpecialTypeUser(3));
-                                            if (Configuration.Configurations.AllowCompetitorMessaging)
+                                            var x = GetUser(res.Client.UserId);
+                                            var t = GetSpecialTypeUser(1);
+                                            if (x.Type >= 4)
                                             {
-                                                t.AddRange(GetSpecialTypeUser(4));
+                                                t.AddRange(GetSpecialTypeUser(2));
+                                                t.AddRange(GetSpecialTypeUser(3));
+                                                if (Configuration.Configurations.AllowCompetitorMessaging)
+                                                {
+                                                    t.AddRange(GetSpecialTypeUser(4));
+                                                }
                                             }
-                                        }
-                                        else
-                                        {
-                                            t.AddRange(GetUsersBelongs(1));
-                                        }
-                                        var p = new List<string>();
-                                        p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
-                                        SendData("RequestMsgTargetUser", JsonConvert.SerializeObject(p), res.Client.ConnId);
+                                            else
+                                            {
+                                                t.AddRange(GetUsersBelongs(1));
+                                            }
+                                            var p = new List<string>();
+                                            p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
+                                            SendData("RequestMsgTargetUser", JsonConvert.SerializeObject(p), res.Client.ConnId);
+                                        }));
                                         break;
                                     }
                             }
@@ -1168,18 +1201,18 @@ namespace Server
             return a;
         }
 
-        private static void ActionExecuter()
+        public static void ActionExecuter(UIElement textBlock)
         {
             Task.Run(() =>
             {
-                var textBlock = UpdateMainPageState("待投递事项：0，待处理事项：0");
                 var cnt = 0;
                 var last = 0;
+                var limit = Environment.ProcessorCount * 2;
                 while (true)
                 {
                     if (ActionList.Any())
                     {
-                        if (cnt <= 5)
+                        if (cnt < limit)
                             if (ActionList.TryDequeue(out var t))
                             {
                                 t.ContinueWith(o =>
@@ -1187,19 +1220,19 @@ namespace Server
                                     lock (ActionCounterLock)
                                     {
                                         cnt--;
-                                        UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
+                                        UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
                                     }
                                 });
                                 t.Start();
                                 lock (ActionCounterLock)
                                 {
                                     cnt++;
-                                    UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
+                                    UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
                                 }
                             }
                         if (last != ActionList.Count)
                         {
-                            UpdateMainPageState($"待投递事项：{ActionList.Count}，待处理事项：{cnt}", textBlock);
+                            UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
                             last = ActionList.Count;
                         }
                     }
