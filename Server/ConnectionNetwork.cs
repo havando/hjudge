@@ -1206,33 +1206,48 @@ namespace Server
             Task.Run(() =>
             {
                 var cnt = 0;
+                long tot = 0;
                 var last = 0;
+                var addition = 0;
                 var limit = Environment.ProcessorCount * 2;
+                var dealingTime = DateTime.Now;
                 while (true)
                 {
                     if (ActionList.Any())
                     {
-                        if (cnt < limit)
+                        if (cnt < limit + addition)
+                        {
+                            if (addition != 0) addition--;
+                            dealingTime = DateTime.Now;
                             if (ActionList.TryDequeue(out var t))
                             {
                                 t.ContinueWith(o =>
                                 {
                                     lock (ActionCounterLock)
                                     {
+                                        tot++;
                                         cnt--;
-                                        UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
+                                        UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
                                     }
                                 });
                                 t.Start();
                                 lock (ActionCounterLock)
                                 {
                                     cnt++;
-                                    UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
+                                    UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
                                 }
                             }
+                        }
+                        else
+                        {
+                            if ((DateTime.Now - dealingTime).TotalSeconds > 5)
+                            {
+                                addition++;
+                            }
+                        }
                         if (last != ActionList.Count)
                         {
-                            UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}", textBlock);
+                            UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
                             last = ActionList.Count;
                         }
                     }
