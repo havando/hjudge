@@ -270,7 +270,7 @@ namespace Server
                             }
                         }
                     }
-                    Thread.Sleep(10);
+                    Thread.Sleep(1);
                 }
             });
         }
@@ -812,7 +812,7 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             var x = GetJudgeInfo(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
-                                            SendData("RequestCode", JsonConvert.SerializeObject(new JudgeInfo { Code = x.Code }), res.Client.ConnId);
+                                            SendData("RequestCode", JsonConvert.SerializeObject(new JudgeInfo { Code = x?.Code ?? string.Empty }), res.Client.ConnId);
                                         }));
                                         break;
                                     }
@@ -1184,7 +1184,7 @@ namespace Server
                             continue;
                         }
                     }
-                    Thread.Sleep(10);
+                    Thread.Sleep(1);
                 }
             });
         }

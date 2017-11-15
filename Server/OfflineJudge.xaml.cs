@@ -323,8 +323,8 @@ namespace Server
                             dr[0] = t.MemberName;
                             var temp =
                                 (from c in t.Result where c.ProblemName == i.ProblemName select c).FirstOrDefault();
-                            dr[1] = temp?.Timeused.Max() ?? 0;
-                            dr[2] = temp?.Memoryused.Max() ?? 0;
+                            dr[1] = temp?.Timeused?.Max() ?? 0;
+                            dr[2] = temp?.Memoryused?.Max() ?? 0;
                             dr[3] = temp?.ResultSummery ?? string.Empty;
                             dr[4] = temp?.FullScore ?? 0;
                             try

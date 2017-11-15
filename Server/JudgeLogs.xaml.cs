@@ -142,8 +142,8 @@ namespace Server
                     dr[0] = i?.UserName ?? string.Empty;
                     dr[1] = i?.ProblemName ?? string.Empty;
                     dr[2] = i?.JudgeDate ?? string.Empty;
-                    dr[3] = i?.Timeused.Max() ?? 0;
-                    dr[4] = i?.Memoryused.Max() ?? 0;
+                    dr[3] = i?.Timeused?.Max() ?? 0;
+                    dr[4] = i?.Memoryused?.Max() ?? 0;
                     dr[5] = i?.ResultSummery ?? string.Empty;
                     dr[6] = i?.FullScore ?? 0;
                     try

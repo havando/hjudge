@@ -278,7 +278,7 @@ namespace Client
                                 }
                         }
                     }
-                    Thread.Sleep(10);
+                    Thread.Sleep(1);
                 }
             });
         }
@@ -608,7 +608,7 @@ namespace Client
                         {
                             continue;
                         }
-                    Thread.Sleep(10);
+                    Thread.Sleep(1);
                 }
             });
         }

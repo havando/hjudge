@@ -31,20 +31,31 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (reader.HasRows)
                         if (reader.Read())
-                            return new JudgeInfo
+                            try
                             {
-                                JudgeId = reader.GetInt32(0),
-                                UserId = reader.GetInt32(1),
-                                JudgeDate = reader.GetString(2),
-                                ProblemId = reader.GetInt32(3),
-                                Code = reader.GetString(4),
-                                Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
-                                Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
-                                Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
-                                Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
-                                Type = reader.GetString(10)
-                            };
+                                return new JudgeInfo
+                                {
+                                    JudgeId = reader.GetInt32(0),
+                                    UserId = reader.GetInt32(1),
+                                    JudgeDate = reader.GetString(2),
+                                    ProblemId = reader.GetInt32(3),
+                                    Code = reader.GetString(4),
+                                    Timeused = CastStringArrToLongArr(reader.GetString(5)?.Split(',')),
+                                    Memoryused = CastStringArrToLongArr(reader.GetString(6)?.Split(',')),
+                                    Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
+                                    Result = reader.GetString(8)?.Split(','),
+                                    Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
+                                    Type = reader.GetString(10)
+                                };
+                            }
+                            catch
+                            {
+                                return new JudgeInfo
+                                {
+                                    JudgeId = reader.GetInt32(0),
+                                    JudgeDate = reader.GetString(2)
+                                };
+                            }
                 }
             }
             return new JudgeInfo();
@@ -109,24 +120,35 @@ namespace Server
                     if (reader.HasRows)
                         while (reader.Read())
                         {
-                            var t = new JudgeInfo
+                            try
                             {
-                                JudgeId = reader.GetInt32(0),
-                                UserId = reader.GetInt32(1),
-                                JudgeDate = reader.GetString(2),
-                                ProblemId = reader.GetInt32(3),
-                                Code = "-|/|\\|-",
-                                Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
-                                Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
-                                Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
-                                Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
-                                Type = reader.GetString(10)
-                            };
-                            if (t.ResultSummery == "Judging...") continue;
-                            if (start-- > 0) continue;
-                            if (count-- == 0) break;
-                            ji.Add(t);
+                                var t = new JudgeInfo
+                                {
+                                    JudgeId = reader.GetInt32(0),
+                                    UserId = reader.GetInt32(1),
+                                    JudgeDate = reader.GetString(2),
+                                    ProblemId = reader.GetInt32(3),
+                                    Code = "-|/|\\|-",
+                                    Timeused = CastStringArrToLongArr(reader.GetString(5)?.Split(',')),
+                                    Memoryused = CastStringArrToLongArr(reader.GetString(6)?.Split(',')),
+                                    Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
+                                    Result = reader.GetString(8)?.Split(','),
+                                    Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
+                                    Type = reader.GetString(10)
+                                };
+                                if (t.ResultSummery == "Judging...") continue;
+                                if (start-- > 0) continue;
+                                if (count-- == 0) break;
+                                ji.Add(t);
+                            }
+                            catch
+                            {
+                                ji.Add(new JudgeInfo
+                                {
+                                    JudgeId = reader.GetInt32(0),
+                                    JudgeDate = reader.GetString(2)
+                                });
+                            }
                         }
                 }
             }
@@ -692,11 +714,11 @@ namespace Server
                                 JudgeDate = reader.GetString(2),
                                 ProblemId = reader.GetInt32(3),
                                 Code = withCode ? reader.GetString(4) : string.Empty,
-                                Timeused = CastStringArrToLongArr(reader.GetString(5).Split(',')),
-                                Memoryused = CastStringArrToLongArr(reader.GetString(6).Split(',')),
-                                Exitcode = CastStringArrToIntArr(reader.GetString(7).Split(',')),
-                                Result = reader.GetString(8).Split(','),
-                                Score = CastStringArrToFloatArr(reader.GetString(9).Split(',')),
+                                Timeused = CastStringArrToLongArr(reader.GetString(5)?.Split(',')),
+                                Memoryused = CastStringArrToLongArr(reader.GetString(6)?.Split(',')),
+                                Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
+                                Result = reader.GetString(8)?.Split(','),
+                                Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                 Type = reader.GetString(10)
                             });
                         }
@@ -769,7 +791,14 @@ namespace Server
             if (p == null) return null;
             var f = new int[p.Count];
             for (var i = 0; i < p.Count; i++)
-                f[i] = Convert.ToInt32(p[i]);
+                try
+                {
+                    f[i] = Convert.ToInt32(p[i]);
+                }
+                catch
+                {
+                    f[i] = 0;
+                }
             return f;
         }
 
@@ -778,7 +807,14 @@ namespace Server
             if (p == null) return null;
             var f = new long[p.Count];
             for (var i = 0; i < p.Count; i++)
-                f[i] = Convert.ToInt64(p[i]);
+                try
+                {
+                    f[i] = Convert.ToInt64(p[i]);
+                }
+                catch
+                {
+                    f[i] = 0;
+                }
             return f;
         }
 
@@ -787,7 +823,14 @@ namespace Server
             if (p == null) return null;
             var f = new float[p.Count];
             for (var i = 0; i < p.Count; i++)
-                f[i] = Convert.ToSingle(p[i]);
+                try
+                {
+                    f[i] = Convert.ToSingle(p[i]);
+                }
+                catch
+                {
+                    f[i] = 0;
+                }
             return f;
         }
 
