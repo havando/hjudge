@@ -64,7 +64,7 @@ namespace Client
                     details +=
                         $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
             JudgeDetails.Text = details;
-            Code.Text = "代码：\r\n" + (string.IsNullOrEmpty(a.Code) ? Connection.GetJudgeCode(a.JudgeId)?.Code ?? string.Empty : a.Code);
+            Code.Text = "代码：\r\n" + (string.IsNullOrEmpty(a.Code) ? a.Code = Connection.GetJudgeCode(a.JudgeId)?.Code ?? string.Empty : a.Code);
         }
 
 
@@ -106,7 +106,7 @@ namespace Client
                     dr[6] = i?.FullScore ?? 0;
                     try
                     {
-                        var bytes = Encoding.Default.GetBytes((string.IsNullOrEmpty(i?.Code ?? string.Empty) ? Connection.GetJudgeCode(i.JudgeId).Code : i.Code));
+                        var bytes = Encoding.Default.GetBytes((string.IsNullOrEmpty(i?.Code ?? string.Empty) ? i.Code = Connection.GetJudgeCode(i.JudgeId).Code : i.Code));
                         dr[7] = Convert.ToBase64String(bytes);
                     }
                     catch
