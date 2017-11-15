@@ -339,7 +339,7 @@ namespace Client
             SendData("QueryJudgeLogs", string.Empty);
             while (!_queryJudgeLogResultState)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             return _queryJudgeLogResult;
         }
@@ -349,7 +349,7 @@ namespace Client
             SendData("RequestCode", judgeId.ToString());
             while (!_getJudgeCodeState)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             return _getJudgeCodeResult;
         }

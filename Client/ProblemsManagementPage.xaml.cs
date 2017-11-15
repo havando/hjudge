@@ -310,7 +310,7 @@ namespace Client
                         Connection.SendFile(ofg.FileName, "DataFile");
                         while (!Connection.UploadFileResult)
                         {
-                            Thread.Sleep(10);
+                            Thread.Sleep(1);
                         }
                         Dispatcher.Invoke(() =>
                         {
@@ -355,7 +355,7 @@ namespace Client
                         Connection.SendFile(ofg.FileName, "PublicFile");
                         while (!Connection.UploadFileResult)
                         {
-                            Thread.Sleep(10);
+                            Thread.Sleep(1);
                         }
                         Dispatcher.Invoke(() =>
                         {
@@ -398,7 +398,7 @@ namespace Client
             SendData("QueryProblems", string.Empty);
             while (!_queryProblemsResultState)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             return _queryProblemsResult;
         }
@@ -409,7 +409,7 @@ namespace Client
             SendData("DeleteProblem", problemId.ToString());
             while (!_deleteProblemResult)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
         }
 
@@ -419,7 +419,7 @@ namespace Client
             SendData("AddProblem", string.Empty);
             while (_addProblemResult <= 0)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             return _addProblemResult;
         }
@@ -430,7 +430,7 @@ namespace Client
             SendData("UpdateProblem", JsonConvert.SerializeObject(problem));
             while (!_updateProblemResult)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
         }
     }

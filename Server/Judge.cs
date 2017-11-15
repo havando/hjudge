@@ -421,7 +421,7 @@ namespace Server
                     var outputStream = execute.StandardOutput;
                     if (_problem.InputFileName == "stdin")
                     {
-                        //Thread.Sleep(10);
+                        //Thread.Sleep(1);
                         res = outputStream.ReadToEndAsync();
                         inputStream.AutoFlush = true;
                         try
@@ -787,7 +787,7 @@ namespace Server
                 {
                     // ignored
                 }
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
         }
 
@@ -810,7 +810,7 @@ namespace Server
                     CreateNoWindow = true
                 };
                 Process.Start(a)?.WaitForExit();
-                Thread.Sleep(10);
+                Thread.Sleep(1);
                 return File.Exists(_workingdir + "\\test_hjudge.exe");
             }
             catch
