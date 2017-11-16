@@ -602,6 +602,18 @@ namespace Client
                                         _getJudgeCodeState = true;
                                         break;
                                     }
+                                case "GetProblemDescription":
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _detailsProblemResult = JsonConvert.DeserializeObject<Problem>(x)?.Description ?? string.Empty;
+                                        _detailsProblemState = true;
+                                        break;
+                                    }
                             }
                         }
                         catch

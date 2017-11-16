@@ -1,0 +1,10 @@
+﻿<Window x:Class="Client.ProblemDescription"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="题目描述" Height="374.791" Width="638.105" Icon="Resources/list.png">
+    <WebBrowser Name="Description"></WebBrowser>
+</Window>

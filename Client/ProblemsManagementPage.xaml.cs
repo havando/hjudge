@@ -16,6 +16,7 @@ using System.Windows.Media.Animation;
 using System.Xml;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Markdig;
 
 namespace Client
 {
@@ -29,6 +30,22 @@ namespace Client
         public ProblemsManagementPage()
         {
             InitializeComponent();
+        }
+
+        static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
+        {
+            webBrowser.Navigating += (s, e) =>
+            {
+                var fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                if (fiComWebBrowser == null)
+                    return;
+
+                object objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
+                if (objComWebBrowser == null)
+                    return;
+
+                objComWebBrowser.GetType().InvokeMember("Silent", System.Reflection.BindingFlags.SetProperty, null, objComWebBrowser, new object[] { hide });
+            };
         }
 
         private void Level_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -114,6 +131,10 @@ namespace Client
             DataSetsNumber.Text = problem.DataSets?.Length.ToString() ?? "0";
             Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
+            Description.Text = string.IsNullOrEmpty(problem.Description) ? Connection.GetProblemDescription(problem.ProblemId) : problem.Description;
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
+            DescriptionViewer.NavigateToString(result);
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
             while (ListBox.Items.Count > a)
@@ -185,6 +206,7 @@ namespace Client
             problem.SpecialJudge = SpecialJudge.Text;
             problem.Level = Convert.ToInt32(Level.Value);
             problem.DataSets = new Data[ListBox.Items.Count];
+            problem.Description = Description.Text;
             for (var i = 0; i < ListBox.Items.Count; i++)
             {
                 problem.DataSets[i] = new Data();
@@ -252,8 +274,22 @@ namespace Client
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
 
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is TabControl t)
+            {
+                if (t.SelectedIndex == 1)
+                {
+                    var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+                    var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
+                    DescriptionViewer.NavigateToString(result);
+                }
+            }
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            SuppressScriptErrors(DescriptionViewer, true);
             ListView.ItemsSource = _problems;
             _problems.Clear();
             Task.Run(() =>
@@ -374,9 +410,9 @@ namespace Client
             if (MessageBox.Show("删除后不可恢复，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 Connection.SendData("ClearData", problem.ProblemId.ToString());
-                if (problem.ExtraFiles.Length > 0&& MessageBox.Show("是否删除额外文件？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (problem.ExtraFiles.Length > 0 && MessageBox.Show("是否删除额外文件？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     Connection.SendData("DeleteExtra", problem.ProblemId.ToString());
-                if (!string.IsNullOrEmpty(problem.SpecialJudge)&& MessageBox.Show("是否删除比较程序？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (!string.IsNullOrEmpty(problem.SpecialJudge) && MessageBox.Show("是否删除比较程序？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     Connection.SendData("DeleteJudge", problem.ProblemId.ToString());
             }
         }
@@ -387,6 +423,8 @@ namespace Client
         private static int _addProblemResult;
         private static bool _deleteProblemResult;
         private static bool _updateProblemResult;
+        private static bool _detailsProblemState;
+        private static string _detailsProblemResult;
         private static bool _queryProblemsResultState;
         private static ObservableCollection<Problem> _queryProblemsResult;
         public static bool UploadFileResult;
@@ -401,6 +439,18 @@ namespace Client
                 Thread.Sleep(1);
             }
             return _queryProblemsResult;
+        }
+
+        public static string GetProblemDescription(int problemId)
+        {
+            _detailsProblemState = false;
+            _detailsProblemResult = string.Empty;
+            SendData("GetProblemDescription", problemId.ToString());
+            while (!_detailsProblemState)
+            {
+                Thread.Sleep(1);
+            }
+            return _detailsProblemResult;
         }
 
         public static void DeleteProblem(int problemId)

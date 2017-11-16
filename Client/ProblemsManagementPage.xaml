@@ -70,6 +70,18 @@
                     <ListBox x:Name="ListBox" Margin="0,24,0,0" SelectionMode="Single" />
                 </Grid>
             </TabItem>
+            <TabItem Header="题目描述">
+                <Grid>
+                    <TabControl SelectionChanged="TabControl_SelectionChanged">
+                        <TabItem Header="编辑">
+                            <TextBox Name="Description" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"></TextBox>
+                        </TabItem>
+                        <TabItem Header="预览">
+                            <WebBrowser Name="DescriptionViewer"></WebBrowser>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
             <TabItem Header="使用帮助">
                 <Grid>
                     <ListBox>

@@ -45,7 +45,8 @@ namespace Server
                                     Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
                                     Result = reader.GetString(8)?.Split(','),
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
-                                    Type = reader.GetString(10)
+                                    Type = reader.GetString(10),
+                                    Description = reader.GetString(11)
                                 };
                             }
                             catch
@@ -134,7 +135,8 @@ namespace Server
                                     Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
                                     Result = reader.GetString(8)?.Split(','),
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
-                                    Type = reader.GetString(10)
+                                    Type = reader.GetString(10),
+                                    Description = reader.GetString(11)
                                 };
                                 if (t.ResultSummery == "Judging...") continue;
                                 if (start-- > 0) continue;
@@ -246,7 +248,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where userName=@1";
+                    cmd.CommandText = "SELECT Password From User Where userName=@1";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String)
@@ -257,7 +259,7 @@ namespace Server
                     if (reader.HasRows)
                     {
                         if (!reader.Read()) return false;
-                        if (sb.ToString() != reader.GetString(3)) return false;
+                        if (sb.ToString() != reader.GetString(0)) return false;
                         using (var cmd2 = new SQLiteCommand(_sqLite))
                         {
                             cmd2.CommandText = "Update User SET Password=@1 Where UserName=@2";
@@ -286,7 +288,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where userId=@1";
+                    cmd.CommandText = "SELECT Coins From User Where userId=@1";
                     SQLiteParameter[] parameters1 =
                     {
                         new SQLiteParameter("@1", DbType.Int32)
@@ -297,7 +299,7 @@ namespace Server
                     if (reader.HasRows)
                     {
                         if (!reader.Read()) return false;
-                        origin = reader.GetInt32(7);
+                        origin = reader.GetInt32(0);
                     }
                     else
                     {
@@ -331,7 +333,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where userId=@1";
+                    cmd.CommandText = "SELECT Experience From User Where userId=@1";
                     SQLiteParameter[] parameters1 =
                     {
                         new SQLiteParameter("@1", DbType.Int32)
@@ -342,7 +344,7 @@ namespace Server
                     if (reader.HasRows)
                     {
                         if (!reader.Read()) return false;
-                        origin = reader.GetInt32(8);
+                        origin = reader.GetInt32(0);
                     }
                     else
                     {
@@ -572,6 +574,8 @@ namespace Server
                             a.InputFileName = reader.GetString(8);
                             a.OutputFileName = reader.GetString(9);
                             a.CompileCommand = reader.GetString(10);
+                            a.Option = reader.GetInt32(11);
+                            a.Description = reader.GetString(12);
                         }
                         catch
                         {
@@ -662,7 +666,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where UserName=@1";
+                    cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String)
@@ -719,7 +723,8 @@ namespace Server
                                 Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
                                 Result = reader.GetString(8)?.Split(','),
                                 Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
-                                Type = reader.GetString(10)
+                                Type = reader.GetString(10),
+                                Description = reader.GetString(11)
                             });
                         }
                         catch
@@ -841,7 +846,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where UserId=@1";
+                    cmd.CommandText = "SELECT UserName From User Where UserId=@1";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32)
@@ -852,7 +857,7 @@ namespace Server
                     if (!reader.HasRows) return userName;
                     while (reader.Read())
                     {
-                        userName = reader.GetString(1);
+                        userName = reader.GetString(0);
                         break;
                     }
                 }
@@ -867,7 +872,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From User Where UserName=@1";
+                    cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String)
@@ -959,7 +964,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From Problem Where ProblemId=@1";
+                    cmd.CommandText = "SELECT ProblemName From Problem Where ProblemId=@1";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32)
@@ -970,7 +975,7 @@ namespace Server
                     if (!reader.HasRows) return problemName;
                     while (reader.Read())
                     {
-                        problemName = reader.GetString(1);
+                        problemName = reader.GetString(0);
                         break;
                     }
                 }
@@ -1005,7 +1010,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     cmd.CommandText =
-                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10 Where JudgeId=@9";
+                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11 Where JudgeId=@9";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32),
@@ -1017,7 +1022,8 @@ namespace Server
                         new SQLiteParameter("@7", DbType.String),
                         new SQLiteParameter("@8", DbType.String),
                         new SQLiteParameter("@9", DbType.Int32),
-                        new SQLiteParameter("@10", DbType.String)
+                        new SQLiteParameter("@10", DbType.String),
+                        new SQLiteParameter("@11", DbType.String)
                     };
                     parameters[0].Value = pInfo.UserId;
                     parameters[1].Value = pInfo.ProblemId;
@@ -1051,6 +1057,7 @@ namespace Server
                     parameters[7].Value = score;
                     parameters[8].Value = pInfo.JudgeId;
                     parameters[9].Value = pInfo.Type;
+                    parameters[10].Value = pInfo.Description;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }
@@ -1082,7 +1089,9 @@ namespace Server
                                 ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
                                 InputFileName = reader.GetString(8),
                                 OutputFileName = reader.GetString(9),
-                                CompileCommand = reader.GetString(10)
+                                CompileCommand = reader.GetString(10),
+                                Option = reader.GetInt32(11),
+                                Description = reader.GetString(12),
                             });
                         }
                         catch
@@ -1104,16 +1113,20 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Problem (AddDate, DataSets, ExtraFiles) VALUES (@1, @2, @3)";
+                    cmd.CommandText = "Insert into Problem (AddDate, DataSets, ExtraFiles, InputFileName, OutputFileName) VALUES (@1, @2, @3, @4, @5)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
-                        new SQLiteParameter("@3", DbType.String)
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String),
+                        new SQLiteParameter("@5", DbType.String)
                     };
                     parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[1].Value = JsonConvert.SerializeObject(new Data[0]);
                     parameters[2].Value = JsonConvert.SerializeObject(new string[0]);
+                    parameters[3].Value = "${name}.in";
+                    parameters[4].Value = "${name}.out";
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                     cmd.CommandText = "select last_insert_rowid() from Problem";
@@ -1147,7 +1160,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     cmd.CommandText =
-                        "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9 Where ProblemId=@10";
+                        "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
@@ -1159,7 +1172,9 @@ namespace Server
                         new SQLiteParameter("@7", DbType.String),
                         new SQLiteParameter("@8", DbType.String),
                         new SQLiteParameter("@9", DbType.String),
-                        new SQLiteParameter("@10", DbType.Int32)
+                        new SQLiteParameter("@10", DbType.Int32),
+                        new SQLiteParameter("@11", DbType.String),
+                        new SQLiteParameter("@12", DbType.Int32)
                     };
                     parameters[0].Value = toUpdateProblem.ProblemName;
                     parameters[1].Value = toUpdateProblem.Level;
@@ -1170,7 +1185,9 @@ namespace Server
                     parameters[6].Value = toUpdateProblem.InputFileName;
                     parameters[7].Value = toUpdateProblem.OutputFileName;
                     parameters[8].Value = toUpdateProblem.CompileCommand;
-                    parameters[9].Value = toUpdateProblem.ProblemId;
+                    parameters[9].Value = toUpdateProblem.Option;
+                    parameters[10].Value = toUpdateProblem.Description;
+                    parameters[11].Value = toUpdateProblem.ProblemId;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }

@@ -25,7 +25,6 @@ namespace Server
         public ProblemManagement()
         {
             InitializeComponent();
-            SuppressScriptErrors(DescriptionViewer, true);
         }
 
         static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
@@ -52,6 +51,7 @@ namespace Server
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            SuppressScriptErrors(DescriptionViewer, true);
             ListView.ItemsSource = _problems;
             Task.Run(() =>
             {
@@ -139,6 +139,10 @@ namespace Server
             DataSetsNumber.Text = problem.DataSets?.Length.ToString() ?? "0";
             Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
+            Description.Text = problem.Description;
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
+            DescriptionViewer.NavigateToString(result);
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
             while (ListBox.Items.Count > a)
@@ -182,8 +186,6 @@ namespace Server
                 ProblemId = Connection.NewProblem()
             });
             ListView.SelectedIndex = ListView.Items.Count - 1;
-            InputFileName.Text = "${name}.in";
-            OutputFileName.Text = "${name}.out";
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
@@ -210,6 +212,7 @@ namespace Server
             problem.SpecialJudge = SpecialJudge.Text;
             problem.Level = Convert.ToInt32(Level.Value);
             problem.DataSets = new Data[ListBox.Items.Count];
+            problem.Description = Description.Text;
             for (var i = 0; i < ListBox.Items.Count; i++)
             {
                 problem.DataSets[i] = new Data();
@@ -284,7 +287,7 @@ namespace Server
                 if (t.SelectedIndex == 1)
                 {
                     var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                    var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text, pipeline);
+                    var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
                     DescriptionViewer.NavigateToString(result);
                 }
             }

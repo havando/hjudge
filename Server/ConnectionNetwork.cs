@@ -545,7 +545,7 @@ namespace Server
                                         var t = JsonConvert.DeserializeObject<Message>(x);
                                         UpdateMainPageState(
                                             $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 向 {t.User} 发送了消息");
-                                        if (t.User == GetUserName(1))
+                                        if (t.User == GetUserName(1) || (UserHelper.CurrentUser.UserId != 0 && t.User == UserHelper.CurrentUser.UserName))
                                         {
                                             lock (DataBaseLock)
                                             {
@@ -617,6 +617,7 @@ namespace Server
                                                     problemDataSet.InputFile =
                                                         problemDataSet.OutputFile = string.Empty;
                                                 problem.SpecialJudge = string.Empty;
+                                                problem.Description = string.Empty;
                                             }
                                             var x = JsonConvert.SerializeObject(pl);
                                             SendData("ProblemList", x, res.Client.ConnId);
@@ -789,7 +790,22 @@ namespace Server
                                         if (t.Type <= 0 || t.Type >= 4) break;
                                         ActionList.Enqueue(new Task(() =>
                                         {
-                                            SendData("QueryProblems", JsonConvert.SerializeObject(QueryProblems()), res.Client.ConnId);
+                                            var x = QueryProblems();
+                                            foreach (var i in x)
+                                            {
+                                                i.Description = string.Empty;
+                                            }
+                                            SendData("QueryProblems", JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "GetProblemDescription":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var x = GetProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                            SendData("GetProblemDescription", JsonConvert.SerializeObject(new Problem { Description = x?.Description ?? string.Empty }), res.Client.ConnId);
                                         }));
                                         break;
                                     }

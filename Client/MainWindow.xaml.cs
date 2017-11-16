@@ -1178,6 +1178,14 @@ namespace Client
             }
         }
 
+        private void Label_MouseDown_4(object sender, MouseButtonEventArgs e)
+        {
+            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            var d = new ProblemDescription();
+            d.SetProblemDescription(string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description);
+            d.Show();
+        }
+
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (!LoginButton.IsEnabled) return;

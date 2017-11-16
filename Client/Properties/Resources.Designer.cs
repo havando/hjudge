@@ -148,6 +148,18 @@ namespace Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;&lt;html&gt;
+        ///&lt;head&gt;&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; /&gt; &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=unicode&quot; /&gt;&lt;/head&gt;
+        ///&lt;style type=&quot;text/css&quot;&gt;
+        ///.hljs{display:block;overflow-x:auto;padding:0.5em;background:#F0F0F0}.hljs,.hljs-subst{color:#444}.hljs-comment{color:#888888}.hljs-keyword,.hljs-attribute,.hljs-selector-tag,.hljs-meta-keyword,.hljs-doctag,.hljs-name{font-weight:bold}.hljs-type,.hljs-string,.hljs-number,.hljs-selector-id,.hljs-selector-class,.hljs-quote [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string MarkdownStyle {
+            get {
+                return ResourceManager.GetString("MarkdownStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAQAAAD/5HvMAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfbBRIXBQDiwxeYAAANeklEQVRo3r2aeZAc1X3HP+919/Qce86udnQgraSVtJJlZEuAwJIQGEsECWxjTFyJcGzHhgq2SchZuRPnMLFJOQqh4qScxEkK2ySVYCUEHHBBYQwGE7CEsI7oWGkRq2O12nt2dmb6+OWP7pnpmZ1ZrRQlr2t3Z/p6n/7+fu/33u/Xa3Dl20Ispi/3Yv1/AHQ9Gy//4isPlORu5v1/ATWzlB46UbOcs4Md+DDrOVeofYB/4RD9vMxvkGlwznJew+UO4qzBAKCVVaymfa6dmHPG6eVeDvMkNpt5gPV8lpEZ56T5bTbyDse4lfkc [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string nolevel {

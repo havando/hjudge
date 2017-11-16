@@ -107,6 +107,8 @@
                              VerticalAlignment="Top" Width="173" />
                     <Image Name="Loading2" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
                            Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+                    <Label Content="点此查看题目描述" HorizontalAlignment="Right" Margin="0,288,82,0"
+                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_4" />
                 </Grid>
             </TabItem>
             <TabItem Name="Messaging" Header="发送消息">

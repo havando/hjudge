@@ -20,6 +20,7 @@ namespace Server
         public string UserName => Connection.GetUserName(UserId);
         public string ProblemName => Connection.GetProblemName(ProblemId);
         public string Type { get; set; }
+        public string Description { get; set; }
 
         public string ResultSummery
         {

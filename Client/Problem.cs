@@ -29,6 +29,8 @@ namespace Client
         public string InputFileName { get; set; }
         public string OutputFileName { get; set; }
         public string CompileCommand { get; set; }
+        public int Option { get; set; }
+        public string Description { get; set; }
 
         public bool IsChecked
         {
