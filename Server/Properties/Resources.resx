@@ -156,11 +156,11 @@
                         &lt;/Grid&gt;</value>
   </data>
   <data name="MarkdownStyle" xml:space="preserve">
-    <value>&lt;!DOCTYPE html&gt;&lt;html&gt;
-&lt;head&gt;&lt;meta http-equiv="X-UA-Compatible" content="IE=edge" /&gt; &lt;meta http-equiv="Content-Type" content="text/html; charset=unicode" /&gt;&lt;/head&gt;
+    <value>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;meta http-equiv="X-UA-Compatible" content="IE=edge" /&gt;&lt;meta http-equiv="Content-Type" content="text/html; charset=unicode" /&gt;&lt;/head&gt;
 &lt;style type="text/css"&gt;
 .hljs{display:block;overflow-x:auto;padding:0.5em;background:#F0F0F0}.hljs,.hljs-subst{color:#444}.hljs-comment{color:#888888}.hljs-keyword,.hljs-attribute,.hljs-selector-tag,.hljs-meta-keyword,.hljs-doctag,.hljs-name{font-weight:bold}.hljs-type,.hljs-string,.hljs-number,.hljs-selector-id,.hljs-selector-class,.hljs-quote,.hljs-template-tag,.hljs-deletion{color:#880000}.hljs-title,.hljs-section{color:#880000;font-weight:bold}.hljs-regexp,.hljs-symbol,.hljs-variable,.hljs-template-variable,.hljs-link,.hljs-selector-attr,.hljs-selector-pseudo{color:#BC6060}.hljs-literal{color:#78A960}.hljs-built_in,.hljs-bullet,.hljs-code,.hljs-addition{color:#397300}.hljs-meta{color:#1f7199}.hljs-meta-string{color:#4d99bf}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:bold}
-
 
 .margin-tb-zero,
 .markdown-body ol ol,
@@ -386,16 +386,15 @@
   padding: 0;
 }
 &lt;/style&gt;
-
 &lt;script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"&gt;&lt;/script&gt;
 &lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
-
 &lt;script type="text/x-mathjax-config"&gt;
    MathJax.Hub.Config({
     extensions: ["jsMath2jax.js"]
   });
 &lt;/script&gt;
-
+&lt;script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"&gt;
+&lt;/script&gt;
 &lt;body class="markdown-body"&gt;</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
