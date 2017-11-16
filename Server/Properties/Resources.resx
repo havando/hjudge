@@ -155,6 +155,14 @@
                             &lt;TextBox Name="Score${index}" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="103" Margin="238,13,0,0"/&gt;
                         &lt;/Grid&gt;</value>
   </data>
+  <data name="MarkdownStyle" xml:space="preserve">
+    <value>&lt;script type="text/x-mathjax-config"&gt;
+   MathJax.Hub.Config({
+    extensions: ["jsMath2jax.js"]
+  });
+&lt;/script&gt;
+&lt;script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"&gt;&lt;/script&gt;</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Server" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Server.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

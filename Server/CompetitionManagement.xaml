@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="比赛管理" Height="349" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
+        Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
         Topmost="True">
     <Grid>
-        <ListView HorizontalAlignment="Left" Height="291" Margin="10,10,0,0" VerticalAlignment="Top" Width="302">
+        <ListView HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="302">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="比赛 ID" Width="50" />
@@ -56,8 +56,14 @@
                 Height="30" />
         <Button Content="删除" HorizontalAlignment="Left" Margin="589,45,0,0" VerticalAlignment="Top" Width="57"
                 Height="30" />
-        <Button Content="保存" HorizontalAlignment="Left" Margin="589,271,0,0" VerticalAlignment="Top" Width="57"
+        <Button Content="保存" HorizontalAlignment="Left" Margin="589,351,0,0" VerticalAlignment="Top" Width="57"
                 Height="30" />
+        <Label Content="比赛密码：（无密码请留空）" HorizontalAlignment="Left" Margin="317,306,0,0" VerticalAlignment="Top" />
+        <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="26" Margin="483,306,0,0" TextWrapping="Wrap"
+            VerticalAlignment="Top" Width="101" />
+        <Label Content="比赛说明：" HorizontalAlignment="Left" Margin="317,337,0,0" VerticalAlignment="Top" />
+        <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="44" Margin="392,337,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
+            VerticalAlignment="Top" Width="192" />
 
     </Grid>
 </Window>

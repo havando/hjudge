@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Markdig;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -24,6 +25,23 @@ namespace Server
         public ProblemManagement()
         {
             InitializeComponent();
+            SuppressScriptErrors(DescriptionViewer, true);
+        }
+
+        static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
+        {
+            webBrowser.Navigating += (s, e) =>
+            {
+                var fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                if (fiComWebBrowser == null)
+                    return;
+
+                object objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
+                if (objComWebBrowser == null)
+                    return;
+
+                objComWebBrowser.GetType().InvokeMember("Silent", System.Reflection.BindingFlags.SetProperty, null, objComWebBrowser, new object[] { hide });
+            };
         }
 
         private void Level_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -62,7 +80,7 @@ namespace Server
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement) obj);
+                    ListBox.Items.Add((UIElement)obj);
                 }
             }
         }
@@ -137,7 +155,7 @@ namespace Server
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement) obj);
+                ListBox.Items.Add((UIElement)obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -253,10 +271,23 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is TabControl t)
+            {
+                if (t.SelectedIndex == 1)
+                {
+                    var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+                    var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text, pipeline);
+                    DescriptionViewer.NavigateToString(result);
+                }
+            }
         }
     }
 }

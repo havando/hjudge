@@ -57,12 +57,24 @@
             <TabItem Header="数据设置">
                 <Grid>
                     <ComboBox Name="ComboBox" Margin="0,0,58,225" IsEditable="True" SelectedIndex="0">
-                        <TextBlock>${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10</TextBlock>
-                        <TextBlock>${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10</TextBlock>
+                        <TextBlock Text="${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10"/>
+                        <TextBlock Text="${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10"/>
                     </ComboBox>
                     <ListBox Name="ListBox" Margin="0,24,0,0" SelectionMode="Single" />
                     <Button Content="填充" HorizontalAlignment="Left" Margin="325,0,0,0" VerticalAlignment="Top"
                             Width="58" Height="24" Click="Button_Click" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="题目描述">
+                <Grid>
+                    <TabControl SelectionChanged="TabControl_SelectionChanged">
+                        <TabItem Header="编辑">
+                            <TextBox Name="Description" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"></TextBox>
+                        </TabItem>
+                        <TabItem Header="预览">
+                            <WebBrowser Name="DescriptionViewer"></WebBrowser>
+                        </TabItem>
+                    </TabControl>
                 </Grid>
             </TabItem>
             <TabItem Header="使用帮助">

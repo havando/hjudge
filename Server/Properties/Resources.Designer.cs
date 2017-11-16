@@ -89,6 +89,20 @@ namespace Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;script type=&quot;text/x-mathjax-config&quot;&gt;
+        ///   MathJax.Hub.Config({
+        ///    extensions: [&quot;jsMath2jax.js&quot;]
+        ///  });
+        ///&lt;/script&gt;
+        ///&lt;script src=&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default&quot;&gt;&lt;/script&gt;.
+        /// </summary>
+        internal static string MarkdownStyle {
+            get {
+                return ResourceManager.GetString("MarkdownStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon Server {
