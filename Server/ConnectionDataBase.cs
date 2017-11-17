@@ -1136,20 +1136,34 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Problem (AddDate, DataSets, ExtraFiles, InputFileName, OutputFileName) VALUES (@1, @2, @3, @4, @5)";
+                    cmd.CommandText = "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
-                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@3", DbType.Int32),
                         new SQLiteParameter("@4", DbType.String),
-                        new SQLiteParameter("@5", DbType.String)
+                        new SQLiteParameter("@5", DbType.Int32),
+                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@7", DbType.String),
+                        new SQLiteParameter("@8", DbType.String),
+                        new SQLiteParameter("@9", DbType.String),
+                        new SQLiteParameter("@10", DbType.String),
+                        new SQLiteParameter("@11", DbType.String),
+                        new SQLiteParameter("@12", DbType.String)
                     };
-                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[1].Value = JsonConvert.SerializeObject(new Data[0]);
-                    parameters[2].Value = JsonConvert.SerializeObject(new string[0]);
-                    parameters[3].Value = "${name}.in";
-                    parameters[4].Value = "${name}.out";
+                    parameters[0].Value = string.Empty;
+                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[2].Value = 1;
+                    parameters[3].Value = JsonConvert.SerializeObject(new Data[0]);
+                    parameters[4].Value = 0;
+                    parameters[5].Value = string.Empty;
+                    parameters[6].Value = JsonConvert.SerializeObject(new string[0]);
+                    parameters[7].Value = "${name}.in";
+                    parameters[8].Value = "${name}.out";
+                    parameters[9].Value = string.Empty;
+                    parameters[10].Value = 0;
+                    parameters[11].Value = string.Empty;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                     cmd.CommandText = "select last_insert_rowid() from Problem";

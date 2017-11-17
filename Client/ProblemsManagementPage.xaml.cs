@@ -174,13 +174,8 @@ namespace Client
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            _problems.Add(new Problem
-            {
-                ProblemId = Connection.AddProblem()
-            });
+            _problems.Add(Connection.AddProblem());
             ListView.SelectedIndex = ListView.Items.Count - 1;
-            InputFileName.Text = "${name}.in";
-            OutputFileName.Text = "${name}.out";
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
@@ -423,7 +418,8 @@ namespace Client
 
     public static partial class Connection
     {
-        private static int _addProblemResult;
+        private static Problem _addProblemResult;
+        private static bool _addProblemState;
         private static bool _deleteProblemResult;
         private static bool _updateProblemResult;
         private static bool _detailsProblemState;
@@ -466,11 +462,12 @@ namespace Client
             }
         }
 
-        public static int AddProblem()
+        public static Problem AddProblem()
         {
-            _addProblemResult = -1;
+            _addProblemState = false;
+            _addProblemResult = null;
             SendData("AddProblem", string.Empty);
-            while (_addProblemResult <= 0)
+            while (!_addProblemState)
             {
                 Thread.Sleep(1);
             }

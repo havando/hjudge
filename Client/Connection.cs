@@ -490,7 +490,14 @@ namespace Client
                                     }
                                 case "AddProblem":
                                     {
-                                        _addProblemResult = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _addProblemResult = JsonConvert.DeserializeObject<Problem>(x);
+                                        _addProblemState = true;
                                         break;
                                     }
                                 case "DeleteProblem":

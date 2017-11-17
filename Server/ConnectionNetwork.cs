@@ -749,7 +749,7 @@ namespace Server
                                         if (t.Type <= 0 || t.Type >= 4) break;
                                         ActionList.Enqueue(new Task(() =>
                                         {
-                                            SendData("AddProblem", NewProblem().ToString(), res.Client.ConnId);
+                                            SendData("AddProblem", JsonConvert.SerializeObject(GetProblem(NewProblem())), res.Client.ConnId);
                                         }));
                                         break;
                                     }

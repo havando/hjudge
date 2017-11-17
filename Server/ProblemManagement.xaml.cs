@@ -182,10 +182,8 @@ namespace Server
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            _problems.Add(new Problem
-            {
-                ProblemId = Connection.NewProblem()
-            });
+            var tid = Connection.NewProblem();
+            _problems.Add(Connection.GetProblem(tid));
             ListView.SelectedIndex = ListView.Items.Count - 1;
         }
 
