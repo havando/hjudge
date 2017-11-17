@@ -41,7 +41,7 @@ namespace Server
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _problems = Connection.QueryProblems();
+            _problems = Connection.QueryProblems(true);
             ListView.ItemsSource = _problems;
             JudgeResult.ItemsSource = _results;
         }

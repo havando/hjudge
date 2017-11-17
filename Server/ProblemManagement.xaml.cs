@@ -55,7 +55,7 @@ namespace Server
             ListView.ItemsSource = _problems;
             Task.Run(() =>
             {
-                foreach (var queryProblem in Connection.QueryProblems())
+                foreach (var queryProblem in Connection.QueryProblems(true))
                 {
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
                 }
@@ -140,6 +140,7 @@ namespace Server
             Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
             Description.Text = problem.Description;
+            Public.IsChecked = (problem.Option & 1) != 0;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
             DescriptionViewer.NavigateToString(result);
@@ -203,6 +204,7 @@ namespace Server
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
             if (!(ListView.SelectedItem is Problem problem)) return;
+            problem.Option = 0;
             problem.Type = 1;
             problem.CompileCommand = CompileCommand.Text;
             problem.ProblemName = ProblemName.Text;
@@ -213,6 +215,7 @@ namespace Server
             problem.Level = Convert.ToInt32(Level.Value);
             problem.DataSets = new Data[ListBox.Items.Count];
             problem.Description = Description.Text;
+            if (Public.IsChecked ?? false) problem.Option |= 1;
             for (var i = 0; i < ListBox.Items.Count; i++)
             {
                 problem.DataSets[i] = new Data();

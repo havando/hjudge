@@ -29,7 +29,7 @@
                     <Label Content="输出文件名：" HorizontalAlignment="Left" Margin="175,165,0,0" VerticalAlignment="Top" Width="72" />
                     <Label Content="编译参数：" HorizontalAlignment="Left" Margin="10,196,0,0" VerticalAlignment="Top" Width="61" />
                     <TextBox x:Name="ProblemName" HorizontalAlignment="Left" Height="23" Margin="76,13,0,0"
-                        TextWrapping="Wrap" VerticalAlignment="Top" Width="253" />
+                        TextWrapping="Wrap" VerticalAlignment="Top" Width="204" />
                     <TextBox x:Name="SpecialJudge" HorizontalAlignment="Left" Height="23" Margin="76,106,0,0"
                         TextWrapping="Wrap" VerticalAlignment="Top" Width="253" />
                     <TextBox x:Name="ExtraFiles" HorizontalAlignment="Left" Height="23" Margin="76,137,0,0"
@@ -57,6 +57,7 @@
                         VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown_1" />
                     <Label Content="清空此题目数据" HorizontalAlignment="Left" Margin="235,243,0,0"
                         VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" Height="27" MouseDown="Label_MouseDown_2" />
+                    <CheckBox x:Name="Public" Content="公开" HorizontalAlignment="Left" Margin="285,16,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="数据设置">

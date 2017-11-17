@@ -1064,7 +1064,7 @@ namespace Server
             }
         }
 
-        public static ObservableCollection<Problem> QueryProblems()
+        public static ObservableCollection<Problem> QueryProblems(bool withPrivate)
         {
             var curJudgeInfo = new ObservableCollection<Problem>();
             lock (DataBaseLock)
@@ -1077,22 +1077,45 @@ namespace Server
                     while (reader.Read())
                         try
                         {
-                            curJudgeInfo.Add(new Problem
+                            if (!withPrivate)
                             {
-                                ProblemId = reader.GetInt32(0),
-                                ProblemName = reader.GetString(1),
-                                AddDate = reader.GetString(2),
-                                Level = reader.GetInt32(3),
-                                DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
-                                Type = reader.GetInt32(5),
-                                SpecialJudge = reader.GetString(6),
-                                ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
-                                InputFileName = reader.GetString(8),
-                                OutputFileName = reader.GetString(9),
-                                CompileCommand = reader.GetString(10),
-                                Option = reader.GetInt32(11),
-                                Description = reader.GetString(12),
-                            });
+                                if ((reader.GetInt32(11) & 1) != 0)
+                                {
+                                    curJudgeInfo.Add(new Problem
+                                    {
+                                        ProblemId = reader.GetInt32(0),
+                                        ProblemName = reader.GetString(1),
+                                        AddDate = reader.GetString(2),
+                                        Level = reader.GetInt32(3),
+                                        DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
+                                        Type = reader.GetInt32(5),
+                                        SpecialJudge = reader.GetString(6),
+                                        ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
+                                        InputFileName = reader.GetString(8),
+                                        OutputFileName = reader.GetString(9),
+                                        CompileCommand = reader.GetString(10),
+                                        Option = reader.GetInt32(11),
+                                        Description = reader.GetString(12),
+                                    });
+                                }
+                            }
+                            else
+                                curJudgeInfo.Add(new Problem
+                                {
+                                    ProblemId = reader.GetInt32(0),
+                                    ProblemName = reader.GetString(1),
+                                    AddDate = reader.GetString(2),
+                                    Level = reader.GetInt32(3),
+                                    DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
+                                    Type = reader.GetInt32(5),
+                                    SpecialJudge = reader.GetString(6),
+                                    ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
+                                    InputFileName = reader.GetString(8),
+                                    OutputFileName = reader.GetString(9),
+                                    CompileCommand = reader.GetString(10),
+                                    Option = reader.GetInt32(11),
+                                    Description = reader.GetString(12),
+                                });
                         }
                         catch
                         {

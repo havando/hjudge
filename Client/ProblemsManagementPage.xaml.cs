@@ -131,6 +131,7 @@ namespace Client
             DataSetsNumber.Text = problem.DataSets?.Length.ToString() ?? "0";
             Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
+            Public.IsChecked = (problem.Option & 1) != 0;
             Description.Text = string.IsNullOrEmpty(problem.Description) ? Connection.GetProblemDescription(problem.ProblemId) : problem.Description;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
@@ -197,6 +198,7 @@ namespace Client
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
             if (!(ListView.SelectedItem is Problem problem)) return;
+            problem.Option = 0;
             problem.Type = 1;
             problem.CompileCommand = CompileCommand.Text;
             problem.ProblemName = ProblemName.Text;
@@ -207,6 +209,7 @@ namespace Client
             problem.Level = Convert.ToInt32(Level.Value);
             problem.DataSets = new Data[ListBox.Items.Count];
             problem.Description = Description.Text;
+            if (Public.IsChecked ?? false) problem.Option |= 1;
             for (var i = 0; i < ListBox.Items.Count; i++)
             {
                 problem.DataSets[i] = new Data();

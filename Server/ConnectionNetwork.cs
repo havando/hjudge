@@ -603,7 +603,7 @@ namespace Server
                                                     .Replace("${index}", (cur + 1).ToString());
                                             }
 
-                                            var pl = QueryProblems();
+                                            var pl = QueryProblems(false);
                                             foreach (var problem in pl)
                                             {
                                                 problem.InputFileName = GetRealString(problem.InputFileName,
@@ -618,6 +618,7 @@ namespace Server
                                                         problemDataSet.OutputFile = string.Empty;
                                                 problem.SpecialJudge = string.Empty;
                                                 problem.Description = string.Empty;
+                                                problem.Option = 0;
                                             }
                                             var x = JsonConvert.SerializeObject(pl);
                                             SendData("ProblemList", x, res.Client.ConnId);
@@ -790,7 +791,7 @@ namespace Server
                                         if (t.Type <= 0 || t.Type >= 4) break;
                                         ActionList.Enqueue(new Task(() =>
                                         {
-                                            var x = QueryProblems();
+                                            var x = QueryProblems(true);
                                             foreach (var i in x)
                                             {
                                                 i.Description = string.Empty;
