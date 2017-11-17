@@ -166,7 +166,7 @@ namespace Server
                                 });
                                 JudgingLog.ScrollIntoView(JudgingLog.Items[JudgingLog.Items.Count - 1]);
                             });
-                            var j = new Judge(m.ProblemId, 1, code, type, isStdInOut);
+                            var j = new Judge(m.ProblemId, 1, code, type, isStdInOut, $"离线评测，选手：{t}");
                             p.Result.Add(j.JudgeResult);
                             Dispatcher.Invoke(() =>
                             {
@@ -185,9 +185,10 @@ namespace Server
                         }));
                         while (true)
                         {
+                            if (_stop) break;
                             if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
-                                    ? Configuration.ProcessorCount
-                                    : Configuration.Configurations.MutiThreading)&& Connection.CanPostJudgTask) break;
+                                ? Configuration.ProcessorCount
+                                : Configuration.Configurations.MutiThreading) && Connection.CanPostJudgTask) break;
                             Thread.Sleep(100);
                         }
                     }

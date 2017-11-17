@@ -21,14 +21,15 @@
                         </GridViewColumn.CellTemplate>
                         <CheckBox x:Name="CheckBox" Click="CheckBox_Click" />
                     </GridViewColumn>
-                    <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding JudgeId}" />
-                    <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding UserName}" />
-                    <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding ProblemId}" />
-                    <GridViewColumn Header="题目名称" Width="100" DisplayMemberBinding="{Binding ProblemName}" />
-                    <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding JudgeDate}" />
-                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding ResultSummery}" />
-                    <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding FullScore}" />
-                    <GridViewColumn Header="代码类型" Width="60" DisplayMemberBinding="{Binding Type}" />
+                    <GridViewColumn Header="评测 ID" Width="50" DisplayMemberBinding="{Binding Path=JudgeId}" />
+                    <GridViewColumn Header="用户名" Width="100" DisplayMemberBinding="{Binding Path=UserName}" />
+                    <GridViewColumn Header="题目 ID" Width="50" DisplayMemberBinding="{Binding Path=ProblemId}" />
+                    <GridViewColumn Header="题目名称" Width="100" DisplayMemberBinding="{Binding Path=ProblemName}" />
+                    <GridViewColumn Header="评测描述" Width="100" DisplayMemberBinding="{Binding Path=Description}" />
+                    <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding Path=JudgeDate}" />
+                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummery}" />
+                    <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding Path=FullScore}" />
+                    <GridViewColumn Header="代码类型" Width="60" DisplayMemberBinding="{Binding Path=Type}" />
                 </GridView>
             </ListView.View>
         </ListView>

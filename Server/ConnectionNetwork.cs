@@ -524,7 +524,7 @@ namespace Server
                                                 var j = new Judge(
                                                     Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
                                                     res.Client.UserId, code,
-                                                    Encoding.Unicode.GetString(res.Content[1]), true);
+                                                    Encoding.Unicode.GetString(res.Content[1]), true, "在线评测");
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.Client.ConnId);
                                             });

@@ -21,7 +21,7 @@ namespace Server
 
         private bool _isFault;
 
-        public Judge(int problemId, int userId, string code, string type, bool isStdio)
+        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description)
         {
             while (true)
             {
@@ -42,7 +42,7 @@ namespace Server
                 _problem = Connection.GetProblem(problemId);
                 var id = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                JudgeResult.JudgeId = Connection.NewJudge();
+                JudgeResult.JudgeId = Connection.NewJudge(description);
                 JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                 JudgeResult.ProblemId = _problem.ProblemId;
                 JudgeResult.Code = code;
@@ -53,6 +53,7 @@ namespace Server
                 JudgeResult.Timeused = new long[_problem.DataSets.Length];
                 JudgeResult.Memoryused = new long[_problem.DataSets.Length];
                 JudgeResult.Type = type;
+                JudgeResult.Description = description;
 
                 var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
@@ -160,7 +161,7 @@ namespace Server
                     _problem.DataSets[i].OutputFile = GetRealString(_problem.DataSets[i].OutputFile, i, extList[0]);
                 }
 
-                _problem.InputFileName = isStdio ? "stdin" : GetRealString(_problem.InputFileName, 0, extList[0]);
+                _problem.InputFileName = isStdIO ? "stdin" : GetRealString(_problem.InputFileName, 0, extList[0]);
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
                 Connection.UpdateMainPageState(

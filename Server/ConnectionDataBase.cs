@@ -54,7 +54,8 @@ namespace Server
                                 return new JudgeInfo
                                 {
                                     JudgeId = reader.GetInt32(0),
-                                    JudgeDate = reader.GetString(2)
+                                    JudgeDate = reader.GetString(2),
+                                    Description = reader.GetString(11)
                                 };
                             }
                 }
@@ -148,7 +149,8 @@ namespace Server
                                 ji.Add(new JudgeInfo
                                 {
                                     JudgeId = reader.GetInt32(0),
-                                    JudgeDate = reader.GetString(2)
+                                    JudgeDate = reader.GetString(2),
+                                    Description = reader.GetString(11)
                                 });
                             }
                         }
@@ -732,7 +734,8 @@ namespace Server
                             curJudgeInfo.Add(new JudgeInfo
                             {
                                 JudgeId = reader.GetInt32(0),
-                                JudgeDate = reader.GetString(2)
+                                JudgeDate = reader.GetString(2),
+                                Description = reader.GetString(11)
                             });
                         }
                 }
@@ -983,18 +986,20 @@ namespace Server
             return problemName;
         }
 
-        public static int NewJudge()
+        public static int NewJudge(string description)
         {
             lock (DataBaseLock)
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Judge (Date) VALUES (@1)";
+                    cmd.CommandText = "Insert into Judge (Date, Description) VALUES (@1, @2)";
                     SQLiteParameter[] parameters =
                     {
-                        new SQLiteParameter("@1", DbType.String)
+                        new SQLiteParameter("@1", DbType.String),
+                        new SQLiteParameter("@2", DbType.String)
                     };
                     parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[1].Value = description;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                     cmd.CommandText = "select last_insert_rowid() from Judge";

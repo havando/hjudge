@@ -87,6 +87,7 @@ namespace Client
                 var dt = new DataTable("结果");
                 dt.Columns.Add("姓名");
                 dt.Columns.Add("题目名称");
+                dt.Columns.Add("评测描述");
                 dt.Columns.Add("评测时间");
                 dt.Columns.Add("最长时间 (ms)");
                 dt.Columns.Add("最大内存 (kb)");
@@ -99,21 +100,22 @@ namespace Client
                     var dr = dt.NewRow();
                     dr[0] = i?.UserName ?? string.Empty;
                     dr[1] = i?.ProblemName ?? string.Empty;
-                    dr[2] = i?.JudgeDate ?? string.Empty;
-                    dr[3] = i?.Timeused?.Max() ?? 0;
-                    dr[4] = i?.Memoryused?.Max() ?? 0;
-                    dr[5] = i?.ResultSummery ?? string.Empty;
-                    dr[6] = i?.FullScore ?? 0;
+                    dr[2] = i?.Description ?? string.Empty;
+                    dr[3] = i?.JudgeDate ?? string.Empty;
+                    dr[4] = i?.Timeused?.Max() ?? 0;
+                    dr[5] = i?.Memoryused?.Max() ?? 0;
+                    dr[6] = i?.ResultSummery ?? string.Empty;
+                    dr[7] = i?.FullScore ?? 0;
                     try
                     {
                         var bytes = Encoding.Default.GetBytes((string.IsNullOrEmpty(i?.Code ?? string.Empty) ? i.Code = Connection.GetJudgeCode(i.JudgeId).Code : i.Code));
-                        dr[7] = Convert.ToBase64String(bytes);
+                        dr[8] = Convert.ToBase64String(bytes);
                     }
                     catch
                     {
-                        dr[7] = string.Empty;
+                        dr[8] = string.Empty;
                     }
-                    dr[8] = i?.Type ?? string.Empty;
+                    dr[9] = i?.Type ?? string.Empty;
                     dt.Rows.Add(dr);
                 }
                 try
