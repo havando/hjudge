@@ -34,7 +34,7 @@ namespace Client
         public void SetProblemDescription(string description)
         {
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(description + "\n</body></html>", pipeline);
+            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(description, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
             Description.NavigateToString(result);
         }
     }

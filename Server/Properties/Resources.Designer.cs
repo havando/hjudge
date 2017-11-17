@@ -95,9 +95,28 @@ namespace Server.Properties {
         ///&lt;style type=&quot;text/css&quot;&gt;
         ///.hljs{display:block;overflow-x:auto;padding:0.5em;background:#F0F0F0}.hljs,.hljs-subst{color:#444}.hljs-comment{color:#888888}.hljs-keyword,.hljs-attribute,.hljs-selector-tag,.hljs-meta-keyword,.hljs-doctag,.hljs-name{font-weight:bold}.hljs-type,.hljs-string,.hljs-number,.hljs-selector-id,.hljs-selector-class,.hljs-quot [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string MarkdownStyle {
+        internal static string MarkdownStyleHead {
             get {
-                return ResourceManager.GetString("MarkdownStyle", resourceCulture);
+                return ResourceManager.GetString("MarkdownStyleHead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;/body&gt;
+        ///&lt;script src=&quot;http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js&quot;&gt;&lt;/script&gt;
+        ///&lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
+        ///&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
+        ///   MathJax.Hub.Config({
+        ///    extensions: [&quot;jsMath2jax.js&quot;]
+        ///  });
+        ///&lt;/script&gt;
+        ///&lt;script src=&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default&quot;&gt;
+        ///&lt;/script&gt;
+        ///&lt;/html&gt;.
+        /// </summary>
+        internal static string MarkdownStyleTail {
+            get {
+                return ResourceManager.GetString("MarkdownStyleTail", resourceCulture);
             }
         }
         

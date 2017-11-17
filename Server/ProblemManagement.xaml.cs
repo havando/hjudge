@@ -141,7 +141,7 @@ namespace Server
             LevelShow.Content = Level.Value;
             Description.Text = problem.Description;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
+            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
             DescriptionViewer.NavigateToString(result);
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
@@ -287,7 +287,7 @@ namespace Server
                 if (t.SelectedIndex == 1)
                 {
                     var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                    var result = Properties.Resources.MarkdownStyle + "\n" + Markdown.ToHtml(Description.Text + "\n</body></html>", pipeline);
+                    var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
                     DescriptionViewer.NavigateToString(result);
                 }
             }
