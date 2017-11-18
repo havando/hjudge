@@ -334,18 +334,6 @@ namespace Client
                                             $"Messaging{Divpar}{x}");
                                         break;
                                     }
-                                case "FileList":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke($"FileList{Divpar}{x}");
-
-                                        break;
-                                    }
                                 case "File":
                                     {
                                         var fileName = Encoding.Unicode.GetString(res.Content[0]);
@@ -398,42 +386,6 @@ namespace Client
                                         }
                                         break;
                                     }
-                                case "JudgeResult":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"JudgeResult{Divpar}{x}");
-                                        break;
-                                    }
-                                case "ProblemList":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"ProblemList{Divpar}{x}");
-                                        break;
-                                    }
-                                case "Profile":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"Profile{Divpar}{x}");
-                                        break;
-                                    }
                                 case "ChangePassword":
                                     {
                                         _updateMainPage.Invoke(
@@ -445,47 +397,6 @@ namespace Client
                                     {
                                         _updateMainPage.Invoke(
                                             $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-
-                                        break;
-                                    }
-                                case "JudgeRecord":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke($"JudgeRecord{Divpar}{x}");
-                                        break;
-                                    }
-                                case "Compiler":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"Compiler{Divpar}{x}");
-                                        break;
-                                    }
-                                case "JudgeCode":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke($"JudgeCode{Divpar}{x}");
-                                        break;
-                                    }
-                                case "Version":
-                                    {
-                                        _updateMainPage.Invoke(
-                                            $"Version{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
                                 case "AddProblem":
@@ -561,42 +472,6 @@ namespace Client
                                             $"Register{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
                                         break;
                                     }
-                                case "RequestMsgTargetUser":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"RequestMsgTargetUser{Divpar}{x}");
-                                        break;
-                                    }
-                                case "RequestMsgList":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"RequestMsgList{Divpar}{x}");
-                                        break;
-                                    }
-                                case "RequestMsg":
-                                    {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
-                                        _updateMainPage.Invoke(
-                                            $"RequestMsg{Divpar}{x}");
-                                        break;
-                                    }
                                 case "RequestCode":
                                     {
                                         var x = string.Empty;
@@ -619,6 +494,18 @@ namespace Client
                                                 x += Encoding.Unicode.GetString(res.Content[i]);
                                         _detailsProblemResult = JsonConvert.DeserializeObject<Problem>(x)?.Description ?? string.Empty;
                                         _detailsProblemState = true;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _updateMainPage.Invoke(
+                                             $"{res.Operation}{Divpar}{x}");
                                         break;
                                     }
                             }

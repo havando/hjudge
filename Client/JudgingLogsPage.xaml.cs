@@ -337,7 +337,7 @@ namespace Client
         public static ObservableCollection<JudgeInfo> QueryJudgeLog()
         {
             _queryJudgeLogResultState = false;
-            _queryProblemsResult = new ObservableCollection<Problem>();
+            _queryJudgeLogResult = new ObservableCollection<JudgeInfo>();
             SendData("QueryJudgeLogs", string.Empty);
             while (!_queryJudgeLogResultState)
             {

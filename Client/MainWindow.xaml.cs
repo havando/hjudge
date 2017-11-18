@@ -35,6 +35,9 @@ namespace Client
         private int _curId;
         private string _userName;
 
+        private string _requestMsgListId;
+        private string _requestMsgTargetUserId;
+
         public MainWindow()
         {
             var tick = DateTime.Now.Ticks;
@@ -121,12 +124,28 @@ namespace Client
             {
                 var info = s.Split(new[] { Divpar }, StringSplitOptions.None);
                 var header = info[0];
-                var content = "";
+                var content = string.Empty;
+                var id = string.Empty;
+                var contentWithoutId = string.Empty;
                 for (var i = 1; i < info.Length; i++)
                     if (i != info.Length - 1)
                         content += info[i] + Divpar;
                     else
                         content += info[i];
+                try
+                {
+                    id = info[1];
+                    for (var i = 2; i < info.Length; i++)
+                        if (i != info.Length - 1)
+                            contentWithoutId += info[i] + Divpar;
+                        else
+                            contentWithoutId += info[i];
+                }
+                catch
+                {
+                    id = string.Empty;
+                    contentWithoutId = string.Empty;
+                }
                 switch (header)
                 {
                     case "Connection":
@@ -181,26 +200,31 @@ namespace Client
                         {
                             Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
                             if (content == "Succeed")
-                                Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                Dispatcher.Invoke(() =>
                                 {
                                     _userName = UserName.Text;
                                     Password.Password = string.Empty;
-                                    _coins = _experience = _currentGetJudgeRecordIndex = 0;
                                     CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                                         JudgeResult.Visibility = Competitions.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Loading1.Visibility = Visibility.Visible;
-                                    Connection.SendData("RequestProfile", _userName);
-                                    Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
-                                    Connection.SendData("RequestFileList", string.Empty);
-                                    Connection.SendData("RequestMsgList", string.Empty);
-                                    _currentGetJudgeRecordIndex = 20;
+                                    MessagesCollection.Clear();
                                     ActiveBox.Items.Add(new TextBlock
                                     {
                                         Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
                                     });
-                                }));
+                                });
+                                _requestMsgListId = Guid.NewGuid().ToString();
+                                Connection.SendData("RequestProfile", _userName);
+                                Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
+                                Connection.SendData("RequestFileList", string.Empty);
+                                Connection.SendData("RequestMsgList" + Divpar + _requestMsgListId, string.Empty);
+
+                                _currentGetJudgeRecordIndex = 20;
+                                _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                            }
                             else if (content == "NeedReview")
                             {
                                 MessageBox.Show("注册还未通过审核，请耐心等待", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -493,7 +517,6 @@ namespace Client
                                 var l = JsonConvert.DeserializeObject<List<Compiler>>(content);
                                 foreach (var m in l)
                                     LangBox.Items.Add(new RadioButton { Content = m.DisplayName });
-                                Loading2.Visibility = Visibility.Hidden;
                             }));
                             break;
                         }
@@ -512,30 +535,26 @@ namespace Client
                         }
                     case "RequestMsgTargetUser":
                         {
-                            var t = JsonConvert.DeserializeObject<List<string>>(content);
-                            Dispatcher.Invoke(() =>
+                            if (id == _requestMsgTargetUserId)
                             {
-                                SendingTarget.Items.Clear();
-                                foreach (var i in t)
+                                var t = JsonConvert.DeserializeObject<string>(contentWithoutId);
+                                Dispatcher.Invoke(() =>
                                 {
-                                    SendingTarget.Items.Add(new CheckBox { Content = i });
-                                }
-                                Loading4.Visibility = Visibility.Hidden;
-                            });
+                                    SendingTarget.Items.Add(new CheckBox { Content = t });
+                                });
+                            }
                             break;
                         }
                     case "RequestMsgList":
                         {
-                            var t = JsonConvert.DeserializeObject<List<Message>>(content);
-                            Dispatcher.Invoke(() =>
+                            if (_requestMsgListId == id)
                             {
-                                MessagesCollection.Clear();
-                                foreach (var i in t)
+                                var t = JsonConvert.DeserializeObject<Message>(contentWithoutId);
+                                Dispatcher.Invoke(() =>
                                 {
-                                    MessagesCollection.Add(i);
-                                }
-                                Loading4.Visibility = Visibility.Hidden;
-                            });
+                                    MessagesCollection.Add(t);
+                                });
+                            }
                             break;
                         }
                     case "RequestMsg":
@@ -892,8 +911,9 @@ namespace Client
                     Connection.SendData("RequestCompiler", string.Empty);
                     break;
                 case 2:
-                    Loading4.Visibility = Visibility.Visible;
-                    Connection.SendData("RequestMsgTargetUser", string.Empty);
+                    _requestMsgTargetUserId = Guid.NewGuid().ToString();
+                    SendingTarget.Items.Clear();
+                    Connection.SendData("RequestMsgTargetUser" + Divpar + _requestMsgTargetUserId, string.Empty);
                     break;
             }
         }

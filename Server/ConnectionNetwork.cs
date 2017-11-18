@@ -925,7 +925,6 @@ namespace Server
                                         }
                                         break;
                                     }
-
                                 case "PublicFile":
                                     {
                                         if (res.Client.UserId == 0) break;
@@ -1153,11 +1152,15 @@ namespace Server
                                 case "RequestMsgList":
                                     {
                                         if (res.Client.UserId == 0) break;
+                                        var id = Encoding.Unicode.GetString(res.Content[0]);
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             var t = QueryMsg(res.Client.UserId, false);
                                             t.Reverse();
-                                            SendData("RequestMsgList", JsonConvert.SerializeObject(t), res.Client.ConnId);
+                                            foreach (var i in t)
+                                            {
+                                                SendData("RequestMsgList", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
+                                            }
                                         }));
                                         break;
                                     }
@@ -1171,6 +1174,7 @@ namespace Server
                                 case "RequestMsgTargetUser":
                                     {
                                         if (res.Client.UserId == 0) break;
+                                        var id = Encoding.Unicode.GetString(res.Content[0]);
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             var x = GetUser(res.Client.UserId);
@@ -1190,7 +1194,10 @@ namespace Server
                                             }
                                             var p = new List<string>();
                                             p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
-                                            SendData("RequestMsgTargetUser", JsonConvert.SerializeObject(p), res.Client.ConnId);
+                                            foreach (var i in p)
+                                            {
+                                                SendData("RequestMsgTargetUser", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
+                                            }
                                         }));
                                         break;
                                     }
