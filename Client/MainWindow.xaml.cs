@@ -37,6 +37,7 @@ namespace Client
 
         private string _requestMsgListId;
         private string _requestMsgTargetUserId;
+        private string _requestProblemListId;
 
         public MainWindow()
         {
@@ -388,9 +389,14 @@ namespace Client
                         }
                     case "ProblemList":
                         {
-                            var x = JsonConvert.DeserializeObject<Problem[]>(content);
-                            UpdateProblemList(x);
-                            Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
+                            if (id == _requestProblemListId)
+                            {
+                                var x = JsonConvert.DeserializeObject<Problem>(contentWithoutId);
+                                Dispatcher.Invoke(() =>
+                                {
+                                    _problems.Add(x);
+                                });
+                            }
                             break;
                         }
                     case "Profile":
@@ -805,16 +811,6 @@ namespace Client
             x.Show();
         }
 
-        private void UpdateProblemList(Problem[] x)
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                _problems.Clear();
-                foreach (var i in x)
-                    _problems.Add(i);
-            }));
-        }
-
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             Loading1.Visibility = Visibility.Visible;
@@ -896,8 +892,9 @@ namespace Client
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
-            Connection.SendData("RequestProblemList", string.Empty);
-            Loading2.Visibility = Visibility.Visible;
+            _requestProblemListId = Guid.NewGuid().ToString();
+            _problems.Clear();
+            Connection.SendData("RequestProblemList", _requestProblemListId);
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -906,8 +903,9 @@ namespace Client
             switch ((sender as TabControl)?.SelectedIndex ?? 0)
             {
                 case 1:
-                    Loading2.Visibility = Visibility.Visible;
-                    Connection.SendData("RequestProblemList", string.Empty);
+                    _requestProblemListId = Guid.NewGuid().ToString();
+                    _problems.Clear();
+                    Connection.SendData("RequestProblemList", _requestProblemListId);
                     Connection.SendData("RequestCompiler", string.Empty);
                     break;
                 case 2:

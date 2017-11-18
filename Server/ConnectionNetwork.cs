@@ -583,7 +583,7 @@ namespace Server
                                     {
                                         if (res.Client.UserId == 0)
                                             break;
-
+                                        var id = Encoding.Unicode.GetString(res.Content[0]);
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             string GetEngName(string origin)
@@ -620,8 +620,10 @@ namespace Server
                                                 problem.Description = string.Empty;
                                                 problem.Option = 0;
                                             }
-                                            var x = JsonConvert.SerializeObject(pl);
-                                            SendData("ProblemList", x, res.Client.ConnId);
+                                            foreach(var i in pl)
+                                            {
+                                                SendData("ProblemList", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
+                                            }
                                         }));
                                         break;
                                     }
