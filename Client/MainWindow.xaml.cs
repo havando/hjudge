@@ -486,12 +486,22 @@ namespace Client
                         }
                     case "FileReceived":
                         {
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 FileList.IsEnabled = true;
                                 ReceivingFile.Visibility = Visibility.Hidden;
                                 ReceivingProcess.Visibility = Visibility.Hidden;
-                            }));
+                            });
+                            if (content == "Error")
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    Connection.SendData("RequestFileList", string.Empty);
+                                    ReceivingFile.Visibility = Visibility.Visible;
+                                    ReceivingProcess.Visibility = Visibility.Visible;
+                                });
+                                MessageBox.Show("文件不存在", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                             break;
                         }
                     case "FileReceiving":

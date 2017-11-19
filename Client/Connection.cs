@@ -292,6 +292,17 @@ namespace Client
                     if (Operations.TryDequeue(out var res))
                         try
                         {
+                            try
+                            {
+                                if (Encoding.Unicode.GetString(res.Content[0]) == "ActionFailed")
+                                {
+                                    MessageBox.Show($"抱歉，程序异常，请重新启动本客户端。\n因为 {Encoding.Unicode.GetString(res.Content[1])}\n操作：{res.Operation}\n堆栈跟踪：\n{Encoding.Unicode.GetString(res.Content[2])}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                             switch (res.Operation)
                             {
                                 case "Login":
@@ -337,6 +348,11 @@ namespace Client
                                 case "File":
                                     {
                                         var fileName = Encoding.Unicode.GetString(res.Content[0]);
+                                        if (fileName == "NotFound")
+                                        {
+                                            _updateMainPage($"FileReceived{Divpar}Error");
+                                            continue;
+                                        }
                                         var fileId = Encoding.Unicode.GetString(res.Content[1]);
                                         var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
                                         if (FrInfo.Any(i => i.FileId == fileId))
@@ -510,9 +526,19 @@ namespace Client
                                     }
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            continue;
+                            try
+                            {
+                                if (Encoding.Unicode.GetString(res.Content[0]) == "ActionFailed")
+                                {
+                                    MessageBox.Show($"抱歉，命令解析出现错误，请重新启动本客户端。\n因为 {ex.Message}\n操作：{res.Operation}\n堆栈跟踪：\n{ex.StackTrace}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         }
                     Thread.Sleep(1);
                 }

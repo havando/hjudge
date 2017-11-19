@@ -83,6 +83,10 @@ namespace Server
 
         private static void SendFile(string fileName, IntPtr connId)
         {
+            if (!File.Exists(fileName))
+            {
+                SendData("File", "NotFound", connId);
+            }
             var fileId = Guid.NewGuid().ToString();
             var temp = Encoding.Unicode.GetBytes("File" + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
@@ -410,11 +414,9 @@ namespace Server
                                         }
                                         filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
                                         if (File.Exists(filePath))
-                                        {
                                             UpdateMainPageState(
                                                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 请求文件：{filePath}");
-                                            Task.Run(() => { SendFile(filePath, res.Client.ConnId); });
-                                        }
+                                        Task.Run(() => { SendFile(filePath, res.Client.ConnId); });
                                         break;
                                     }
                                 case "RequestProblemDataSet":
@@ -620,7 +622,7 @@ namespace Server
                                                 problem.Description = string.Empty;
                                                 problem.Option = 0;
                                             }
-                                            foreach(var i in pl)
+                                            foreach (var i in pl)
                                             {
                                                 SendData("ProblemList", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
                                             }
@@ -1205,9 +1207,9 @@ namespace Server
                                     }
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            continue;
+                            SendData(res.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace, res.Client.ConnId);
                         }
                     }
                     Thread.Sleep(1);
