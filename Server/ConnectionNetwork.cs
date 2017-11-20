@@ -543,15 +543,17 @@ namespace Server
                                                     code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
                                                 else
                                                     code += Encoding.Unicode.GetString(res.Content[i]);
+                                            var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                            var type = Encoding.Unicode.GetString(res.Content[1]);
+                                            var userId = res.Client.UserId;
+                                            ActionList.Enqueue(new Task(() =>
                                             new Thread(() =>
                                             {
-                                                var j = new Judge(
-                                                    Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                                    res.Client.UserId, code,
-                                                    Encoding.Unicode.GetString(res.Content[1]), true, "在线评测");
+                                                var j = new Judge(problemId, userId, code, type, true, "在线评测");
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.Client.ConnId);
-                                            }).Start();
+                                            }).Start()
+                                            ));
                                         }
 
                                         break;
@@ -1270,25 +1272,40 @@ namespace Server
                 var addition = 0;
                 var limit = Environment.ProcessorCount * 2;
                 var dealingTime = DateTime.Now;
+                bool withAddition = false;
                 while (true)
                 {
                     if (ActionList.Any())
                     {
                         if (cnt < limit + addition)
                         {
-                            if (addition != 0) addition--;
                             dealingTime = DateTime.Now;
                             if (ActionList.TryDequeue(out var t))
                             {
-                                t.ContinueWith(o =>
+                                if (withAddition)
                                 {
-                                    lock (ActionCounterLock)
+                                    withAddition = false;
+                                    t.ContinueWith(o =>
                                     {
-                                        tot++;
-                                        cnt--;
-                                        UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
-                                    }
-                                });
+                                        lock (ActionCounterLock)
+                                        {
+                                            tot++;
+                                            cnt--;
+                                            addition--;
+                                            UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
+                                        }
+                                    });
+                                }
+                                else
+                                    t.ContinueWith(o =>
+                                    {
+                                        lock (ActionCounterLock)
+                                        {
+                                            tot++;
+                                            cnt--;
+                                            UpdateMainPageState($"当前负荷：待投递任务：{ActionList.Count}，待处理任务：{cnt}。已完成任务：{tot}", textBlock);
+                                        }
+                                    });
                                 t.Start();
                                 lock (ActionCounterLock)
                                 {
@@ -1299,9 +1316,11 @@ namespace Server
                         }
                         else
                         {
-                            if ((DateTime.Now - dealingTime).TotalSeconds > 5)
+                            if ((DateTime.Now - dealingTime).TotalSeconds > 3)
                             {
-                                addition++;
+                                withAddition = true;
+                                lock (ActionCounterLock)
+                                    addition++;
                             }
                         }
                         if (last != ActionList.Count)
