@@ -119,29 +119,51 @@ namespace Server
             HServer.Send(connId, final, final.Length);
         }
 
+        public static void SetMsgState(int msgId, int state)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "UPDATE Message SET State=@1 Where MessageId=@2";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.Int32),
+                        new SQLiteParameter("@2", DbType.Int32),
+                    };
+                    parameters[0].Value = state;
+                    parameters[1].Value = msgId;
+                    cmd.Parameters.AddRange(parameters);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         public static void SendMsg(string sendString, int fromUserId, int toUserId)
         {
             lock (DataBaseLock)
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                    cmd.CommandText = "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32),
                         new SQLiteParameter("@2", DbType.Int32),
                         new SQLiteParameter("@3", DbType.String),
-                        new SQLiteParameter("@4", DbType.String)
+                        new SQLiteParameter("@4", DbType.String),
+                        new SQLiteParameter("@5", DbType.Int32)
                     };
                     parameters[0].Value = fromUserId;
                     parameters[1].Value = toUserId;
                     parameters[2].Value = DateTime.Now;
                     parameters[3].Value = sendString;
+                    parameters[4].Value = 0;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }
             }
-            var t = new Message { Content = sendString, MessageTime = DateTime.Now, Direction = "接收", User = GetUserName(fromUserId) };
+            var t = new Message { Content = sendString, MessageTime = DateTime.Now, Direction = "接收", User = GetUserName(fromUserId), State = 0 };
             SendData("Messaging", JsonConvert.SerializeObject(t), Recv.Where(i => i.Info.UserId == toUserId)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ?? IntPtr.Zero);
         }
 
@@ -554,18 +576,20 @@ namespace Server
                                                 using (var cmd = new SQLiteCommand(_sqLite))
                                                 {
                                                     cmd.CommandText =
-                                                        "Insert INTO Message (FromUserId,ToUserId,SendDate,Content) VALUES (@1,@2,@3,@4)";
+                                                        "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
                                                     SQLiteParameter[] parameters =
                                                     {
                                                         new SQLiteParameter("@1", DbType.Int32),
                                                         new SQLiteParameter("@2", DbType.Int32),
                                                         new SQLiteParameter("@3", DbType.String),
-                                                        new SQLiteParameter("@4", DbType.String)
+                                                        new SQLiteParameter("@4", DbType.String),
+                                                        new SQLiteParameter("@5", DbType.Int32)
                                                     };
                                                     parameters[0].Value = res.Client.UserId;
                                                     parameters[1].Value = GetUserId(t.User);
                                                     parameters[2].Value = DateTime.Now;
                                                     parameters[3].Value = t.Content;
+                                                    parameters[4].Value = 1;
                                                     cmd.Parameters.AddRange(parameters);
                                                     cmd.ExecuteNonQuery();
                                                 }
@@ -573,8 +597,7 @@ namespace Server
                                             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                             {
                                                 var y = new Messaging();
-                                                y.SetMessage(t.Content,
-                                                    res.Client.ConnId, res.Client.UserName);
+                                                y.SetMessage(new Message { Content = t.Content, User = res.Client.UserName, State = 1, MessageTime = DateTime.Now });
                                                 y.Show();
                                             }));
                                         }
@@ -1171,7 +1194,7 @@ namespace Server
                                 case "RequestMsg":
                                     {
                                         if (res.Client.UserId == 0) break;
-                                        var t = QueryMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                        var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
                                         ActionList.Enqueue(new Task(() => SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId)));
                                         break;
                                     }
@@ -1203,6 +1226,14 @@ namespace Server
                                                 SendData("RequestMsgTargetUser", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
                                             }
                                         }));
+                                        break;
+                                    }
+                                case "SetMsgState":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        var state = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
+                                        ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
                                         break;
                                     }
                             }

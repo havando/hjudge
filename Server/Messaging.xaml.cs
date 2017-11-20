@@ -15,15 +15,15 @@ namespace Server
             InitializeComponent();
         }
 
-        public void SetMessage(string msg, IntPtr id, string userName)
+        public void SetMessage(Message msg)
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                ClientMsg.Text = msg;
-                SendDate.Content = $"发送时间：{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
-                SendUser.Content = $"发送用户：{userName}";
+                ClientMsg.Text = msg.Content;
+                SendDate.Content = $"发送时间：{msg.DisplayDateTime}";
+                SendUser.Content = $"发送用户：{msg.User}";
             }));
-            _userId = Connection.GetUserId(userName);
+            _userId = Connection.GetUserId(msg.User);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

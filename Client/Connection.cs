@@ -17,7 +17,7 @@ namespace Client
 {
     public static partial class Connection
     {
-        private const string Divpar = "<h~|~j>";
+        public const string Divpar = "<h~|~j>";
         private static readonly ConcurrentQueue<List<byte>> Recv = new ConcurrentQueue<List<byte>>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullClient HClient = new TcpPullClient();

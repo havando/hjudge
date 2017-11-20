@@ -301,7 +301,7 @@ namespace Client
                                     User = t.User
                                 });
                                 var x = new Messaging();
-                                x.SetMessge(t.Content, t.DisplayDateTime, t.User);
+                                x.SetMessge(t);
                                 x.Show();
                             }));
                             break;
@@ -569,6 +569,19 @@ namespace Client
                                 Dispatcher.Invoke(() =>
                                 {
                                     MessagesCollection.Add(t);
+                                    if (t.State == 0 && t.Direction == "接收")
+                                    {
+                                        if (t.Content.Length == 33)
+                                        {
+                                            Connection.SendData("RequestMsg", t.MsgId.ToString());
+                                        }
+                                        else
+                                        {
+                                            var x = new Messaging();
+                                            x.SetMessge(t);
+                                            x.Show();
+                                        }
+                                    }
                                 });
                             }
                             break;
@@ -582,7 +595,7 @@ namespace Client
                                 MessagesCollection.Where(i => i.MsgId == t.MsgId).FirstOrDefault().Content = t.Content;
                                 MessageList.Items.Refresh();
                                 var x = new Messaging();
-                                x.SetMessge(t.Content, t.DisplayDateTime, t.User);
+                                x.SetMessge(t);
                                 x.Show();
                             }));
                             break;
@@ -1107,7 +1120,7 @@ namespace Client
             else
             {
                 var x = new Messaging();
-                x.SetMessge(si.Content, si.DisplayDateTime, si.User);
+                x.SetMessge(si);
                 x.Show();
             }
         }

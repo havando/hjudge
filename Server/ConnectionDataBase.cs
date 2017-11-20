@@ -745,7 +745,7 @@ namespace Server
             }
             return curJudgeInfo;
         }
-        public static Message QueryMsg(int msgId)
+        public static Message GetMsg(int msgId)
         {
             var t = new Message();
             lock (DataBaseLock)
@@ -762,6 +762,7 @@ namespace Server
                             t.User = GetUserName(reader.GetInt32(1));
                             t.MessageTime = Convert.ToDateTime(reader.GetString(3));
                             t.Content = reader.GetString(4);
+                            t.State = reader.GetInt32(5);
                         }
                         catch
                         {
@@ -785,8 +786,8 @@ namespace Server
                         try
                         {
                             if (withContent)
-                                t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
-                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收" });
+                                t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收", State = reader.GetInt32(5) });
+                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收", State = reader.GetInt32(5) });
                         }
                         catch
                         {

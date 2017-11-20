@@ -174,7 +174,7 @@ namespace Server
             var t = GetReaderSchema("Message", conn);
             if (t != null)
             {
-                var tableName = new[] { "MessageId", "FromUserId", "ToUserId", "SendDate", "Content" };
+                var tableName = new[] { "MessageId", "FromUserId", "ToUserId", "SendDate", "Content", "State" };
                 if (tableName.Length != t.Rows.Count) return false;
                 for (var i = 0; i < t.Rows.Count; i++)
                 {
@@ -194,7 +194,8 @@ namespace Server
                 sqlTable.Append("FromUserId int,");
                 sqlTable.Append("ToUserId int,");
                 sqlTable.Append("SendDate ntext,");
-                sqlTable.Append("Content ntext)");
+                sqlTable.Append("Content ntext,");
+                sqlTable.Append("State int)");
                 cmd.CommandText = sqlTable.ToString();
                 try
                 {

@@ -7,7 +7,7 @@ namespace Server
 {
     public static partial class Connection
     {
-        private const string Divpar = "<h~|~j>";
+        public const string Divpar = "<h~|~j>";
         public static bool IsExited;
         private static Func<string, UIElement, bool, UIElement> _updateMain;
         private static int _id;
