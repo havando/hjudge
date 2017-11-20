@@ -571,7 +571,7 @@ namespace Server
                                         var t = JsonConvert.DeserializeObject<Message>(x);
                                         UpdateMainPageState(
                                             $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 向 {t.User} 发送了消息");
-                                        if (t.User == GetUserName(1) || (UserHelper.CurrentUser.UserId != 0 && t.User == UserHelper.CurrentUser.UserName))
+                                        if (t.User == GetUserName(1))
                                         {
                                             lock (DataBaseLock)
                                             {
