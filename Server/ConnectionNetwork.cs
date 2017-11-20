@@ -1240,7 +1240,6 @@ namespace Server
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"命令处理异常：{ex.Message}\n堆栈跟踪：\n{ex.StackTrace}");
                             SendData(res.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace, res.Client.ConnId);
                         }
                     }
