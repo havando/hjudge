@@ -543,7 +543,7 @@ namespace Server
                                                     code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
                                                 else
                                                     code += Encoding.Unicode.GetString(res.Content[i]);
-                                            Task.Run(() =>
+                                            new Thread(() =>
                                             {
                                                 var j = new Judge(
                                                     Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
@@ -551,7 +551,7 @@ namespace Server
                                                     Encoding.Unicode.GetString(res.Content[1]), true, "在线评测");
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.Client.ConnId);
-                                            });
+                                            }).Start();
                                         }
 
                                         break;
