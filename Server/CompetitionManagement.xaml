@@ -12,11 +12,11 @@
                   SelectionMode="Single">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="比赛 ID" Width="50" />
-                    <GridViewColumn Header="比赛名称" Width="100" />
-                    <GridViewColumn Header="开始时间" Width="100" />
-                    <GridViewColumn Header="结束时间" Width="100" />
-                    <GridViewColumn Header="题目数量" Width="100" />
+                    <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}" Width="50" />
+                    <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"  Width="100" />
+                    <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
+                    <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
+                    <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
                 </GridView>
             </ListView.View>
         </ListView>

@@ -108,6 +108,7 @@
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="ClientData.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="Competition.cs" />
     <Compile Include="CompetitionManagement.xaml.cs">
       <DependentUpon>CompetitionManagement.xaml</DependentUpon>
     </Compile>
