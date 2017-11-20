@@ -52,7 +52,7 @@
         <TextBox Name="ComProblems" HorizontalAlignment="Left" Height="26" Margin="323,192,0,0" TextWrapping="Wrap"
                  VerticalAlignment="Top" Width="261" />
         <Label Content="比赛选项：" HorizontalAlignment="Left" Margin="317,223,0,0" VerticalAlignment="Top" />
-        <ListBox HorizontalAlignment="Left" Height="47" Margin="323,254,0,0" VerticalAlignment="Top" Width="261">
+        <ListBox HorizontalAlignment="Left" Height="65" Margin="323,254,0,0" VerticalAlignment="Top" Width="261">
             <DockPanel>
                 <TextBlock Text="赛制："></TextBlock>
                 <RadioButton IsChecked="True" Content="无限提交赛"></RadioButton>
@@ -78,11 +78,11 @@
                 Height="30" />
         <Button Content="保存" HorizontalAlignment="Left" Margin="589,351,0,0" VerticalAlignment="Top" Width="57"
                 Height="30" />
-        <Label Content="比赛密码：（无密码请留空）" HorizontalAlignment="Left" Margin="317,306,0,0" VerticalAlignment="Top" />
-        <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="26" Margin="483,306,0,0" TextWrapping="Wrap"
+        <Label Content="比赛密码：（无密码请留空）" HorizontalAlignment="Left" Margin="317,324,0,0" VerticalAlignment="Top" />
+        <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="26" Margin="483,324,0,0" TextWrapping="Wrap"
             VerticalAlignment="Top" Width="101" />
-        <Label Content="比赛说明：" HorizontalAlignment="Left" Margin="317,337,0,0" VerticalAlignment="Top" />
-        <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="44" Margin="392,337,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
+        <Label Content="比赛说明：" HorizontalAlignment="Left" Margin="317,355,0,0" VerticalAlignment="Top" />
+        <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="26" Margin="392,355,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
             VerticalAlignment="Top" Width="192" />
 
     </Grid>
