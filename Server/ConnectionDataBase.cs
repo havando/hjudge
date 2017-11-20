@@ -46,7 +46,8 @@ namespace Server
                                     Result = reader.GetString(8)?.Split(','),
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                     Type = reader.GetString(10),
-                                    Description = reader.GetString(11)
+                                    Description = reader.GetString(11),
+                                    CompetitionId = reader.GetInt32(12)
                                 };
                             }
                             catch
@@ -137,7 +138,8 @@ namespace Server
                                     Result = reader.GetString(8)?.Split(','),
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                     Type = reader.GetString(10),
-                                    Description = reader.GetString(11)
+                                    Description = reader.GetString(11),
+                                    CompetitionId = reader.GetInt32(12)
                                 };
                                 if (t.ResultSummery == "Judging...") continue;
                                 if (start-- > 0) continue;
@@ -726,7 +728,8 @@ namespace Server
                                 Result = reader.GetString(8)?.Split(','),
                                 Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                 Type = reader.GetString(10),
-                                Description = reader.GetString(11)
+                                Description = reader.GetString(11),
+                                CompetitionId = reader.GetInt32(12)
                             });
                         }
                         catch
@@ -986,20 +989,22 @@ namespace Server
             return problemName;
         }
 
-        public static int NewJudge(string description)
+        public static int NewJudge(string description, int competitionId = 0)
         {
             lock (DataBaseLock)
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Judge (Date, Description) VALUES (@1, @2)";
+                    cmd.CommandText = "Insert into Judge (Date, Description, CompetitionId) VALUES (@1, @2, @3)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
-                        new SQLiteParameter("@2", DbType.String)
+                        new SQLiteParameter("@2", DbType.String),
+                        new SQLiteParameter("@3", DbType.Int32)
                     };
                     parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[1].Value = description;
+                    parameters[2].Value = competitionId;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                     cmd.CommandText = "select last_insert_rowid() from Judge";
@@ -1015,7 +1020,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     cmd.CommandText =
-                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11 Where JudgeId=@9";
+                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12 Where JudgeId=@9";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32),
@@ -1028,7 +1033,8 @@ namespace Server
                         new SQLiteParameter("@8", DbType.String),
                         new SQLiteParameter("@9", DbType.Int32),
                         new SQLiteParameter("@10", DbType.String),
-                        new SQLiteParameter("@11", DbType.String)
+                        new SQLiteParameter("@11", DbType.String),
+                        new SQLiteParameter("@12", DbType.Int32)
                     };
                     parameters[0].Value = pInfo.UserId;
                     parameters[1].Value = pInfo.ProblemId;
@@ -1063,6 +1069,7 @@ namespace Server
                     parameters[8].Value = pInfo.JudgeId;
                     parameters[9].Value = pInfo.Type;
                     parameters[10].Value = pInfo.Description;
+                    parameters[11].Value = pInfo.CompetitionId;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }

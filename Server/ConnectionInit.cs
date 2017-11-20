@@ -39,7 +39,8 @@ namespace Server
                     sqlTable.Append("Result ntext,");
                     sqlTable.Append("Score ntext,");
                     sqlTable.Append("Type ntext,");
-                    sqlTable.Append("Description ntext)");
+                    sqlTable.Append("Description ntext,");
+                    sqlTable.Append("CompetitionId int)");
                     cmd.CommandText = sqlTable.ToString();
                     cmd.ExecuteNonQuery();
                     sqlTable.Clear();

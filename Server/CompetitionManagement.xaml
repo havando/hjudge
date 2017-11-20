@@ -8,7 +8,8 @@
         Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
         Topmost="True">
     <Grid>
-        <ListView HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="302">
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click"
+                  SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="比赛 ID" Width="50" />
@@ -26,32 +27,51 @@
         <Label Content="结束时间：" HorizontalAlignment="Left" Margin="317,103,0,0" VerticalAlignment="Top" />
         <DatePicker Name="StartDate" HorizontalAlignment="Left" Margin="323,72,0,0" VerticalAlignment="Top" Width="137" />
         <TextBox Name="StartHour" HorizontalAlignment="Left" Height="24" Margin="465,72,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="29" />
+                 Text="0" VerticalAlignment="Top" Width="29" TextChanged="Hour_TextChanged" />
         <TextBlock HorizontalAlignment="Left" Margin="496,76,0,0" TextWrapping="Wrap" Text="：" VerticalAlignment="Top"
                    Height="23" Width="10" />
         <TextBox x:Name="StartMinute" HorizontalAlignment="Left" Height="24" Margin="508,72,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="30" />
+                 Text="0" VerticalAlignment="Top" Width="30" TextChanged="NonHour_TextChanged" />
         <TextBlock HorizontalAlignment="Left" Margin="540,76,0,0" TextWrapping="Wrap" Text="：" VerticalAlignment="Top"
                    Height="23" Width="10" />
         <TextBox x:Name="StartSecond" HorizontalAlignment="Left" Height="24" Margin="554,72,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="30" />
+                 Text="0" VerticalAlignment="Top" Width="30" TextChanged="NonHour_TextChanged" />
         <DatePicker x:Name="EndDate" HorizontalAlignment="Left" Margin="323,132,0,0" VerticalAlignment="Top"
                     Width="137" />
         <TextBox x:Name="EndHour" HorizontalAlignment="Left" Height="24" Margin="465,132,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="29" />
+                 Text="0" VerticalAlignment="Top" Width="29" TextChanged="Hour_TextChanged" />
         <TextBlock HorizontalAlignment="Left" Margin="496,136,0,0" TextWrapping="Wrap" Text="：" VerticalAlignment="Top"
                    Height="24" Width="10" />
         <TextBox x:Name="EndMinute" HorizontalAlignment="Left" Height="24" Margin="508,132,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="30" />
+                 Text="0" VerticalAlignment="Top" Width="30" TextChanged="NonHour_TextChanged" />
         <TextBlock HorizontalAlignment="Left" Margin="540,136,0,0" TextWrapping="Wrap" Text="：" VerticalAlignment="Top"
                    Height="24" Width="10" />
         <TextBox x:Name="EndSecond" HorizontalAlignment="Left" Height="24" Margin="554,132,0,0" TextWrapping="Wrap"
-                 Text="0" VerticalAlignment="Top" Width="30" />
+                 Text="0" VerticalAlignment="Top" Width="30" TextChanged="NonHour_TextChanged" />
         <Label Content="题目设置：（输入题目 ID，以空格分隔开）" HorizontalAlignment="Left" Margin="317,161,0,0" VerticalAlignment="Top" />
         <TextBox Name="ComProblems" HorizontalAlignment="Left" Height="26" Margin="323,192,0,0" TextWrapping="Wrap"
                  VerticalAlignment="Top" Width="261" />
         <Label Content="比赛选项：" HorizontalAlignment="Left" Margin="317,223,0,0" VerticalAlignment="Top" />
-        <ListBox HorizontalAlignment="Left" Height="47" Margin="323,254,0,0" VerticalAlignment="Top" Width="261" />
+        <ListBox HorizontalAlignment="Left" Height="47" Margin="323,254,0,0" VerticalAlignment="Top" Width="261">
+            <DockPanel>
+                <TextBlock Text="赛制："></TextBlock>
+                <RadioButton IsChecked="True" Content="无限提交赛"></RadioButton>
+                <RadioButton Content="首次提交赛"></RadioButton>
+                <RadioButton Content="最后提交赛"></RadioButton>
+                <RadioButton Content="简单计时赛"></RadioButton>
+                <RadioButton Content="罚时计时赛"></RadioButton>
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="评测结果："></TextBlock>
+                <RadioButton IsChecked="True" Content="即时通知"></RadioButton>
+                <RadioButton Content="赛后通知"></RadioButton>
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="排名："></TextBlock>
+                <RadioButton IsChecked="True" Content="显示"></RadioButton>
+                <RadioButton Content="不显示"></RadioButton>
+            </DockPanel>
+        </ListBox>
         <Button Content="添加" HorizontalAlignment="Left" Margin="589,10,0,0" VerticalAlignment="Top" Width="57"
                 Height="30" />
         <Button Content="删除" HorizontalAlignment="Left" Margin="589,45,0,0" VerticalAlignment="Top" Width="57"
