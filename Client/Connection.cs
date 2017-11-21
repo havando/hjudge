@@ -62,9 +62,9 @@ namespace Client
                 {
                     if (IsExited) break;
                     HClient.Connect(ip, port);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                 } while (!_isConnected);
-                StayConnection();
+                new Thread(StayConnection).Start();
             });
         }
 
@@ -549,31 +549,36 @@ namespace Client
 
         private static void StayConnection()
         {
-            Task.Run(() =>
+            var cnt = 0;
+            while (!IsExited)
             {
-                while (!IsExited)
+                SendData("@", string.Empty);
+                Thread.Sleep(10000);
+                while (_isReceivingData || _isSendingData)
+                    Thread.Sleep(5000);
+                if (_isConnecting)
                 {
-                    SendData("@", string.Empty);
-                    Thread.Sleep(30000);
-                    while (_isReceivingData || _isSendingData)
-                        Thread.Sleep(5000);
-                    if (_isConnecting)
-                    {
-                        _isConnecting = false;
-                        _hasNotify = false;
-                        continue;
-                    }
-                    _updateMainPage.Invoke($"Connection{Divpar}Break");
-                    if (!_hasNotify)
-                    {
-                        MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        _hasNotify = true;
-                    }
-                    break;
+                    cnt = 0;
+                    _isConnecting = false;
+                    _hasNotify = false;
+                    continue;
                 }
-                Thread.Sleep(3000);
-                Connect(_ip, _port);
-            });
+                else
+                {
+                    cnt++;
+                    if (cnt <= 3) continue;
+                    else cnt = 0;
+                }
+                _updateMainPage.Invoke($"Connection{Divpar}Break");
+                if (!_hasNotify)
+                {
+                    MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _hasNotify = true;
+                }
+                break;
+            }
+            Thread.Sleep(1000);
+            Connect(_ip, _port);
         }
 
         #endregion
