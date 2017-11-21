@@ -134,6 +134,9 @@
       <DependentUpon>MembersManagement.xaml</DependentUpon>
     </Compile>
     <Compile Include="Message.cs" />
+    <Compile Include="MessageList.xaml.cs">
+      <DependentUpon>MessageList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Messaging.xaml.cs">
       <DependentUpon>Messaging.xaml</DependentUpon>
     </Compile>
@@ -185,6 +188,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MembersManagement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MessageList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
