@@ -82,6 +82,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
+    <Compile Include="Competition.cs" />
     <Compile Include="CompetitionsManagementPage.xaml.cs">
       <DependentUpon>CompetitionsManagementPage.xaml</DependentUpon>
     </Compile>

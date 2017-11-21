@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
         Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
-        Topmost="True">
+        Topmost="True" Loaded="Window_Loaded">
     <Grid>
         <ListView Name="ListView" HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click"
                   SelectionMode="Single">
@@ -55,29 +55,35 @@
         <ListBox HorizontalAlignment="Left" Height="65" Margin="323,254,0,0" VerticalAlignment="Top" Width="261">
             <DockPanel>
                 <TextBlock Text="赛制："></TextBlock>
-                <RadioButton IsChecked="True" Content="无限提交赛"></RadioButton>
-                <RadioButton Content="首次提交赛"></RadioButton>
-                <RadioButton Content="最后提交赛"></RadioButton>
-                <RadioButton Content="简单计时赛"></RadioButton>
-                <RadioButton Content="罚时计时赛"></RadioButton>
+                <RadioButton IsChecked="True" Name="LimitedSubmit">
+                    <DockPanel>
+                        <TextBlock Text="限制提交赛"></TextBlock>
+                        <TextBox Name="LimitedSubmitTime" Width="30" Text="0" TextChanged="LimitedSubmitTime_TextChanged"></TextBox>
+                        <TextBlock Text="次（0 代表不限）"></TextBlock>
+                    </DockPanel>
+                </RadioButton>
+                <RadioButton Name="FirstSubmit" Content="首次提交赛"></RadioButton>
+                <RadioButton Name="LastSubmit" Content="最后提交赛"></RadioButton>
+                <RadioButton Name="SimpleTimeCount" Content="简单计时赛"></RadioButton>
+                <RadioButton Name="TimeCount" Content="罚时计时赛"></RadioButton>
             </DockPanel>
             <DockPanel>
                 <TextBlock Text="评测结果："></TextBlock>
-                <RadioButton IsChecked="True" Content="即时通知"></RadioButton>
-                <RadioButton Content="赛后通知"></RadioButton>
+                <RadioButton Name="IntimeNotify" IsChecked="True" Content="即时通知"></RadioButton>
+                <RadioButton Name="DelayNotify" Content="赛后通知"></RadioButton>
             </DockPanel>
             <DockPanel>
                 <TextBlock Text="排名："></TextBlock>
-                <RadioButton IsChecked="True" Content="显示"></RadioButton>
-                <RadioButton Content="不显示"></RadioButton>
+                <RadioButton Name="ShowRank" IsChecked="True" Content="显示"></RadioButton>
+                <RadioButton Name="HideRank" Content="不显示"></RadioButton>
             </DockPanel>
         </ListBox>
         <Button Content="添加" HorizontalAlignment="Left" Margin="589,10,0,0" VerticalAlignment="Top" Width="57"
-                Height="30" />
+                Height="30" Click="Button_Click" />
         <Button Content="删除" HorizontalAlignment="Left" Margin="589,45,0,0" VerticalAlignment="Top" Width="57"
-                Height="30" />
+                Height="30" Click="Button_Click_1" />
         <Button Content="保存" HorizontalAlignment="Left" Margin="589,351,0,0" VerticalAlignment="Top" Width="57"
-                Height="30" />
+                Height="30" Click="Button_Click_2" />
         <Label Content="比赛密码：（无密码请留空）" HorizontalAlignment="Left" Margin="317,324,0,0" VerticalAlignment="Top" />
         <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="26" Margin="483,324,0,0" TextWrapping="Wrap"
             VerticalAlignment="Top" Width="101" />

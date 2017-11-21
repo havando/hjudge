@@ -214,7 +214,7 @@ namespace Server
             var t = GetReaderSchema("Competition", conn);
             if (t != null)
             {
-                var tableName = new[] { "CompetitionId", "CompetitionName", "StartTime", "EndTime", "ProblemSet", "Option", "Password", "Description" };
+                var tableName = new[] { "CompetitionId", "CompetitionName", "StartTime", "EndTime", "ProblemSet", "Option", "Password", "Description", "SubmitLimit" };
                 if (tableName.Length != t.Rows.Count) return false;
                 for (var i = 0; i < t.Rows.Count; i++)
                 {
@@ -237,7 +237,8 @@ namespace Server
                 sqlTable.Append("ProblemSet ntext,");
                 sqlTable.Append("Option int,");
                 sqlTable.Append("Password ntext,");
-                sqlTable.Append("Description ntext)");
+                sqlTable.Append("Description ntext,");
+                sqlTable.Append("SubmitLimit int)");
                 cmd.CommandText = sqlTable.ToString();
                 try
                 {

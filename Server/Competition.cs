@@ -1,8 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace Server
 {
-    class Competition : INotifyPropertyChanged
+    public class Competition : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public int CompetitionId { get; set; }
@@ -16,7 +17,7 @@ namespace Server
             }
         }
 
-        public string StartTime
+        public DateTime StartTime
         {
             get => _startTime;
             set
@@ -26,7 +27,7 @@ namespace Server
             }
         }
 
-        public string EndTime
+        public DateTime EndTime
         {
             get => _endTime;
             set
@@ -36,7 +37,7 @@ namespace Server
             }
         }
 
-        public string[] ProblemSet
+        public int[] ProblemSet
         {
             get => _problemSet;
             set
@@ -49,11 +50,12 @@ namespace Server
         public string Password { get; set; }
         public string Description { get; set; }
         public int ProblemCount => ProblemSet?.Length ?? 0;
+        public int SubmitLimit { get; set; }
 
         private string _competitionName;
-        private string[] _problemSet { get; set; }
-        private string _startTime;
-        private string _endTime;
+        private int[] _problemSet { get; set; }
+        private DateTime _startTime;
+        private DateTime _endTime;
 
     }
 }

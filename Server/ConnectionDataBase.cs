@@ -375,6 +375,82 @@ namespace Server
             }
         }
 
+        public static int NewCompetition()
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.String),
+                        new SQLiteParameter("@2", DbType.String),
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String),
+                        new SQLiteParameter("@5", DbType.Int32),
+                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@7", DbType.String),
+                        new SQLiteParameter("@8", DbType.Int32),
+                    };
+                    parameters[0].Value = string.Empty;
+                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[3].Value = JsonConvert.SerializeObject(new int[0]);
+                    parameters[4].Value = 97;
+                    parameters[5].Value = string.Empty;
+                    parameters[6].Value = string.Empty;
+                    parameters[7].Value = 0;
+                    cmd.Parameters.AddRange(parameters);
+                    cmd.ExecuteNonQuery();
+                    cmd.CommandText = "select last_insert_rowid() from Competition";
+                    return Convert.ToInt32(cmd.ExecuteScalar());
+                }
+            }
+        }
+
+        public static bool UpdateCompetition(Competition competition)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
+                    SQLiteParameter[] parameters =
+                    {
+                        new SQLiteParameter("@1", DbType.String),
+                        new SQLiteParameter("@2", DbType.String),
+                        new SQLiteParameter("@3", DbType.String),
+                        new SQLiteParameter("@4", DbType.String),
+                        new SQLiteParameter("@5", DbType.Int32),
+                        new SQLiteParameter("@6", DbType.String),
+                        new SQLiteParameter("@7", DbType.Int32),
+                        new SQLiteParameter("@8", DbType.String),
+                        new SQLiteParameter("@9", DbType.Int32)
+                    };
+                    parameters[0].Value = competition.CompetitionName;
+                    parameters[1].Value = competition.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[2].Value = competition.EndTime.ToString("yyyy/MM/dd HH:mm:ss");
+                    parameters[3].Value = JsonConvert.SerializeObject(competition.ProblemSet);
+                    parameters[4].Value = competition.Option;
+                    parameters[5].Value = competition.Description;
+                    parameters[6].Value = competition.SubmitLimit;
+                    parameters[7].Value = competition.Password;
+                    parameters[8].Value = competition.CompetitionId;
+                    cmd.Parameters.AddRange(parameters);
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
         private static bool RemoteUpdateProfile(int userId, string userName, string icon)
         {
             var k = CheckUser(userName);
@@ -700,6 +776,117 @@ namespace Server
             }
         }
 
+        public static void DeleteCompetition(int competitionId)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static Competition GetCompetition(int competitionId)
+        {
+            var a = new Competition();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = $"SELECT * From Competition where CompetitionId={competitionId}";
+                    var reader = cmd.ExecuteReader();
+                    if (reader.HasRows)
+                        if (reader.Read())
+                        {
+                            a.CompetitionId = reader.GetInt32(0);
+                            a.CompetitionName = reader.GetString(1);
+                            a.StartTime = Convert.ToDateTime(reader.GetString(2));
+                            a.EndTime = Convert.ToDateTime(reader.GetString(3));
+                            a.ProblemSet = JsonConvert.DeserializeObject<int[]>(reader.GetString(4));
+                            a.Option = reader.GetInt32(5);
+                            a.Password = reader.GetString(6);
+                            a.Description = reader.GetString(7);
+                            a.SubmitLimit = reader.GetInt32(8);
+                        }
+                    return a;
+                }
+            }
+        }
+
+        public static ObservableCollection<Competition> QueryCompetition()
+        {
+            var a = new ObservableCollection<Competition>();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = "SELECT * From Competition";
+                    var reader = cmd.ExecuteReader();
+                    if (reader.HasRows)
+                        while (reader.Read())
+                            a.Add(new Competition
+                            {
+                                CompetitionId = reader.GetInt32(0),
+                                CompetitionName = reader.GetString(1),
+                                StartTime = Convert.ToDateTime(reader.GetString(2)),
+                                EndTime = Convert.ToDateTime(reader.GetString(3)),
+                                ProblemSet = JsonConvert.DeserializeObject<int[]>(reader.GetString(4)),
+                                Option = reader.GetInt32(5),
+                                Password = reader.GetString(6),
+                                Description = reader.GetString(7),
+                                SubmitLimit = reader.GetInt32(8)
+                            });
+                    return a;
+                }
+            }
+        }
+
+        public static List<JudgeInfo> QueryJudgeLogBelongsToCompetition(int competitionId, int userId)
+        {
+            var a = new List<JudgeInfo>();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    cmd.CommandText = $"SELECT * From Judge Where CompetitonId={competitionId} and UserId={userId}";
+                    var reader = cmd.ExecuteReader();
+                    if (!reader.HasRows) return a;
+                    while (reader.Read())
+                        try
+                        {
+                            a.Add(new JudgeInfo
+                            {
+                                JudgeId = reader.GetInt32(0),
+                                UserId = reader.GetInt32(1),
+                                JudgeDate = reader.GetString(2),
+                                ProblemId = reader.GetInt32(3),
+                                Code = reader.GetString(4),
+                                Timeused = CastStringArrToLongArr(reader.GetString(5)?.Split(',')),
+                                Memoryused = CastStringArrToLongArr(reader.GetString(6)?.Split(',')),
+                                Exitcode = CastStringArrToIntArr(reader.GetString(7)?.Split(',')),
+                                Result = reader.GetString(8)?.Split(','),
+                                Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
+                                Type = reader.GetString(10),
+                                Description = reader.GetString(11),
+                                CompetitionId = reader.GetInt32(12)
+                            });
+                        }
+                        catch
+                        {
+                            a.Add(new JudgeInfo
+                            {
+                                JudgeId = reader.GetInt32(0),
+                                JudgeDate = reader.GetString(2),
+                                Description = reader.GetString(11)
+                            });
+                        }
+                    return a;
+                }
+            }
+        }
+
         public static ObservableCollection<JudgeInfo> QueryJudgeLog(bool withCode)
         {
             var curJudgeInfo = new ObservableCollection<JudgeInfo>();
@@ -797,6 +984,7 @@ namespace Server
             }
             return t;
         }
+
 
         private static int[] CastStringArrToIntArr(IReadOnlyList<string> p)
         {
@@ -980,11 +1168,8 @@ namespace Server
                     cmd.Parameters.AddRange(parameters);
                     var reader = cmd.ExecuteReader();
                     if (!reader.HasRows) return problemName;
-                    while (reader.Read())
-                    {
+                    if (reader.Read())
                         problemName = reader.GetString(0);
-                        break;
-                    }
                 }
             }
             return problemName;
