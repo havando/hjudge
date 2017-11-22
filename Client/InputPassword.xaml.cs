@@ -25,6 +25,7 @@ namespace Client
         }
 
         private Action<string> _recall;
+        private bool _hasNotify = false;
 
         public void SetRecallFun(Action<string> fun)
         {
@@ -33,13 +34,15 @@ namespace Client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            _hasNotify = true;
             _recall.Invoke(Password.Password);
             Close();
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            _recall.Invoke(null);
+            if (!_hasNotify)
+                _recall.Invoke(null);
         }
     }
 }
