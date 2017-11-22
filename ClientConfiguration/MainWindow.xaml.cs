@@ -14,15 +14,15 @@ namespace ClientConfiguration
         public MainWindow()
         {
             InitializeComponent();
-            //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
+            //if (File.Exists($"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe"))
             //{
             //    new Process
             //    {
             //        StartInfo =
             //        {
-            //            FileName = $"{Environment.CurrentDirectory}\\Updater.exe",
+            //            FileName = $"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe",
             //            Arguments =
-            //                $"ClientConfiguration {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{Environment.CurrentDirectory}\""
+            //                $"ClientConfiguration {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{AppDomain.CurrentDomain.BaseDirectory}\""
             //        }
             //    }.Start();
             //}
@@ -32,7 +32,7 @@ namespace ClientConfiguration
         {
             Generate(IpBox.Text, Convert.ToUInt16(PortBox.Text));
             MessageBox.Show(
-                "已成功生成配置文件于 " + Environment.CurrentDirectory + "\\Config.xml\r\n请将该文件放置于 hjudge - Client 的 AppData 目录下",
+                "已成功生成配置文件于 " + AppDomain.CurrentDomain.BaseDirectory + "\\Config.xml\r\n请将该文件放置于 hjudge - Client 的 AppData 目录下",
                 "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             Close();
         }
@@ -44,7 +44,7 @@ namespace ClientConfiguration
                 Ip = ip,
                 Port = port
             };
-            File.WriteAllText(Environment.CurrentDirectory + "\\Config.xml", SerializeToXmlString(configurations),
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\Config.xml", SerializeToXmlString(configurations),
                 Encoding.UTF8);
         }
 

@@ -8,7 +8,7 @@
         Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
         Topmost="True" Loaded="Window_Loaded">
     <Grid>
-        <ListView Name="ListView" HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click"
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="340" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" MouseDoubleClick="ListView_MouseDoubleClick"
                   SelectionMode="Single">
             <ListView.View>
                 <GridView>
@@ -90,6 +90,8 @@
         <Label Content="比赛说明：" HorizontalAlignment="Left" Margin="317,355,0,0" VerticalAlignment="Top" />
         <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="26" Margin="392,355,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
             VerticalAlignment="Top" Width="192" />
+        <Label Content="Tips：单击编辑比赛，双击进入比赛" HorizontalAlignment="Left" Margin="10,355,0,0"
+            VerticalAlignment="Top" Cursor="Hand" Foreground="Red" />
 
     </Grid>
 </Window>

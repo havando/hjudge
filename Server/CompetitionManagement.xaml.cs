@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Server
 {
@@ -189,6 +190,15 @@ namespace Server
             t.ProblemSet = tmpProId.ToArray();
             t.Description = ComNote.Text;
             Connection.UpdateCompetition(t);
+        }
+
+        private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
+            if (!(ListView.SelectedItem is Competition t)) return;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Server
         public static void Init()
         {
             Configurations = new Config();
-            if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\Config.xml"))
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml"))
             {
                 Configurations.Compiler = new List<Compiler>();
                 Configurations.EnvironmentValues = string.Empty;
@@ -29,13 +29,13 @@ namespace Server
                 Configurations.IpAddress = "::";
                 Configurations.AllowCompetitorMessaging = true;
                 Configurations.RegisterMode = 0;
-                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml",
                     SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());
             var rdr =
                 new StringReader(
-                    File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
+                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
             Configurations = (Config)xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
@@ -57,7 +57,7 @@ namespace Server
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
                 EnvironmentVariableTarget.Process);
-            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml",
                 Encoding.UTF8.GetString(Encoding.Default.GetBytes(SerializeToXmlString(Configurations))),
                 Encoding.UTF8);
         }

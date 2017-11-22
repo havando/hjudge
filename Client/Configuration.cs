@@ -12,17 +12,17 @@ namespace Client
         public static void Init()
         {
             Configurations = new Config();
-            if (!File.Exists(Environment.CurrentDirectory + "\\AppData\\Config.xml"))
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml"))
             {
                 Configurations.Ip = "";
                 Configurations.Port = 0;
-                File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml",
                     SerializeToXmlString(Configurations), Encoding.UTF8);
             }
             var xmlDeserializer = new XmlSerializer(Configurations.GetType());
             var rdr =
                 new StringReader(
-                    File.ReadAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
+                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
             Configurations = (Config) xmlDeserializer.Deserialize(rdr);
         }
 
@@ -36,7 +36,7 @@ namespace Client
 
         public static void Save()
         {
-            File.WriteAllText(Environment.CurrentDirectory + "\\AppData\\Config.xml",
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml",
                 Encoding.UTF8.GetString(Encoding.Default.GetBytes(SerializeToXmlString(Configurations))),
                 Encoding.UTF8);
         }

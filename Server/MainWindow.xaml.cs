@@ -29,32 +29,32 @@ namespace Server
 
         public MainWindow()
         {
-            //if (File.Exists($"{Environment.CurrentDirectory}\\Updater.exe"))
+            //if (File.Exists($"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe"))
             //{
             //    new Process
             //    {
             //        StartInfo =
             //        {
-            //            FileName = $"{Environment.CurrentDirectory}\\Updater.exe",
+            //            FileName = $"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe",
             //            Arguments =
-            //                $"Server {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{Environment.CurrentDirectory}\""
+            //                $"Server {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{AppDomain.CurrentDomain.BaseDirectory}\""
             //        }
             //    }.Start();
             //}
             try
             {
-                if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
-                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\AppData");
-                if (!Directory.Exists(Environment.CurrentDirectory + "\\Files"))
-                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\Files");
-                if (!Directory.Exists(Environment.CurrentDirectory + "\\Data"))
-                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\Data");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\AppData");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Files"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Files");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Data"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Data");
                 if (Environment.Is64BitProcess)
-                    File.Copy(Environment.CurrentDirectory + "\\x64\\HPSocket4C_U.dll",
-                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x64\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
                 else
-                    File.Copy(Environment.CurrentDirectory + "\\x86\\HPSocket4C_U.dll",
-                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x86\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
             }
             catch
             {

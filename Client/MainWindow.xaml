@@ -41,7 +41,7 @@
                                         VerticalAlignment="Top" Width="55" Height="26" Click="Button_Click_2" />
                             </Grid>
                         </Expander>
-                        <Label Content="点击头像可修改" HorizontalAlignment="Left" Margin="35,131,0,0" VerticalAlignment="Top" />
+                        <Label Content="Tips：点击头像可修改" HorizontalAlignment="Left" Margin="20,131,0,0" VerticalAlignment="Top" Foreground="Red" />
                         <Label Content="动态：" HorizontalAlignment="Left" Margin="346,26,0,0" VerticalAlignment="Top" />
                         <ListBox Name="ActiveBox" HorizontalAlignment="Left" Height="216" Margin="346,56,0,0"
                                  VerticalAlignment="Top" Width="341" />

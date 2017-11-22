@@ -407,7 +407,7 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             var x = SearchFiles(
-                                                Environment.CurrentDirectory + "\\Files" +
+                                                AppDomain.CurrentDomain.BaseDirectory + "\\Files" +
                                                 (string.IsNullOrEmpty(filePath) ? string.Empty : $"\\{filePath}")
                                             );
                                             var y = string.Empty;
@@ -434,7 +434,7 @@ namespace Server
                                             if (filePath.Substring(filePath.Length - 1) == "\\")
                                                 filePath = filePath.Substring(filePath.Length - 1);
                                         }
-                                        filePath = Environment.CurrentDirectory + "\\Files\\" + filePath;
+                                        filePath = AppDomain.CurrentDomain.BaseDirectory + "\\Files\\" + filePath;
                                         if (File.Exists(filePath))
                                             UpdateMainPageState(
                                                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 请求文件：{filePath}");
@@ -473,7 +473,7 @@ namespace Server
                                                     {
                                                         return origin
                                                             .Replace("${datadir}",
-                                                                Environment.CurrentDirectory + "\\Data")
+                                                                AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                                                             .Replace("${name}", GetEngName(problemName))
                                                             .Replace("${index0}", cur.ToString())
                                                             .Replace("${index}", (cur + 1).ToString());
@@ -491,14 +491,14 @@ namespace Server
                                                                 GetRealString(problem.DataSets[i].OutputFile,
                                                                     problem.ProblemName, i);
                                                             var inputFilePath = inputName.Replace(
-                                                                Environment.CurrentDirectory,
+                                                                AppDomain.CurrentDomain.BaseDirectory,
                                                                 string.Empty);
                                                             inputFilePath = inputFilePath.Substring(0,
                                                                                 inputFilePath.LastIndexOf("\\",
                                                                                     StringComparison.Ordinal)) + "\\" +
                                                                             (i + 1);
                                                             var outputFilePath = outputName.Replace(
-                                                                Environment.CurrentDirectory,
+                                                                AppDomain.CurrentDomain.BaseDirectory,
                                                                 string.Empty);
                                                             outputFilePath = outputFilePath.Substring(0,
                                                                                  outputFilePath.LastIndexOf("\\",
@@ -624,7 +624,7 @@ namespace Server
                                             {
                                                 return origin
                                                     .Replace("${datadir}",
-                                                        Environment.CurrentDirectory + "\\Data")
+                                                        AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                                                     .Replace("${name}", GetEngName(problemName))
                                                     .Replace("${index0}", cur.ToString())
                                                     .Replace("${index}", (cur + 1).ToString());
@@ -907,7 +907,7 @@ namespace Server
                                                     try
                                                     {
                                                         System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                            $"{Environment.CurrentDirectory}\\Data");
+                                                            $"{AppDomain.CurrentDomain.BaseDirectory}\\Data");
                                                     }
                                                     catch
                                                     {
@@ -991,7 +991,7 @@ namespace Server
                                                     try
                                                     {
                                                         System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                            $"{Environment.CurrentDirectory}\\Files");
+                                                            $"{AppDomain.CurrentDomain.BaseDirectory}\\Files");
                                                     }
                                                     catch
                                                     {
@@ -1057,7 +1057,7 @@ namespace Server
                                             {
                                                 return origin
                                                     .Replace("${datadir}",
-                                                        Environment.CurrentDirectory + "\\Data")
+                                                        AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                                                     .Replace("${name}", GetEngName(problemName))
                                                     .Replace("${index0}", cur.ToString())
                                                     .Replace("${index}", (cur + 1).ToString());
@@ -1114,7 +1114,7 @@ namespace Server
                                             {
                                                 return origin
                                                     .Replace("${datadir}",
-                                                        Environment.CurrentDirectory + "\\Data")
+                                                        AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                                                     .Replace("${name}", GetEngName(problemName));
                                             }
 
@@ -1157,7 +1157,7 @@ namespace Server
                                             {
                                                 return origin
                                                     .Replace("${datadir}",
-                                                        Environment.CurrentDirectory + "\\Data")
+                                                        AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                                                     .Replace("${name}", GetEngName(problemName));
                                             }
 

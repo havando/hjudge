@@ -45,14 +45,14 @@ namespace Client
             _random = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
             try
             {
-                if (!Directory.Exists(Environment.CurrentDirectory + "\\AppData"))
-                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\AppData");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\AppData");
                 if (Environment.Is64BitProcess)
-                    File.Copy(Environment.CurrentDirectory + "\\x64\\HPSocket4C_U.dll",
-                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x64\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
                 else
-                    File.Copy(Environment.CurrentDirectory + "\\x86\\HPSocket4C_U.dll",
-                        Environment.CurrentDirectory + "\\HPSocket4C_U.dll", true);
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x86\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
             }
             catch
             {
@@ -1111,6 +1111,10 @@ namespace Client
 
         private void MessageList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
             if (!(MessageList.SelectedItem is Message si)) return;
             if (si.Content.Length == 33)
             {
@@ -1127,6 +1131,10 @@ namespace Client
 
         private void JudgeList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
             if (!(JudgeList.SelectedItem is JudgeInfo si)) return;
             if (si.Code == "-|/|\\|-")
                 if (_curId == 0 || _curId == 4)
@@ -1159,6 +1167,10 @@ namespace Client
 
         private void FileList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
             if (!(FileList.SelectedItem is FileInfomation si)) return;
             Connection.SendData(si.Type == "文件" ? "RequestFile" : "RequestFileList",
                 CurrentLocation.Text + "\\" + si.Name);

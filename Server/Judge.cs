@@ -200,7 +200,7 @@ namespace Server
         private string GetRealString(string origin, int cur, string extName)
         {
             return origin.Replace("${woringdir}", _workingdir)
-                .Replace("${datadir}", Environment.CurrentDirectory + "\\Data")
+                .Replace("${datadir}", AppDomain.CurrentDomain.BaseDirectory + "\\Data")
                 .Replace("${name}", GetEngName(_problem.ProblemName))
                 .Replace("${index0}", cur.ToString())
                 .Replace("${index}", (cur + 1).ToString())
