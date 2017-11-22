@@ -44,5 +44,15 @@ namespace Client
             if (!_hasNotify)
                 _recall.Invoke(null);
         }
+
+        private void Button_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                _hasNotify = true;
+                _recall.Invoke(Password.Password);
+                Close();
+            }
+        }
     }
 }
