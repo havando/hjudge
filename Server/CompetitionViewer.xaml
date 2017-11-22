@@ -8,12 +8,11 @@
         Title="查看比赛" Height="427.323" Width="700.417" ResizeMode="CanMinimize" Icon="Resources/edit.png" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="98*"/>
-            <ColumnDefinition Width="41*"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Label Content="比赛名称：" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="10,10,0,0"/>
         <Label Name="ComName" Content="###" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="125,10,0,0" Width="289"/>
-        <TabControl HorizontalAlignment="Left" Height="327" Margin="10,52,0,0" VerticalAlignment="Top" Width="662" Grid.ColumnSpan="2">
+        <TabControl HorizontalAlignment="Left" Height="327" Margin="10,52,0,0" VerticalAlignment="Top" Width="662">
             <TabItem Header="排名">
                 <Grid>
                     <ListView Name="CompetitionState" GridViewColumnHeader.Click="ListView_Click">
@@ -88,7 +87,7 @@
         </TabControl>
 
 
-        <ListBox HorizontalAlignment="Left" Height="61" Margin="419,10,0,0" VerticalAlignment="Top" Width="215" BorderThickness="0" Grid.ColumnSpan="2">
+        <ListBox HorizontalAlignment="Left" Height="61" Margin="419,10,0,0" VerticalAlignment="Top" Width="215" BorderThickness="0">
             <DockPanel>
                 <TextBlock Text="比赛状态："></TextBlock>
                 <TextBlock Name="ComState" Text="未开始"></TextBlock>
@@ -110,7 +109,7 @@
                 <TextBlock Name="ComUserNumber" Text="0"></TextBlock>
             </DockPanel>
         </ListBox>
-        <Button Content="刷新" HorizontalAlignment="Left" Margin="149.5,10,0,0" VerticalAlignment="Top" Width="33" Height="61" Grid.Column="1" Click="Button_Click"/>
+        <Button Content="刷新" HorizontalAlignment="Left" Margin="639,10,0,0" VerticalAlignment="Top" Width="33" Height="61" Click="Button_Click"/>
     </Grid>
 
 </Window>
