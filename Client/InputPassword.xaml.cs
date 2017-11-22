@@ -45,7 +45,7 @@ namespace Client
                 _recall.Invoke(null);
         }
 
-        private void Button_KeyDown(object sender, KeyEventArgs e)
+        private void Password_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
