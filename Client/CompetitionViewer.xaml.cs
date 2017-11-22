@@ -81,7 +81,12 @@ namespace Client
 
         private void VerifyPassword(string password)
         {
-            if ((password ?? string.Empty) != _competition.Password)
+            if (password == null)
+            {
+                Close();
+                return;
+            }
+            if (password != _competition.Password)
             {
                 MessageBox.Show("密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
