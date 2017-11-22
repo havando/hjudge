@@ -1,118 +1,178 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using Microsoft.Win32;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Xml;
 
 namespace Server
 {
     /// <summary>
-    ///     Interaction logic for JudgeLogs.xaml
+    /// Interaction logic for CompetitionViewer.xaml
     /// </summary>
-    public partial class JudgeLogs : Window
+
+    public partial class CompetitionViewer : Window
     {
+
+        private ObservableCollection<CompetitionUserInfo> _competitionInfo = new ObservableCollection<CompetitionUserInfo>();
         private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private Competition _competition;
         private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
         private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
         private bool _isFilterActivated = false;
 
-        public JudgeLogs()
+        public CompetitionViewer()
         {
             InitializeComponent();
         }
 
-        private void Label_MouseDown(object sender, MouseButtonEventArgs e)
+        public void SetCompetition(Competition competition)
         {
-            if (MessageBox.Show("你确定要清空数据吗？清空后不可恢复！", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
-                MessageBoxResult.Yes)
+            _competition = competition;
+        }
+
+        private void Refresh()
+        {
+            while (true)
             {
-                _isFilterActivated = false;
-                _curJudgeInfoBak.Clear();
-                ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
-                Connection.ClearJudgeLog();
-                _curJudgeInfo.Clear();
-                Code.Text = JudgeDetails.Text = string.Empty;
-                CheckBox.IsChecked = false;
+                Dispatcher.Invoke(() =>
+                {
+                    if (DateTime.Now > _competition.EndTime)
+                    {
+                        ComTimeC.Text = ComTimeR.Text = "0:0:0";
+                        ComState.Text = "已结束";
+                    }
+                    else if (DateTime.Now < _competition.StartTime)
+                    {
+                        ComTimeC.Text = ComTimeR.Text = "0:0:0";
+                        ComState.Text = "未开始";
+                    }
+                    else
+                    {
+                        var st = DateTime.Now - _competition.StartTime;
+                        var et = _competition.EndTime - DateTime.Now;
+                        ComTimeC.Text = $"{st.Days * 24 + st.Hours}:{st.Minutes}:{st.Seconds}";
+                        ComTimeR.Text = $"{et.Days * 24 + et.Hours}:{et.Minutes}:{et.Seconds}";
+                        ComState.Text = $"进行中 ({Math.Round(st.TotalSeconds * 100 / ((_competition.EndTime - _competition.StartTime).TotalSeconds == 0 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
+                    }
+                });
+                Thread.Sleep(1000);
             }
-        }
-
-        private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
-        {
-            _isFilterActivated = false;
-            _curJudgeInfoBak.Clear();
-            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
-            _curJudgeInfo = Connection.QueryJudgeLog(true);
-            ListView.ItemsSource = _curJudgeInfo;
-            ListView.Items.Refresh();
-            CheckBox.IsChecked = false;
-        }
-
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!(ListView.SelectedItem is JudgeInfo a)) return;
-            Code.Text = "代码：\r\n" + a.Code;
-            var details = "详情：\r\n";
-            if (a.Result != null)
-                for (var i = 0; i < a.Result.Length; i++)
-                    details +=
-                        $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
-            JudgeDetails.Text = details;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (UserHelper.CurrentUser.Type >= 3) ClearLabel.Visibility = Visibility.Hidden;
+            if (_competition == null) Close();
+            ComName.Content = $"({_competition.CompetitionId}) {_competition.CompetitionName}";
+            if ((_competition.Option & 1) != 0) ComMode.Text = $"限制提交赛：{_competition.SubmitLimit} 次";
+            if ((_competition.Option & 2) != 0) ComMode.Text = $"最后提交赛";
+            if ((_competition.Option & 4) != 0) ComMode.Text = $"简单计时赛";
+            if ((_competition.Option & 8) != 0) ComMode.Text = $"罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
-
-            _curJudgeInfo.Clear();
-            _problemFilter.Clear();
-            _userFilter.Clear();
-            ProblemFilter.ItemsSource = _problemFilter;
-            UserFilter.ItemsSource = _userFilter;
-            Task.Run(() =>
+            for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
             {
-                var t = Connection.QueryJudgeLog(true);
-                foreach (var judgeInfo in t)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(judgeInfo);
-                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
-                        if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
-                    });
-                }
-            });
+                var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
+                                   $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
+                var strreader = new StringReader(t);
+                var xmlreader = new XmlTextReader(strreader);
+                var obj = XamlReader.Load(xmlreader);
+                CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
+            }
+            CompetitionState.ItemsSource = _competitionInfo;
+            new Thread(Refresh).Start();
+            new Thread(Load).Start();
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void Load()
         {
-            try
+            var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
+            Dispatcher.Invoke(() => _curJudgeInfo.Clear());
+            for (var i = x.Count - 1; i >= 0; i--)
             {
-                ListView.Height = ActualHeight - 82.149;
-                ListView.Width = (ActualWidth - 24) * 0.4;
-                JudgeDetails.Width = Code.Width = FilterDock.Width = (ActualWidth - 48) * 0.6;
-                JudgeDetails.Height = (ActualHeight - 48) * 0.4 - 28;
-                Code.Height = (ActualHeight - 72) * 0.6;
-                FilterDock.Margin = new Thickness(ListView.Width + 15, 10, 0, 0);
-                JudgeDetails.Margin = new Thickness(ListView.Width + 15, 38, 0, 0);
-                Code.Margin = new Thickness(ListView.Width + 15, JudgeDetails.Height + 43, 0, 0);
-                Refresh.Margin = new Thickness(ListView.Width - 20, ListView.Height + 10, 0, 0);
-                ClearLabel.Margin = new Thickness(ListView.Width - 20 - 39, ListView.Height + 10, 0, 0);
-                ExportLabel.Margin = new Thickness(10, ListView.Height + 10, 0, 0);
-                TimeFilter.Width = UserFilter.Width = ProblemFilter.Width = 128 + ((ActualWidth - 48) * 0.6 - 644) / 3;
+                Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
             }
-            catch
+            Dispatcher.Invoke(() =>
             {
-                Width = e.PreviousSize.Width;
-                Height = e.PreviousSize.Height;
+                foreach (var i in CompetitionStateColumn.Columns)
+                {
+                    if (i.Header is StackPanel j)
+                    {
+                        foreach (var k in j.Children)
+                        {
+                            if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
+                            {
+                                var m = Convert.ToInt32(l.Name.Substring(13));
+                                l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accept")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                            }
+                        }
+                    }
+                }
+            });
+            var tmpList = new List<CompetitionUserInfo>();
+            Dispatcher.Invoke(() => _competitionInfo.Clear());
+            var user = x.Select(p => p.UserName).Distinct();
+            Dispatcher.Invoke(() => ComUserNumber.Text = $"{user.Count()}");
+            foreach (var i in user)
+            {
+                var tmp = new CompetitionUserInfo
+                {
+                    UserName = i,
+                    ProblemInfo = new CompetitionProblemInfo[_competition.ProblemSet.Length]
+                };
+                float score = 0;
+                var totTime = new TimeSpan(0);
+                for (var j = 0; j < _competition.ProblemSet.Length; j++)
+                {
+                    var ac = x.Where(p => p.UserName == i && p.ResultSummery == "Accepted")?.Count() ?? 0;
+                    var all = x.Where(p => p.UserName == i)?.Count() ?? 0;
+                    tmp.ProblemInfo[j].State = $"{ac}/{all}";
+                    if (ac != 0) tmp.ProblemInfo[j].Color = Brushes.LightGreen;
+                    else tmp.ProblemInfo[j].Color = Brushes.LightPink;
+                    var time = new TimeSpan(0);
+                    var cnt = 0;
+                    foreach (var k in x.Where(p => p.UserName == i))
+                    {
+                        var tmpTime = (Convert.ToDateTime(k.JudgeDate) - _competition.StartTime);
+                        time += tmpTime;
+                        totTime += tmpTime;
+                        if (k.ResultSummery == "Accepted") break;
+                        else if ((_competition.Option | 8) != 0)
+                        {
+                            time += new TimeSpan(0, 20, 0);
+                            totTime += new TimeSpan(0, 20, 0);
+                            cnt++;
+                        }
+                    }
+                    if ((_competition.Option | 8) != 0) tmp.ProblemInfo[j].State += $" (-{cnt})";
+                    tmp.ProblemInfo[j].Time = $"{time.Days * 24 + time.Hours}:{time.Minutes}:{time.Seconds}";
+                    score += x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]).Max(p => p.FullScore);
+                }
+                tmp.Score = score;
+                tmp.TotTime = totTime;
+                tmpList.Add(tmp);
+            }
+            tmpList.Sort((x1, x2) =>
+            {
+                if (x1.Score != x2.Score) return x2.Score.CompareTo(x1.Score);
+                else return x1.TotTime.CompareTo(x2.TotTime);
+            });
+            for (var i = 0; i < x.Count; i++)
+            {
+                tmpList[i].Rank = i + 1;
+                Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
             }
         }
 
@@ -187,10 +247,11 @@ namespace Server
         {
             try
             {
+                if (!(sender is ListView listView)) return;
                 var clickedColumn = (e.OriginalSource as GridViewColumnHeader)?.Column;
                 if (clickedColumn == null) return;
                 var bindingProperty = (clickedColumn.DisplayMemberBinding as Binding)?.Path.Path;
-                var sdc = ListView.Items.SortDescriptions;
+                var sdc = listView.Items.SortDescriptions;
                 var sortDirection = ListSortDirection.Ascending;
                 if (sdc.Count > 0)
                 {
@@ -335,5 +396,42 @@ namespace Server
                 }
             });
         }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(ListView.SelectedItem is JudgeInfo a)) return;
+            Code.Text = "代码：\r\n" + a.Code;
+            var details = "详情：\r\n";
+            if (a.Result != null)
+                for (var i = 0; i < a.Result.Length; i++)
+                    details +=
+                        $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
+            JudgeDetails.Text = details;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            _isFilterActivated = false;
+            _curJudgeInfoBak.Clear();
+            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
+            new Thread(Load).Start();
+        }
+    }
+
+    class CompetitionUserInfo
+    {
+        public int Rank { get; set; }
+        public string UserName { get; set; }
+        public float Score { get; set; }
+        public string TimeCost => $"{TotTime.Days * 24 + TotTime.Hours}:{TotTime.Minutes}:{TotTime.Seconds}";
+        public TimeSpan TotTime { get; set; }
+        public CompetitionProblemInfo[] ProblemInfo { get; set; }
+    }
+
+    class CompetitionProblemInfo
+    {
+        public string Time { get; set; }
+        public string State { get; set; }
+        public Brush Color { get; set; }
     }
 }

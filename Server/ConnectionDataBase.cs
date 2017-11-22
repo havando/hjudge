@@ -850,7 +850,9 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = $"SELECT * From Judge Where CompetitonId={competitionId} and UserId={userId}";
+                    if (userId != 0)
+                        cmd.CommandText = $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}";
+                    else cmd.CommandText = $"SELECT * From Judge Where CompetitionId={competitionId}";
                     var reader = cmd.ExecuteReader();
                     if (!reader.HasRows) return a;
                     while (reader.Read())

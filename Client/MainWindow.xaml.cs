@@ -1235,7 +1235,7 @@ namespace Client
         {
             if (!(MyProblemList.SelectedItem is Problem x)) return;
             var d = new ProblemDescription();
-            d.SetProblemDescription(string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description);
+            d.SetProblemDescription(string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description, x.ProblemIndex);
             d.Show();
         }
 

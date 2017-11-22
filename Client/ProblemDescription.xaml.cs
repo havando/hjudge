@@ -31,8 +31,9 @@ namespace Client
             };
         }
 
-        public void SetProblemDescription(string description)
+        public void SetProblemDescription(string description, string problemIndex)
         {
+            Title = $"题目描述 - {problemIndex}";
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(description, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
             Description.NavigateToString(result);

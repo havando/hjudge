@@ -76,13 +76,12 @@ namespace Server
                 foreach (var i in t.ProblemSet) tmp += $"{i} ";
                 ComProblems.Text = tmp;
                 if ((t.Option & 1) != 0) LimitedSubmit.IsChecked = true;
-                if ((t.Option & 2) != 0) FirstSubmit.IsChecked = true;
-                if ((t.Option & 4) != 0) LastSubmit.IsChecked = true;
-                if ((t.Option & 8) != 0) SimpleTimeCount.IsChecked = true;
-                if ((t.Option & 16) != 0) TimeCount.IsChecked = true;
-                if ((t.Option & 32) != 0) IntimeNotify.IsChecked = true;
+                if ((t.Option & 2) != 0) LastSubmit.IsChecked = true;
+                if ((t.Option & 4) != 0) SimpleTimeCount.IsChecked = true;
+                if ((t.Option & 8) != 0) TimeCount.IsChecked = true;
+                if ((t.Option & 16) != 0) IntimeNotify.IsChecked = true;
                 else DelayNotify.IsChecked = true;
-                if ((t.Option & 64) != 0) ShowRank.IsChecked = true;
+                if ((t.Option & 32) != 0) ShowRank.IsChecked = true;
                 else HideRank.IsChecked = true;
                 LimitedSubmitTime.Text = t.SubmitLimit.ToString();
                 ComPassword.Text = t.Password;
@@ -161,12 +160,11 @@ namespace Server
             t.EndTime = Convert.ToDateTime($"{tmpEdate:yyyy/MM/dd} {(EndHour.Text.Length == 1 ? $"0{EndHour.Text}" : EndHour.Text)}:{(EndMinute.Text.Length == 1 ? $"0{EndMinute.Text}" : EndMinute.Text)}:{(EndSecond.Text.Length == 1 ? $"0{EndSecond.Text}" : EndSecond.Text)}");
             t.Option = 0;
             if (LimitedSubmit.IsChecked ?? false) t.Option |= 1;
-            if (FirstSubmit.IsChecked ?? false) t.Option |= 2;
-            if (LastSubmit.IsChecked ?? false) t.Option |= 4;
-            if (SimpleTimeCount.IsChecked ?? false) t.Option |= 8;
-            if (TimeCount.IsChecked ?? false) t.Option |= 16;
-            if (IntimeNotify.IsChecked ?? false) t.Option |= 32;
-            if (ShowRank.IsChecked ?? false) t.Option |= 64;
+            if (LastSubmit.IsChecked ?? false) t.Option |= 2;
+            if (SimpleTimeCount.IsChecked ?? false) t.Option |= 4;
+            if (TimeCount.IsChecked ?? false) t.Option |= 8;
+            if (IntimeNotify.IsChecked ?? false) t.Option |= 16;
+            if (ShowRank.IsChecked ?? false) t.Option |= 32;
             t.Password = ComPassword.Text;
             t.SubmitLimit = Convert.ToInt32(LimitedSubmitTime.Text);
             var tmpProId = new List<int>();
@@ -199,6 +197,9 @@ namespace Server
             if (originalSource == null) return;
             if (!(sender is ListView)) return;
             if (!(ListView.SelectedItem is Competition t)) return;
+            var x = new CompetitionViewer();
+            x.SetCompetition(t);
+            x.Show();
         }
     }
 }

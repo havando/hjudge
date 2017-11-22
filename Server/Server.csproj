@@ -112,6 +112,9 @@
     <Compile Include="CompetitionManagement.xaml.cs">
       <DependentUpon>CompetitionManagement.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CompetitionViewer.xaml.cs">
+      <DependentUpon>CompetitionViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CompilerConfiguration.xaml.cs">
       <DependentUpon>CompilerConfiguration.xaml</DependentUpon>
     </Compile>
@@ -163,6 +166,10 @@
     <Compile Include="UserHelper.cs" />
     <Compile Include="UserInfo.cs" />
     <Page Include="CompetitionManagement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CompetitionViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

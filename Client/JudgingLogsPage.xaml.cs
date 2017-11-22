@@ -40,6 +40,9 @@ namespace Client
             if (MessageBox.Show("你确定要清空数据吗？清空后不可恢复！", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                 MessageBoxResult.Yes)
             {
+                _isFilterActivated = false;
+                _curJudgeInfoBak.Clear();
+                ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
                 Connection.SendData("ClearJudgingLogs", string.Empty);
                 _curJudgeInfo.Clear();
                 Code.Text = JudgeDetails.Text = string.Empty;
@@ -49,6 +52,9 @@ namespace Client
 
         private void Label_MouseDown_1(object sender, MouseButtonEventArgs e)
         {
+            _isFilterActivated = false;
+            _curJudgeInfoBak.Clear();
+            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             _curJudgeInfo = Connection.QueryJudgeLog();
             ListView.ItemsSource = _curJudgeInfo;
             ListView.Items.Refresh();

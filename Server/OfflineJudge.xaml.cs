@@ -91,7 +91,7 @@ namespace Server
                     var dTime = DateTime.Now - start;
                     Dispatcher.Invoke(() =>
                     {
-                        TimeConsume.Content = $"{dTime.Hours}:{dTime.Minutes}:{dTime.Seconds}";
+                        TimeConsume.Content = $"{dTime.Days * 24 + dTime.Hours}:{dTime.Minutes}:{dTime.Seconds}";
                         JudgingSpeed.Content =
                             $"{Math.Round(Convert.ToInt32(JudgingLog.Items.Count / 2) / (Math.Abs(dTime.TotalMinutes) < 1 ? 1 : dTime.TotalMinutes), MidpointRounding.AwayFromZero)} 题/分钟";
                     });

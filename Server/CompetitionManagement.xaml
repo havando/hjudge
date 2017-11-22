@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
-        Topmost="True" Loaded="Window_Loaded">
+        Title="比赛管理" Height="434.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
     <Grid>
         <ListView Name="ListView" HorizontalAlignment="Left" Height="340" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" MouseDoubleClick="ListView_MouseDoubleClick"
                   SelectionMode="Single">
@@ -62,7 +61,6 @@
                         <TextBlock Text="次（0 代表不限）"></TextBlock>
                     </DockPanel>
                 </RadioButton>
-                <RadioButton Name="FirstSubmit" Content="首次提交赛"></RadioButton>
                 <RadioButton Name="LastSubmit" Content="最后提交赛"></RadioButton>
                 <RadioButton Name="SimpleTimeCount" Content="简单计时赛"></RadioButton>
                 <RadioButton Name="TimeCount" Content="罚时计时赛"></RadioButton>

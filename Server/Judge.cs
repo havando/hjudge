@@ -21,7 +21,7 @@ namespace Server
 
         private bool _isFault;
 
-        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description)
+        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description, string defaultTime = null)
         {
             while (true)
             {
@@ -43,7 +43,9 @@ namespace Server
                 var id = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
                 JudgeResult.JudgeId = Connection.NewJudge(description);
-                JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                if (defaultTime == null)
+                    JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                else JudgeResult.JudgeDate = defaultTime;
                 JudgeResult.ProblemId = _problem.ProblemId;
                 JudgeResult.Code = code;
                 JudgeResult.UserId = userId;
