@@ -549,13 +549,11 @@ namespace Server
                                             ActionList.Enqueue(new Task(() =>
                                             new Thread(() =>
                                             {
-                                                var j = new Judge(problemId, userId, code, type, true, "在线评测");
+                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0);
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.Client.ConnId);
-                                            }).Start()
-                                            ));
+                                            }).Start()));
                                         }
-
                                         break;
                                     }
                                 case "Messaging":
@@ -596,12 +594,12 @@ namespace Server
                                                     cmd.ExecuteNonQuery();
                                                 }
                                             }
-                                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                            Application.Current.Dispatcher.Invoke(() =>
                                             {
                                                 var y = new Messaging();
                                                 y.SetMessage(new Message { Content = t.Content, User = res.Client.UserName, State = 1, MessageTime = DateTime.Now });
                                                 y.Show();
-                                            }));
+                                            });
                                         }
                                         else SendMsg(t.Content, res.Client.UserId, GetUserId(t.User));
                                         break;
@@ -675,6 +673,16 @@ namespace Server
                                         var cmp = Configuration.Configurations.Compiler.Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                         var x = JsonConvert.SerializeObject(cmp);
                                         SendData("Compiler", x, res.Client.ConnId);
+                                        break;
+                                    }
+                                case "QueryLanguagesForCompetition":
+                                    {
+                                        if (res.Client.UserId == 0)
+                                            break;
+
+                                        var cmp = Configuration.Configurations.Compiler.Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
+                                        var x = JsonConvert.SerializeObject(cmp);
+                                        SendData("QueryLanguagesForCompetition", x, res.Client.ConnId);
                                         break;
                                     }
                                 case "ChangePassword":
@@ -1236,6 +1244,107 @@ namespace Server
                                         var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                         var state = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
                                         ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
+                                        break;
+                                    }
+                                case "GetProblemSolvedCount":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var x = QueryJudgeLogBelongsToCompetition(cid, res.Client.UserId);
+                                            var problems = GetCompetition(cid).ProblemSet;
+                                            var cnt = 0;
+                                            foreach (var i in problems)
+                                            {
+                                                if (x.Any(j => j.ResultSummery == "Accepted" && j.ProblemId == i)) cnt++;
+                                            }
+                                            SendData("GetProblemSolvedCount", cnt.ToString(), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "RequestCompetitionList":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var id = Encoding.Unicode.GetString(res.Content[0]);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            foreach (var i in QueryCompetition())
+                                            {
+                                                SendData("RequestCompetitionList", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
+                                            }
+                                        }));
+                                        break;
+                                    }
+                                case "QueryJudgeLogBelongsToCompetition":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var t = GetCompetition(cid);
+                                            var withRank = (t?.Option ?? 0) & 16;
+                                            var x = QueryJudgeLogBelongsToCompetition(cid, withRank == 0 ? res.Client.UserId : 0);
+                                            foreach (var i in x)
+                                            {
+                                                if (i.UserId != res.Client.UserId) i.Code = string.Empty;
+                                            }
+                                            SendData("QueryJudgeLogBelongsToCompetition", JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "QueryProblemsForCompetition":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var competition = GetCompetition(cid);
+                                            var pList = new List<Problem>();
+                                            foreach (var i in competition.ProblemSet)
+                                            {
+                                                pList.Add(GetProblem(i));
+                                            }
+                                            SendData("QueryProblemsForCompetition", JsonConvert.SerializeObject(pList), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "SubmitCodeForCompetition":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
+                                        if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[2])))
+                                        {
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+
+                                            var code = string.Empty;
+                                            for (var i = 3; i < res.Content.Count; i++)
+                                                if (i != res.Content.Count - 1)
+                                                    code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                                else
+                                                    code += Encoding.Unicode.GetString(res.Content[i]);
+                                            var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                            var type = Encoding.Unicode.GetString(res.Content[2]);
+                                            var userId = res.Client.UserId;
+                                            var t = GetCompetition(cid);
+                                            ActionList.Enqueue(new Task(() =>
+                                            {
+                                                new Thread(() =>
+                                                {
+                                                    var j = new Judge(problemId, userId, code, type, true, "在线评测", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid);
+                                                    var jr = JsonConvert.SerializeObject(j.JudgeResult);
+                                                    if ((t.Option & 8) != 0) SendData("JudgeResultForCompetition", jr, res.Client.ConnId);
+                                                }).Start();
+                                            }));
+                                        }
+                                        break;
+                                    }
+                                case "GetCurrentDateTime":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        SendData("GetCurrentDateTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), res.Client.ConnId);
                                         break;
                                     }
                             }

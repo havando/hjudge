@@ -214,8 +214,21 @@
             </TabItem>
             <TabItem Name="Competitions" Header="查看比赛">
                 <Grid>
-                    <Label Content="功能开发中，请期待后续版本" HorizontalAlignment="Left" Margin="266,128,0,0"
-                           VerticalAlignment="Top" />
+                    <ListView x:Name="CompetitionList" MouseDoubleClick="CompetitionList_MouseDoubleClick"
+                        SelectionMode="Single" Margin="0,0,0,39">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}" Width="50" />
+                                <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"  Width="100" />
+                                <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
+                                <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
+                                <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
+                                <GridViewColumn Header="完成数量" DisplayMemberBinding="{Binding ProblemSolved}" Width="100" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
+                        VerticalAlignment="Top" Foreground="Red" />
                 </Grid>
             </TabItem>
             <TabItem Header="管理后台" Name="AdminConsole">

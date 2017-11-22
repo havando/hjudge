@@ -21,7 +21,7 @@ namespace Server
 
         private bool _isFault;
 
-        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description, string defaultTime = null)
+        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description, string defaultTime, int competitionId)
         {
             while (true)
             {
@@ -56,6 +56,21 @@ namespace Server
                 JudgeResult.Memoryused = new long[_problem.DataSets.Length];
                 JudgeResult.Type = type;
                 JudgeResult.Description = description;
+                JudgeResult.CompetitionId = competitionId;
+                if (competitionId != 0)
+                {
+                    var comp = Connection.GetCompetition(competitionId);
+                    var judgeLogs = Connection.QueryJudgeLogBelongsToCompetition(competitionId, userId);
+                    if ((comp.Option & 1) != 0 && comp.SubmitLimit != 0)
+                    {
+                        if (judgeLogs.Where(i => i.ProblemId == problemId).Count() > comp.SubmitLimit)
+                        {
+                            _isFinished = true;
+                            lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
+                            return;
+                        }
+                    }
+                }
 
                 var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
@@ -110,6 +125,7 @@ namespace Server
                     }
                     Connection.UpdateJudgeInfo(JudgeResult);
 
+                    lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
                     _isFinished = true;
@@ -128,6 +144,7 @@ namespace Server
                     }
                     Connection.UpdateJudgeInfo(JudgeResult);
 
+                    lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
                     _isFinished = true;

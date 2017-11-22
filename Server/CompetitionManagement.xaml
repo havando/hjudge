@@ -62,7 +62,6 @@
                     </DockPanel>
                 </RadioButton>
                 <RadioButton Name="LastSubmit" Content="最后提交赛"></RadioButton>
-                <RadioButton Name="SimpleTimeCount" Content="简单计时赛"></RadioButton>
                 <RadioButton Name="TimeCount" Content="罚时计时赛"></RadioButton>
             </DockPanel>
             <DockPanel>

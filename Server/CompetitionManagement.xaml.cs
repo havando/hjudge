@@ -77,11 +77,10 @@ namespace Server
                 ComProblems.Text = tmp;
                 if ((t.Option & 1) != 0) LimitedSubmit.IsChecked = true;
                 if ((t.Option & 2) != 0) LastSubmit.IsChecked = true;
-                if ((t.Option & 4) != 0) SimpleTimeCount.IsChecked = true;
-                if ((t.Option & 8) != 0) TimeCount.IsChecked = true;
-                if ((t.Option & 16) != 0) IntimeNotify.IsChecked = true;
+                if ((t.Option & 4) != 0) TimeCount.IsChecked = true;
+                if ((t.Option & 8) != 0) IntimeNotify.IsChecked = true;
                 else DelayNotify.IsChecked = true;
-                if ((t.Option & 32) != 0) ShowRank.IsChecked = true;
+                if ((t.Option & 16) != 0) ShowRank.IsChecked = true;
                 else HideRank.IsChecked = true;
                 LimitedSubmitTime.Text = t.SubmitLimit.ToString();
                 ComPassword.Text = t.Password;
@@ -161,10 +160,9 @@ namespace Server
             t.Option = 0;
             if (LimitedSubmit.IsChecked ?? false) t.Option |= 1;
             if (LastSubmit.IsChecked ?? false) t.Option |= 2;
-            if (SimpleTimeCount.IsChecked ?? false) t.Option |= 4;
-            if (TimeCount.IsChecked ?? false) t.Option |= 8;
-            if (IntimeNotify.IsChecked ?? false) t.Option |= 16;
-            if (ShowRank.IsChecked ?? false) t.Option |= 32;
+            if (TimeCount.IsChecked ?? false) t.Option |= 4;
+            if (IntimeNotify.IsChecked ?? false) t.Option |= 8;
+            if (ShowRank.IsChecked ?? false) t.Option |= 16;
             t.Password = ComPassword.Text;
             t.SubmitLimit = Convert.ToInt32(LimitedSubmitTime.Text);
             var tmpProId = new List<int>();

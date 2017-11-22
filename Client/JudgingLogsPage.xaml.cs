@@ -82,14 +82,14 @@ namespace Client
                 MessageBox.Show("你选择的项目中部分仍在评测，请等待评测完毕再导出", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            var sfg = new SaveFileDialog
-            {
-                Title = "保存导出数据：",
-                Filter = "Excel 文件|*.xlsx"
-            };
-            if (!(sfg.ShowDialog() ?? false)) return;
             if (a.Any())
             {
+                var sfg = new SaveFileDialog
+                {
+                    Title = "保存导出数据：",
+                    Filter = "Excel 文件|*.xlsx"
+                };
+                if (!(sfg.ShowDialog() ?? false)) return;
                 var dt = new DataTable("结果");
                 dt.Columns.Add("姓名");
                 dt.Columns.Add("题目名称");

@@ -17,7 +17,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xml;
 
-namespace Server
+namespace Client
 {
     /// <summary>
     /// Interaction logic for CompetitionViewer.xaml
@@ -29,6 +29,7 @@ namespace Server
         private ObservableCollection<CompetitionUserInfo> _competitionInfo = new ObservableCollection<CompetitionUserInfo>();
         private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
         private Competition _competition;
         private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
         private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
@@ -78,24 +79,37 @@ namespace Server
             }
         }
 
+        private void VerifyPassword(string password)
+        {
+            if ((password ?? string.Empty) != _competition.Password)
+            {
+                MessageBox.Show("密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+            }
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (_competition == null) Close();
+            var now = Connection.GetCurrentDateTime();
+            if (now < _competition.StartTime)
+            {
+                MessageBox.Show("比赛未开始", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+                return;
+            }
+            if (!string.IsNullOrEmpty(_competition.Password))
+            {
+                var pass = new InputPassword();
+                pass.SetRecallFun(VerifyPassword);
+                pass.ShowDialog();
+            }
             ComName.Content = $"({_competition.CompetitionId}) {_competition.CompetitionName}";
             if ((_competition.Option & 1) != 0) ComMode.Text = $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
-            if ((_competition.Option & 2) != 0) ComMode.Text = $"最后提交赛";
-            if ((_competition.Option & 4) != 0) ComMode.Text = $"罚时计时赛";
+            if ((_competition.Option & 2) != 0) ComMode.Text = "最后提交赛";
+            if ((_competition.Option & 4) != 0) ComMode.Text = "罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
-            for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
-            {
-                var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                                   $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
-                var strreader = new StringReader(t);
-                var xmlreader = new XmlTextReader(strreader);
-                var obj = XamlReader.Load(xmlreader);
-                CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
-            }
-            CompetitionState.ItemsSource = _competitionInfo;
+            MyProblemList.ItemsSource = _problems;
             Description.Text = _competition.Description;
             new Thread(Refresh).Start();
             new Thread(Load).Start();
@@ -103,13 +117,21 @@ namespace Server
 
         private void Load()
         {
+            var now = Connection.GetCurrentDateTime();
+            var problems = Connection.QueryProblemsForCompetition(_competition.CompetitionId);
+            Dispatcher.Invoke(() => _problems.Clear());
+            foreach (var i in problems) Dispatcher.Invoke(() => _problems.Add(i));
+            var languages = Connection.QueryLanguagesForCompetition();
+            Dispatcher.Invoke(() => LangBox.Items.Clear());
+            foreach (var m in languages)
+                Dispatcher.Invoke(() => LangBox.Items.Add(new RadioButton { Content = m.DisplayName }));
             if (!_hasFirstLoad)
             {
                 _hasFirstLoad = true;
                 for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
                 {
                     var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                                       $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
+                                       $"{i}").Replace("${ProblemName}", problems.Where(j => j.ProblemId == _competition.ProblemSet[i]).Select(j => j.ProblemIndex).FirstOrDefault() ?? string.Empty);
                     var strreader = new StringReader(t);
                     var xmlreader = new XmlTextReader(strreader);
                     Dispatcher.Invoke(() =>
@@ -120,12 +142,13 @@ namespace Server
                 }
             }
             Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
-            var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
+            var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId);
             Dispatcher.Invoke(() => { _curJudgeInfo.Clear(); _competitionInfo.Clear(); });
-            for (var i = x.Count - 1; i >= 0; i--)
-            {
-                Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
-            }
+            if ((_competition.Option & 8) == 0 || now > _competition.EndTime)
+                for (var i = x.Count - 1; i >= 0; i--)
+                {
+                    Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
+                }
             Dispatcher.Invoke(() =>
             {
                 foreach (var i in CompetitionStateColumn.Columns)
@@ -146,7 +169,6 @@ namespace Server
             var tmpList = new List<CompetitionUserInfo>();
             Dispatcher.Invoke(() => _competitionInfo.Clear());
             var user = x.Select(p => p.UserName).Distinct();
-            Dispatcher.Invoke(() => ComUserNumber.Text = $"{user.Count()}");
             foreach (var i in user)
             {
                 var tmp = new CompetitionUserInfo
@@ -457,6 +479,41 @@ namespace Server
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             new Thread(Load).Start();
         }
+
+        private void ProblemList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var x = MyProblemList.SelectedItem as Problem;
+            ProblemInfomationList.Items.Clear();
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目 ID：{x?.ProblemId}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目名称：{x?.ProblemName}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目难度：{x?.Level}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"数据组数：{x?.DataSets.Length}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}" });
+        }
+
+        private void Button_Submit(object sender, RoutedEventArgs e)
+        {
+            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            var type = string.Empty;
+            foreach (var i in LangBox.Items)
+                if (i is RadioButton t)
+                    if (t.IsChecked ?? false)
+                        type = t.Content.ToString();
+            if (!string.IsNullOrEmpty(CodeBox.Text) && !string.IsNullOrEmpty(type))
+            {
+                Connection.UpdateMainPage.Invoke($"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}");
+                Connection.SendData("SubmitCodeForCompetition", x.ProblemId + Connection.Divpar + _competition.CompetitionId + Connection.Divpar + type + Connection.Divpar + CodeBox.Text);
+                CodeBox.Text = string.Empty;
+            }
+        }
+
+        private void ProblemDescription_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            var d = new ProblemDescription();
+            d.SetProblemDescription(string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description, x.ProblemIndex);
+            d.Show();
+        }
     }
 
     class CompetitionUserInfo
@@ -474,5 +531,65 @@ namespace Server
         public string Time { get; set; }
         public string State { get; set; }
         public Brush Color { get; set; }
+    }
+
+    public static partial class Connection
+    {
+        public static List<Problem> _queryProblemsForCompetitionResult = new List<Problem>();
+        public static bool _queryProblemsForCompetitionState;
+        public static List<JudgeInfo> _queryJudgeLogBelongsToCompetitionResult = new List<JudgeInfo>();
+        public static bool _queryJudgeLogBelongsToCompetitionState;
+        public static List<Compiler> _queryLanguagesForCompetitionResult = new List<Compiler>();
+        public static bool _queryLanguagesForCompetitionState;
+        public static DateTime _getCurrentDateTimeResult;
+        public static bool _getCurrentDateTimeState;
+
+
+        public static List<JudgeInfo> QueryJudgeLogBelongsToCompetition(int competitionId)
+        {
+            _queryJudgeLogBelongsToCompetitionState = false;
+            _queryJudgeLogBelongsToCompetitionResult.Clear();
+            SendData("QueryJudgeLogBelongsToCompetition", competitionId.ToString());
+            while (!_queryJudgeLogBelongsToCompetitionState)
+            {
+                Thread.Sleep(1);
+            }
+            return _queryJudgeLogBelongsToCompetitionResult;
+        }
+
+        public static List<Problem> QueryProblemsForCompetition(int competitionId)
+        {
+            _queryProblemsForCompetitionState = false;
+            _queryProblemsForCompetitionResult.Clear();
+            SendData("QueryProblemsForCompetition", competitionId.ToString());
+            while (!_queryProblemsForCompetitionState)
+            {
+                Thread.Sleep(1);
+            }
+            return _queryProblemsForCompetitionResult;
+        }
+
+        public static List<Compiler> QueryLanguagesForCompetition()
+        {
+            _queryLanguagesForCompetitionState = false;
+            _queryLanguagesForCompetitionResult.Clear();
+            SendData("QueryLanguagesForCompetition", string.Empty);
+            while (!_queryLanguagesForCompetitionState)
+            {
+                Thread.Sleep(1);
+            }
+            return _queryLanguagesForCompetitionResult;
+        }
+
+        public static DateTime GetCurrentDateTime()
+        {
+            _getCurrentDateTimeState = false;
+            SendData("GetCurrentDateTime", string.Empty);
+            while (!_getCurrentDateTimeState)
+            {
+                Thread.Sleep(1);
+            }
+            return _getCurrentDateTimeResult;
+        }
     }
 }

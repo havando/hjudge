@@ -86,11 +86,17 @@
     <Compile Include="CompetitionsManagementPage.xaml.cs">
       <DependentUpon>CompetitionsManagementPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CompetitionViewer.xaml.cs">
+      <DependentUpon>CompetitionViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Compiler.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ExcelUtility.cs" />
     <Compile Include="FileInfomation.cs" />
     <Compile Include="FileRecvInfo.cs" />
+    <Compile Include="InputPassword.xaml.cs">
+      <DependentUpon>InputPassword.xaml</DependentUpon>
+    </Compile>
     <Compile Include="JudgeDetails.xaml.cs">
       <DependentUpon>JudgeDetails.xaml</DependentUpon>
     </Compile>
@@ -118,6 +124,14 @@
     </Compile>
     <Compile Include="UserInfo.cs" />
     <Page Include="CompetitionsManagementPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CompetitionViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InputPassword.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -211,6 +225,7 @@
     <Resource Include="Resources\default_user_icon.png" />
     <Resource Include="Resources\list.png" />
     <Resource Include="Resources\loading.gif" />
+    <Resource Include="Resources\edit.png" />
     <Content Include="x64\HPSocket4C_U.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

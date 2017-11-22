@@ -61,6 +61,21 @@ namespace Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;GridViewColumn Width=&quot;100&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        /// xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot; xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;
+        /// xmlns:mc=&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;
+        /// xmlns:local=&quot;clr-namespace:Server&quot; mc:Ignorable=&quot;d&quot;&gt;
+        ///     &lt;GridViewColumn.Header&gt;
+        ///         &lt;StackPanel VerticalAlignment=&quot;Center&quot; HorizontalAlignment=&quot;Center&quot;&gt;
+        ///             &lt;TextBlock HorizontalAlignment=&quot;Center&quot; Text=&quot;${Prob [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string CompetitionDetailsProblemInfoControl {
+            get {
+                return ResourceManager.GetString("CompetitionDetailsProblemInfoControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;Grid Name=&quot;Data${index}&quot; Height=&quot;125&quot; Width=&quot;307&quot; xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
         ///        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
         ///        xmlns:d=&quot;http://schemas.microsoft.com/expression/blend/2008&quot;

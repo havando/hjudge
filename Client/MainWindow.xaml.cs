@@ -24,11 +24,11 @@ namespace Client
         private const string Divpar = "<h~|~j>";
         private readonly Random _random;
 
-        public readonly ObservableCollection<FileInfomation> FileInfomations =
+        private readonly ObservableCollection<FileInfomation> _fileInfomations =
             new ObservableCollection<FileInfomation>();
-
-        public readonly ObservableCollection<JudgeInfo> JudgeInfos = new ObservableCollection<JudgeInfo>();
-        public readonly ObservableCollection<Message> MessagesCollection = new ObservableCollection<Message>();
+        private readonly ObservableCollection<Competition> _competitionsCollection = new ObservableCollection<Client.Competition>();
+        private readonly ObservableCollection<JudgeInfo> _judgeInfos = new ObservableCollection<JudgeInfo>();
+        private readonly ObservableCollection<Message> _messagesCollection = new ObservableCollection<Message>();
 
         private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
         private int _coins, _experience, _currentGetJudgeRecordIndex;
@@ -38,6 +38,7 @@ namespace Client
         private string _requestMsgListId;
         private string _requestMsgTargetUserId;
         private string _requestProblemListId;
+        private string _requestCompetitionListId;
 
         public MainWindow()
         {
@@ -62,9 +63,10 @@ namespace Client
             InitializeComponent();
 
             MyProblemList.ItemsSource = _problems;
-            JudgeList.ItemsSource = JudgeInfos;
-            MessageList.ItemsSource = MessagesCollection;
-            FileList.ItemsSource = FileInfomations;
+            JudgeList.ItemsSource = _judgeInfos;
+            MessageList.ItemsSource = _messagesCollection;
+            FileList.ItemsSource = _fileInfomations;
+            CompetitionList.ItemsSource = _competitionsCollection;
 
             Configuration.Init();
 
@@ -155,17 +157,17 @@ namespace Client
                             {
                                 case "Connected":
                                     {
-                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        Dispatcher.Invoke(() =>
                                         {
                                             LoginButton.IsEnabled = Register.IsEnabled = true;
-                                        }));
+                                        });
                                         break;
                                     }
                                 case "Break":
                                     {
                                         _userName = string.Empty;
                                         _curId = 0;
-                                        Dispatcher.BeginInvoke(new Action(() =>
+                                        Dispatcher.Invoke(() =>
                                         {
                                             CodeSubmit.Visibility = Messaging.Visibility =
                                                 Messages.Visibility = JudgeResult.Visibility =
@@ -176,8 +178,8 @@ namespace Client
                                             InitManagementTools(0);
                                             OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
                                             ActiveBox.Items.Clear();
-                                            JudgeInfos.Clear();
-                                            MessagesCollection.Clear();
+                                            _judgeInfos.Clear();
+                                            _messagesCollection.Clear();
                                             Experience.Content = Coins.Content = "0";
                                             Level.Content = "-";
                                             WelcomeLabel.Content = "你好，";
@@ -191,7 +193,7 @@ namespace Client
                                             Loading1.Visibility = Visibility.Hidden;
                                             Loading2.Visibility = Visibility.Hidden;
                                             Loading3.Visibility = Visibility.Hidden;
-                                        }));
+                                        });
                                         break;
                                     }
                             }
@@ -199,7 +201,7 @@ namespace Client
                         }
                     case "Login":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading0.Visibility = Visibility.Hidden; });
                             if (content == "Succeed")
                             {
                                 Dispatcher.Invoke(() =>
@@ -211,7 +213,7 @@ namespace Client
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Loading1.Visibility = Visibility.Visible;
-                                    MessagesCollection.Clear();
+                                    _messagesCollection.Clear();
                                     ActiveBox.Items.Add(new TextBlock
                                     {
                                         Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
@@ -237,7 +239,7 @@ namespace Client
                         {
                             _userName = string.Empty;
                             _curId = 0;
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 CodeSubmit.Visibility = Messaging.Visibility =
                                     Messages.Visibility = JudgeResult.Visibility =
@@ -248,8 +250,8 @@ namespace Client
                                 InitManagementTools(0);
                                 OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
                                 ActiveBox.Items.Clear();
-                                JudgeInfos.Clear();
-                                MessagesCollection.Clear();
+                                _judgeInfos.Clear();
+                                _messagesCollection.Clear();
                                 Experience.Content = Coins.Content = "0";
                                 Level.Content = "-";
                                 WelcomeLabel.Content = "你好，";
@@ -263,12 +265,12 @@ namespace Client
                                 Loading1.Visibility = Visibility.Hidden;
                                 Loading2.Visibility = Visibility.Hidden;
                                 Loading3.Visibility = Visibility.Hidden;
-                            }));
+                            });
                             break;
                         }
                     case "Register":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading0.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading0.Visibility = Visibility.Hidden; });
                             if (content == "Succeeded")
                             {
                                 MessageBox.Show("注册成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -290,10 +292,10 @@ namespace Client
                     case "Messaging":
                         {
                             var t = JsonConvert.DeserializeObject<Message>(content);
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到消息" });
-                                MessagesCollection.Insert(0, new Message
+                                _messagesCollection.Insert(0, new Message
                                 {
                                     Content = t.Content,
                                     Direction = "接收",
@@ -303,16 +305,16 @@ namespace Client
                                 var x = new Messaging();
                                 x.SetMessge(t);
                                 x.Show();
-                            }));
+                            });
                             break;
                         }
                     case "FileList":
                         {
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 2) break;
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
-                                FileInfomations.Clear();
+                                _fileInfomations.Clear();
                                 CurrentLocation.Text = final[0];
                                 var flag = true;
                                 for (var i = 1; i < final.Length; i++)
@@ -322,7 +324,7 @@ namespace Client
                                         flag = !flag;
                                         continue;
                                     }
-                                    FileInfomations.Add(new FileInfomation
+                                    _fileInfomations.Add(new FileInfomation
                                     {
                                         Type = flag ? "文件夹" : "文件",
                                         Name = final[i]
@@ -330,13 +332,13 @@ namespace Client
                                 }
                                 ReceivingFile.Visibility = Visibility.Hidden;
                                 ReceivingProcess.Visibility = Visibility.Hidden;
-                            }));
+                            });
                             break;
                         }
                     case "JudgeResult":
                         {
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 ActiveBox.Items.Add(new TextBlock
                                 {
@@ -379,12 +381,65 @@ namespace Client
                                         Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
                                     });
                                 }
-                                JudgeInfos.Insert(0, p);
+                                _judgeInfos.Insert(0, p);
                                 Coins.Content = _coins;
                                 Experience.Content = _experience;
                                 SetLevel(_experience);
                                 ShowJudgeDetails(p);
-                            }));
+                            });
+                            break;
+                        }
+                    case "JudgeResultForCompetition":
+                        {
+                            var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                            Dispatcher.Invoke(() =>
+                            {
+                                ActiveBox.Items.Add(new TextBlock
+                                {
+                                    Text =
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}"
+                                });
+                                if (p.ResultSummery == "Accepted")
+                                {
+                                    var delta = 4 + _random.Next() % 32;
+                                    var delta2 = 16 + _random.Next() % 12;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    Connection.SendData("UpdateCoins", delta2.ToString());
+                                    _coins += delta2;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
+                                    });
+                                }
+                                else if (p.ResultSummery.Contains("Exceeded"))
+                                {
+                                    var delta = 2 + _random.Next() % 16;
+                                    var delta2 = 8 + _random.Next() % 4;
+                                    Connection.SendData("UpdateCoins", delta.ToString());
+                                    _coins += delta;
+                                    Connection.SendData("UpdateExperience", delta2.ToString());
+                                    _experience += delta2;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
+                                    });
+                                }
+                                else
+                                {
+                                    var delta = 1 + _random.Next() % 4;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
+                                    });
+                                }
+                                Coins.Content = _coins;
+                                Experience.Content = _experience;
+                                SetLevel(_experience);
+                                ShowJudgeDetails(p);
+                            });
                             break;
                         }
                     case "ProblemList":
@@ -403,7 +458,7 @@ namespace Client
                         {
                             var x = JsonConvert.DeserializeObject<UserInfo>(content);
                             _curId = x.Type;
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 WelcomeLabel.Content = $"你好，{x.UserName}";
                                 Identity.Content = $"身份：{x.Type2}";
@@ -419,12 +474,12 @@ namespace Client
                                 {
                                     AdminConsole.Visibility = Visibility.Visible;
                                 }
-                            }));
+                            });
                             break;
                         }
                     case "UpdateProfile":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
                                 case "Succeed":
@@ -443,7 +498,7 @@ namespace Client
                         }
                     case "ChangePassword":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading1.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
                                 case "Succeed":
@@ -460,28 +515,28 @@ namespace Client
                         }
                     case "JudgeRecord":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 3) break;
                             _currentGetJudgeRecordIndex = Convert.ToInt32(final[0]) + Convert.ToInt32(final[1]);
                             if (Convert.ToInt32(final[1]) != 20)
                                 _currentGetJudgeRecordIndex = -1;
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 foreach (var i in JsonConvert.DeserializeObject<JudgeInfo[]>(final[2]))
-                                    JudgeInfos.Add(i);
-                            }));
+                                    _judgeInfos.Add(i);
+                            });
                             break;
                         }
                     case "JudgeCode":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading3.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                            var j = (from c in JudgeInfos where c.JudgeId == jc.JudgeId select c)
+                            var j = (from c in _judgeInfos where c.JudgeId == jc.JudgeId select c)
                                 .FirstOrDefault();
                             if (j == null) break;
                             j.Code = jc.Code;
-                            Dispatcher.BeginInvoke(new Action(() => { ShowJudgeDetails(j); }));
+                            Dispatcher.Invoke(() => { ShowJudgeDetails(j); });
                             break;
                         }
                     case "FileReceived":
@@ -506,34 +561,34 @@ namespace Client
                         }
                     case "FileReceiving":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { ReceivingProcess.Content = content; }));
+                            Dispatcher.Invoke(() => { ReceivingProcess.Content = content; });
                             break;
                         }
                     case "ProblemDataSet":
                         {
-                            Dispatcher.BeginInvoke(new Action(() => { Loading2.Visibility = Visibility.Hidden; }));
+                            Dispatcher.Invoke(() => { Loading2.Visibility = Visibility.Hidden; });
                             if (content != "Denied") break;
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 _coins += 500;
                                 Coins.Content = _coins;
                                 ActiveBox.Items.Add(new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +500" });
                                 MessageBox.Show("抱歉，系统设定不允许获取题目数据，请联系管理员。金币已为您加回。", "提示", MessageBoxButton.OK,
                                     MessageBoxImage.Error);
-                            }));
+                            });
 
                             Connection.SendData("UpdateCoins", "500");
                             break;
                         }
                     case "Compiler":
                         {
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 LangBox.Items.Clear();
                                 var l = JsonConvert.DeserializeObject<List<Compiler>>(content);
                                 foreach (var m in l)
                                     LangBox.Items.Add(new RadioButton { Content = m.DisplayName });
-                            }));
+                            });
                             break;
                         }
                     case "Version":
@@ -568,7 +623,7 @@ namespace Client
                                 var t = JsonConvert.DeserializeObject<Message>(contentWithoutId);
                                 Dispatcher.Invoke(() =>
                                 {
-                                    MessagesCollection.Add(t);
+                                    _messagesCollection.Add(t);
                                     if (t.State == 0 && t.Direction == "接收")
                                     {
                                         if (t.Content.Length == 33)
@@ -589,15 +644,27 @@ namespace Client
                     case "RequestMsg":
                         {
                             var t = JsonConvert.DeserializeObject<Message>(content);
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Dispatcher.Invoke(() =>
                             {
                                 Loading5.Visibility = Visibility.Hidden;
-                                MessagesCollection.Where(i => i.MsgId == t.MsgId).FirstOrDefault().Content = t.Content;
+                                _messagesCollection.Where(i => i.MsgId == t.MsgId).FirstOrDefault().Content = t.Content;
                                 MessageList.Items.Refresh();
                                 var x = new Messaging();
                                 x.SetMessge(t);
                                 x.Show();
-                            }));
+                            });
+                            break;
+                        }
+                    case "RequestCompetitionList":
+                        {
+                            if (_requestCompetitionListId == id)
+                            {
+                                var t = JsonConvert.DeserializeObject<Competition>(contentWithoutId);
+                                Dispatcher.Invoke(() =>
+                                {
+                                    _competitionsCollection.Add(t);
+                                });
+                            }
                             break;
                         }
                 }
@@ -934,7 +1001,12 @@ namespace Client
                 case 2:
                     _requestMsgTargetUserId = Guid.NewGuid().ToString();
                     SendingTarget.Items.Clear();
-                    Connection.SendData("RequestMsgTargetUser" + Divpar + _requestMsgTargetUserId, string.Empty);
+                    Connection.SendData("RequestMsgTargetUser", _requestMsgTargetUserId);
+                    break;
+                case 6:
+                    _requestCompetitionListId = Guid.NewGuid().ToString();
+                    _competitionsCollection.Clear();
+                    Connection.SendData("RequestCompetitionList", _requestCompetitionListId);
                     break;
             }
         }
@@ -977,7 +1049,7 @@ namespace Client
 
             foreach (var t in target)
             {
-                MessagesCollection.Insert(0, new Message
+                _messagesCollection.Insert(0, new Message
                 {
                     Content = MessageContent.Text,
                     Direction = "发送",
@@ -1237,6 +1309,18 @@ namespace Client
             var d = new ProblemDescription();
             d.SetProblemDescription(string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description, x.ProblemIndex);
             d.Show();
+        }
+
+        private void CompetitionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
+            if (!(CompetitionList.SelectedItem is Competition t)) return;
+            var x = new CompetitionViewer();
+            x.SetCompetition(t);
+            x.ShowDialog();
         }
 
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)
