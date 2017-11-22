@@ -1316,9 +1316,8 @@ namespace Server
                                         var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
                                         if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[2])))
                                         {
-                                            UpdateMainPageState(
-                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
-
+                                            var t = GetCompetition(cid);
+                                            if (DateTime.Now > t.EndTime || DateTime.Now < t.StartTime) continue;
                                             var code = string.Empty;
                                             for (var i = 3; i < res.Content.Count; i++)
                                                 if (i != res.Content.Count - 1)
@@ -1328,7 +1327,8 @@ namespace Server
                                             var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                             var type = Encoding.Unicode.GetString(res.Content[2]);
                                             var userId = res.Client.UserId;
-                                            var t = GetCompetition(cid);
+                                            UpdateMainPageState(
+                                                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
                                             ActionList.Enqueue(new Task(() =>
                                             {
                                                 new Thread(() =>
