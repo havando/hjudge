@@ -9,10 +9,10 @@
       Title="MembersManagementPage" Loaded="Page_Loaded">
 
     <Grid>
-        <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
-        <Label Name="Identity" HorizontalAlignment="Left" Margin="109,10,0,0" VerticalAlignment="Top" />
-        <ListView Name="ListView" HorizontalAlignment="Left" Height="247" Margin="10,41,0,0" VerticalAlignment="Top"
-                  Width="491" GridViewColumnHeader.Click="GridViewColumnHeader_Click" SelectionMode="Single">
+        <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalAlignment="Top" />
+        <Label Name="Identity" HorizontalAlignment="Left" Margin="99,2,0,0" VerticalAlignment="Top" />
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="265" Margin="0,33,0,0" VerticalAlignment="Top"
+                  Width="501" GridViewColumnHeader.Click="GridViewColumnHeader_Click" SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="用户名" Width="150" DisplayMemberBinding="{Binding Path=UserName}" />
@@ -38,13 +38,13 @@
                        Width="168" Foreground="Red" />
             </Grid>
         </GroupBox>
-        <Button Name="NewUser" Content="新增" HorizontalAlignment="Left" Height="31" Margin="506,41,0,0"
+        <Button Name="NewUser" Content="新增" HorizontalAlignment="Left" Height="31" Margin="506,33,0,0"
                 VerticalAlignment="Top" Width="69" Click="NewUser_Click" />
-        <Button Name="EditUser" Content="修改" HorizontalAlignment="Left" Height="31" Margin="506,77,0,0"
+        <Button Name="EditUser" Content="修改" HorizontalAlignment="Left" Height="31" Margin="506,69,0,0"
                 VerticalAlignment="Top" Width="69" Click="EditUser_Click" />
-        <Button Name="DeleteUser" Content="删除" HorizontalAlignment="Left" Height="31" Margin="506,113,0,0"
+        <Button Name="DeleteUser" Content="删除" HorizontalAlignment="Left" Height="31" Margin="506,105,0,0"
                 VerticalAlignment="Top" Width="69" Click="DeleteUser_Click" />
-        <Button Name="OkButton" Content="保存" HorizontalAlignment="Left" Height="31" Margin="506,257,0,0"
+        <Button Name="OkButton" Content="保存" HorizontalAlignment="Left" Height="31" Margin="506,267,0,0"
                 VerticalAlignment="Top" Width="69" Click="OkButton_Click" />
 
     </Grid>
