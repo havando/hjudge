@@ -25,6 +25,7 @@ namespace Client
         private static bool _isConnected;
         private static bool _isReceivingData;
         private static bool _isSendingData;
+        public static bool DealingWithLargeData;
         public static bool IsExited;
         public static Action<string> UpdateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
@@ -596,7 +597,7 @@ namespace Client
             {
                 SendData("@", string.Empty);
                 Thread.Sleep(10000);
-                while (_isReceivingData || _isSendingData)
+                while (_isReceivingData || _isSendingData || DealingWithLargeData)
                     Thread.Sleep(5000);
                 if (_isConnecting)
                 {

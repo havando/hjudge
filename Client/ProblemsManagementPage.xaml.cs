@@ -341,11 +341,13 @@ namespace Client
                     {
                         Connection.CanSwitch = false;
                         Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
+                        Connection.DealingWithLargeData = true;
                         Connection.SendFile(ofg.FileName, "DataFile");
                         while (!Connection.UploadFileResult)
                         {
                             Thread.Sleep(1);
                         }
+                        Connection.DealingWithLargeData = false;
                         Dispatcher.Invoke(() =>
                         {
                             Dealing.Visibility = Visibility.Hidden;
@@ -386,11 +388,13 @@ namespace Client
                     {
                         Connection.CanSwitch = false;
                         Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
+                        Connection.DealingWithLargeData = true;
                         Connection.SendFile(ofg.FileName, "PublicFile");
                         while (!Connection.UploadFileResult)
                         {
                             Thread.Sleep(1);
                         }
+                        Connection.DealingWithLargeData = false;
                         Dispatcher.Invoke(() =>
                         {
                             Dealing.Visibility = Visibility.Hidden;
