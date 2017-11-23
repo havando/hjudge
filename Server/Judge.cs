@@ -63,7 +63,7 @@ namespace Server
                     var judgeLogs = Connection.QueryJudgeLogBelongsToCompetition(competitionId, userId);
                     if ((comp.Option & 1) != 0 && comp.SubmitLimit != 0)
                     {
-                        if (judgeLogs.Where(i => i.ProblemId == problemId).Count() > comp.SubmitLimit)
+                        if (judgeLogs.Where(i => i.ProblemId == problemId).Count() >= comp.SubmitLimit)
                         {
                             _isFinished = true;
                             lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;

@@ -92,16 +92,6 @@ namespace Server
             if ((_competition.Option & 2) != 0) ComMode.Text = $"最后提交赛";
             if ((_competition.Option & 4) != 0) ComMode.Text = $"罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
-            for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
-            {
-                var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                                   $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
-                var strreader = new StringReader(t);
-                var xmlreader = new XmlTextReader(strreader);
-                var obj = XamlReader.Load(xmlreader);
-                CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
-            }
-            CompetitionState.ItemsSource = _competitionInfo;
             Description.Text = _competition.Description;
             ProblemFilter.ItemsSource = _problemFilter;
             UserFilter.ItemsSource = _userFilter;
@@ -127,6 +117,7 @@ namespace Server
                         CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
                     });
                 }
+                Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
             }
             Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
             var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
