@@ -236,7 +236,11 @@ namespace Client
                         if (tmpScoreBase.Count() > 0) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
                         var y = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])?.LastOrDefault() ?? null;
                         if (y != null && y.ResultSummery == "Accepted") tmp.ProblemInfo[j].State = "Solved";
-                        else tmp.ProblemInfo[j].State = "Unsolved";
+                        else
+                        {
+                            tmp.ProblemInfo[j].Color = Brushes.LightPink;
+                            tmp.ProblemInfo[j].State = "Unsolved";
+                        }
                         if (y != null)
                         {
                             var tmpTime = (Convert.ToDateTime(y.JudgeDate) - _competition.StartTime);
