@@ -520,7 +520,7 @@ namespace Client
                                         _deleteCompetitionState = true;
                                         break;
                                     }
-                                case "GetProblemClient":
+                                case "GetProblem":
                                     {
                                         _getProblemResult = JsonConvert.DeserializeObject<Problem>(content);
                                         _getProblemState = true;

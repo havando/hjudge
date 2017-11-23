@@ -6,10 +6,10 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d" 
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="CompetitionsManagementPage">
+      Title="CompetitionsManagementPage" Loaded="Page_Loaded">
 
     <Grid>
-        <ListView Name="ListView" HorizontalAlignment="Left" Height="265" VerticalAlignment="Top" Width="228" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" MouseDoubleClick="ListView_MouseDoubleClick"
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="298" VerticalAlignment="Top" Width="228" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click"
                   SelectionMode="Single">
             <ListView.View>
                 <GridView>
@@ -77,19 +77,17 @@
                 <RadioButton Name="HideRank" Content="不显示"></RadioButton>
             </DockPanel>
         </ListBox>
-        <Button Content="添加" HorizontalAlignment="Left" Margin="532,0,0,0" VerticalAlignment="Top" Width="52"
+        <Button Content="添加" HorizontalAlignment="Left" Margin="532,0,0,0" VerticalAlignment="Top" Width="43"
                 Height="24" Click="Button_Click" />
-        <Button Content="删除" HorizontalAlignment="Left" Margin="532,29,0,0" VerticalAlignment="Top" Width="52"
+        <Button Content="删除" HorizontalAlignment="Left" Margin="532,29,0,0" VerticalAlignment="Top" Width="43"
                 Height="24" Click="Button_Click_1" />
-        <Button Content="保存" HorizontalAlignment="Left" Margin="533,274,0,0" VerticalAlignment="Top" Width="52"
+        <Button Content="保存" HorizontalAlignment="Left" Margin="533,274,0,0" VerticalAlignment="Top" Width="42"
                 Height="24" Click="Button_Click_2" />
         <Label Content="比赛密码（无密码请留空）" HorizontalAlignment="Left" Margin="233,205,0,0" VerticalAlignment="Top" Height="25" Width="163" />
         <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="25" Margin="401,205,0,0" TextWrapping="Wrap"
             VerticalAlignment="Top" Width="127" />
         <Label Content="比赛说明" HorizontalAlignment="Left" Margin="233,230,0,0" VerticalAlignment="Top" Height="25" Width="63" />
         <TextBox x:Name="ComNote" HorizontalAlignment="Left" Margin="301,235,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True" Width="227" Height="63" VerticalAlignment="Top" />
-        <Label Content="Tips：单击编辑比赛，双击进入比赛" HorizontalAlignment="Left" Margin="0,270,0,0"
-            VerticalAlignment="Top" Cursor="Hand" Foreground="Red" Height="28" Width="218" />
 
     </Grid>
 </Page>

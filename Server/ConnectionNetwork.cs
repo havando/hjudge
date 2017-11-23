@@ -1330,6 +1330,71 @@ namespace Server
                                         SendData("GetCurrentDateTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), res.Client.ConnId);
                                         break;
                                     }
+                                case "QueryCompetitionClient":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("QueryCompetitionClient", JsonConvert.SerializeObject(QueryCompetition()), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "NewCompetitionClient":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("NewCompetitionClient", JsonConvert.SerializeObject(GetCompetition(NewCompetition())), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "DeleteCompetitionClient":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            DeleteCompetition(cid);
+                                            SendData("DeleteCompetitionClient",string.Empty, res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "UpdateCompetitionClient":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            UpdateCompetition(JsonConvert.DeserializeObject<Competition>(x));
+                                            SendData("UpdateCompetitionClient", string.Empty, res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "GetProblem":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            SendData("GetProblem", JsonConvert.SerializeObject(GetProblem(pid)), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
                             }
                         }
                         catch (Exception ex)

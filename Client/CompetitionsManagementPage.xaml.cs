@@ -105,17 +105,7 @@ namespace Client
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            _competitions.Clear();
-            ListView.ItemsSource = _competitions;
-            foreach (var i in Connection.QueryCompetition())
-            {
-                _competitions.Add(i);
-            }
-        }
-
+        
         private void LimitedSubmitTime_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox t)
@@ -190,16 +180,14 @@ namespace Client
             Connection.UpdateCompetition(t);
         }
 
-        private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            var originalSource = (DependencyObject)e.OriginalSource;
-            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
-            if (originalSource == null) return;
-            if (!(sender is ListView)) return;
-            if (!(ListView.SelectedItem is Competition t)) return;
-            var x = new CompetitionViewer();
-            x.SetCompetition(t);
-            x.Show();
+            _competitions.Clear();
+            ListView.ItemsSource = _competitions;
+            foreach (var i in Connection.QueryCompetition())
+            {
+                _competitions.Add(i);
+            }
         }
     }
 
@@ -247,7 +235,7 @@ namespace Client
         public static Problem GetProblem(int problemId)
         {
             _getProblemState = false;
-            SendData("GetProblemClient", problemId.ToString());
+            SendData("GetProblem", problemId.ToString());
             while (!_getProblemState)
             {
                 Thread.Sleep(1);
