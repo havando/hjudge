@@ -112,7 +112,7 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "SELECT * From Judge Where UserId=@1 and CompetitionId>0 order by JudgeId desc";
+                    cmd.CommandText = "SELECT * From Judge Where UserId=@1 and CompetitionId=0 order by JudgeId desc";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32)
