@@ -52,7 +52,7 @@ namespace Server
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (DateTime.Now > _competition.EndTime)
+                    if (DateTime.Now >= _competition.EndTime)
                     {
                         var t = _competition.EndTime - _competition.StartTime;
                         ComTimeC.Text = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
@@ -137,7 +137,7 @@ namespace Server
                             if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
                             {
                                 var m = Convert.ToInt32(l.Name.Substring(13));
-                                l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accept")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                                l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
                             }
                         }
                     }

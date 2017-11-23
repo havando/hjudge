@@ -60,7 +60,7 @@ namespace Client
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (GetNowDateTime() > _competition.EndTime)
+                    if (GetNowDateTime() >= _competition.EndTime)
                     {
                         var t = _competition.EndTime - _competition.StartTime;
                         ComTimeC.Text = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
@@ -174,23 +174,24 @@ namespace Client
                 {
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
                 }
-            Dispatcher.Invoke(() =>
-            {
-                foreach (var i in CompetitionStateColumn.Columns)
+            if (!((_competition.Option & 8) == 0 && GetNowDateTime() < _competition.EndTime))
+                Dispatcher.Invoke(() =>
                 {
-                    if (i.Header is StackPanel j)
+                    foreach (var i in CompetitionStateColumn.Columns)
                     {
-                        foreach (var k in j.Children)
+                        if (i.Header is StackPanel j)
                         {
-                            if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
+                            foreach (var k in j.Children)
                             {
-                                var m = Convert.ToInt32(l.Name.Substring(13));
-                                l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accept")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                                if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
+                                {
+                                    var m = Convert.ToInt32(l.Name.Substring(13));
+                                    l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
             var tmpList = new List<CompetitionUserInfo>();
             Dispatcher.Invoke(() => _competitionInfo.Clear());
             var user = x.Select(p => p.UserName).Distinct();
@@ -206,6 +207,7 @@ namespace Client
                 for (var j = 0; j < _competition.ProblemSet.Length; j++)
                 {
                     tmp.ProblemInfo[j] = new CompetitionProblemInfo();
+                    if ((_competition.Option & 8) == 0 && GetNowDateTime() < _competition.EndTime) continue;
                     var ac = x.Where(p => p.UserName == i && p.ResultSummery == "Accepted" && p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
                     var all = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
                     if (ac != 0) tmp.ProblemInfo[j].Color = Brushes.LightGreen;
