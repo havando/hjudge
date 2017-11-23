@@ -305,18 +305,20 @@ namespace Client
                                 //ignored
                             }
                             var content = string.Empty;
-                            for (var i = 0; i < res.Content.Count; i++)
-                                if (i != res.Content.Count - 1)
-                                    content += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                else
-                                    content += Encoding.Unicode.GetString(res.Content[i]);
+                            try
+                            {
+                                for (var i = 0; i < res.Content.Count; i++)
+                                    if (i != res.Content.Count - 1)
+                                        content += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    else
+                                        content += Encoding.Unicode.GetString(res.Content[i]);
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                             switch (res.Operation)
                             {
-                                case "Login":
-                                    {
-                                        UpdateMainPage.Invoke($"Login{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
                                 case "Logout":
                                     {
                                         while (Recv.TryDequeue(out var temp)) { temp.Clear(); }
@@ -338,12 +340,6 @@ namespace Client
                                             res.Content[1]);
                                         Process.Start("explorer.exe",
                                             $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                        break;
-                                    }
-                                case "Messaging":
-                                    {
-                                        UpdateMainPage.Invoke(
-                                            $"Messaging{Divpar}{content}");
                                         break;
                                     }
                                 case "File":
@@ -465,12 +461,6 @@ namespace Client
                                         UploadFileResult = true;
                                         break;
                                     }
-                                case "Register":
-                                    {
-                                        UpdateMainPage.Invoke(
-                                            $"Register{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                        break;
-                                    }
                                 case "RequestCode":
                                     {
                                         _getJudgeCodeResult = JsonConvert.DeserializeObject<JudgeInfo>(content);
@@ -481,11 +471,6 @@ namespace Client
                                     {
                                         _detailsProblemResult = JsonConvert.DeserializeObject<Problem>(content)?.Description ?? string.Empty;
                                         _detailsProblemState = true;
-                                        break;
-                                    }
-                                case "GetProblemSolvedCount":
-                                    {
-                                        _getProblemSolvedCountResult = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                         break;
                                     }
                                 case "QueryJudgeLogBelongsToCompetition":
@@ -518,16 +503,38 @@ namespace Client
                                         _getCurrentDateTimeState = true;
                                         break;
                                     }
+                                case "QueryCompetitionClient":
+                                    {
+                                        _queryCompetitionResult = JsonConvert.DeserializeObject<List<Competition>>(content);
+                                        _queryCompetitionState = true;
+                                        break;
+                                    }
+                                case "NewCompetitionClient":
+                                    {
+                                        _newCompetitionResult = JsonConvert.DeserializeObject<Competition>(content);
+                                        _newCompetitionState = true;
+                                        break;
+                                    }
+                                case "DeleteCompetitionClient":
+                                    {
+                                        _deleteCompetitionState = true;
+                                        break;
+                                    }
+                                case "GetProblemClient":
+                                    {
+                                        _getProblemResult = JsonConvert.DeserializeObject<Problem>(content);
+                                        _getProblemState = true;
+                                        break;
+                                    }
+                                case "UpdateCompetitionClient":
+                                    {
+                                        _updateCompetitionState = true;
+                                        break;
+                                    }
                                 default:
                                     {
-                                        var x = string.Empty;
-                                        for (var i = 0; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                            else
-                                                x += Encoding.Unicode.GetString(res.Content[i]);
                                         UpdateMainPage.Invoke(
-                                             $"{res.Operation}{Divpar}{x}");
+                                             $"{res.Operation}{Divpar}{content}");
                                         break;
                                     }
                             }

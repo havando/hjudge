@@ -11,7 +11,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Label Content="比赛名称：" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="10,10,0,0"/>
-        <Label Name="ComName" Content="###" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="125,10,0,0" Width="289"/>
+        <Label Name="ComName" Content="加载中..." HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="125,10,0,0" Width="289"/>
         <TabControl HorizontalAlignment="Left" Height="327" Margin="10,52,0,0" VerticalAlignment="Top" Width="662">
             <TabItem Header="题目">
                 <Grid>
@@ -23,7 +23,7 @@
                         SelectionChanged="ProblemList_SelectionChanged" IsEditable="True" IsReadOnly="False"
                         DisplayMemberPath="ProblemIndex" />
                     <Label Content="题目：" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="45" />
-                    <Button Content="提交代码" HorizontalAlignment="Left" Margin="591,274,0,0" VerticalAlignment="Top"
+                    <Button Name="Submit" Content="提交代码" HorizontalAlignment="Left" Margin="591,274,0,0" VerticalAlignment="Top"
                         Width="65" Height="25" Click="Button_Submit" />
                     <Label Content="题目信息：" HorizontalAlignment="Left" Margin="0,30,0,0" VerticalAlignment="Top" Height="25" Width="68" />
                     <Label Content="代码：" HorizontalAlignment="Left" Margin="123,30,0,0" VerticalAlignment="Top" Height="25" Width="45" />

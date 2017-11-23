@@ -18,24 +18,6 @@ namespace Client
         public string Description { get; set; }
         public int ProblemCount { get; set; }
         public int SubmitLimit { get; set; }
-
-        public int ProblemSolved => Connection.GetProblemSolvedCount(CompetitionId);
-    }
-
-    public static partial class Connection
-    {
-        private static int _getProblemSolvedCountResult;
-        public static int GetProblemSolvedCount(int competitionId)
-        {
-            _getProblemSolvedCountResult = -1;
-            SendData("GetProblemSolvedCount", $"{competitionId}");
-            while (_getProblemSolvedCountResult == -1)
-            {
-                Thread.Sleep(1);
-            }
-            return _getProblemSolvedCountResult;
-        }
-
     }
 
 }

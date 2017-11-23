@@ -35,10 +35,18 @@ namespace Client
         private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
         private bool _isFilterActivated = false;
         private bool _hasFirstLoad = false;
+        private readonly DateTime[] _baseTime = new DateTime[2];
+        private bool _hasRefreshWhenFinished = false;
 
         public CompetitionViewer()
         {
             InitializeComponent();
+        }
+
+        private DateTime GetNowDateTime()
+        {
+            var diff = DateTime.Now - _baseTime[1];
+            return _baseTime[0] + diff;
         }
 
         public void SetCompetition(Competition competition)
@@ -52,24 +60,32 @@ namespace Client
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (DateTime.Now > _competition.EndTime)
+                    if (GetNowDateTime() > _competition.EndTime)
                     {
                         var t = _competition.EndTime - _competition.StartTime;
                         ComTimeC.Text = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
+                        Submit.IsEnabled = false;
                         ComTimeR.Text = "0:0:0";
                         ComState.Text = "已结束";
+                        if (!_hasRefreshWhenFinished)
+                        {
+                            Button_Click(null, null);
+                            _hasRefreshWhenFinished = true;
+                        }
                     }
-                    else if (DateTime.Now < _competition.StartTime)
+                    else if (GetNowDateTime() < _competition.StartTime)
                     {
                         var t = _competition.EndTime - _competition.StartTime;
                         ComTimeC.Text = "0:0:0";
+                        Submit.IsEnabled = false;
                         ComTimeR.Text = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
                         ComState.Text = "未开始";
                     }
                     else
                     {
-                        var st = DateTime.Now - _competition.StartTime;
-                        var et = _competition.EndTime - DateTime.Now;
+                        var st = GetNowDateTime() - _competition.StartTime;
+                        var et = _competition.EndTime - GetNowDateTime();
+                        Submit.IsEnabled = true;
                         ComTimeC.Text = $"{st.Days * 24 + st.Hours}:{st.Minutes}:{st.Seconds}";
                         ComTimeR.Text = $"{et.Days * 24 + et.Hours}:{et.Minutes}:{et.Seconds}";
                         ComState.Text = $"进行中 ({Math.Round(st.TotalSeconds * 100 / ((_competition.EndTime - _competition.StartTime).TotalSeconds == 0 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
@@ -96,8 +112,9 @@ namespace Client
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (_competition == null) Close();
-            var now = Connection.GetCurrentDateTime();
-            if (now < _competition.StartTime)
+            _baseTime[0] = Connection.GetCurrentDateTime();
+            _baseTime[1] = DateTime.Now;
+            if (GetNowDateTime() < _competition.StartTime)
             {
                 MessageBox.Show("比赛未开始", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
@@ -115,8 +132,11 @@ namespace Client
             if ((_competition.Option & 4) != 0) ComMode.Text = "罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
             MyProblemList.ItemsSource = _problems;
+            ProblemFilter.ItemsSource = _problemFilter;
+            UserFilter.ItemsSource = _userFilter;
             Description.Text = _competition.Description;
             new Thread(Refresh).Start();
+            _hasRefreshWhenFinished = true;
             new Thread(Load).Start();
         }
 
@@ -149,7 +169,7 @@ namespace Client
             Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
             var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId);
             Dispatcher.Invoke(() => { _curJudgeInfo.Clear(); _competitionInfo.Clear(); });
-            if ((_competition.Option & 8) == 0 || now > _competition.EndTime)
+            if ((_competition.Option & 8) != 0 || now > _competition.EndTime)
                 for (var i = x.Count - 1; i >= 0; i--)
                 {
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
@@ -242,6 +262,22 @@ namespace Client
                 tmpList[i].Rank = i + 1;
                 Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
             }
+            Dispatcher.Invoke(() =>
+            {
+                _problemFilter.Clear();
+                _userFilter.Clear();
+            });
+            foreach (var judgeInfo in x)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    _curJudgeInfo.Add(judgeInfo);
+                    if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                    if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                });
+            }
+            if (GetNowDateTime() < _competition.EndTime)
+                _hasRefreshWhenFinished = false;
         }
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
@@ -359,7 +395,7 @@ namespace Client
         }
         private bool Filter(JudgeInfo p)
         {
-            var now = DateTime.Now;
+            var now = GetNowDateTime();
             string pf = null, uf = null;
             var tf = -1;
             Dispatcher.Invoke(() =>
@@ -468,13 +504,21 @@ namespace Client
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListView.SelectedItem is JudgeInfo a)) return;
-            Code.Text = "代码：\r\n" + a.Code;
-            var details = "详情：\r\n";
-            if (a.Result != null)
-                for (var i = 0; i < a.Result.Length; i++)
-                    details +=
-                        $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
-            JudgeDetails.Text = details;
+            if (!string.IsNullOrEmpty(a.Code))
+            {
+                Code.Text = "代码：\r\n" + a.Code;
+                var details = "详情：\r\n";
+                if (a.Result != null)
+                    for (var i = 0; i < a.Result.Length; i++)
+                        details +=
+                            $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
+                JudgeDetails.Text = details;
+            }
+            else
+            {
+                Code.Text = "不允许查看其他用户的代码";
+                JudgeDetails.Text = "不允许查看其他用户的评测详情";
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

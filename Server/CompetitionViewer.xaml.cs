@@ -34,6 +34,7 @@ namespace Server
         private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
         private bool _isFilterActivated = false;
         private bool _hasFirstLoad = false;
+        private bool _hasRefreshWhenFinished = false;
 
         public CompetitionViewer()
         {
@@ -57,6 +58,11 @@ namespace Server
                         ComTimeC.Text = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
                         ComTimeR.Text = "0:0:0";
                         ComState.Text = "已结束";
+                        if (!_hasRefreshWhenFinished)
+                        {
+                            Button_Click(null, null);
+                            _hasRefreshWhenFinished = true;
+                        }
                     }
                     else if (DateTime.Now < _competition.StartTime)
                     {
@@ -97,6 +103,9 @@ namespace Server
             }
             CompetitionState.ItemsSource = _competitionInfo;
             Description.Text = _competition.Description;
+            ProblemFilter.ItemsSource = _problemFilter;
+            UserFilter.ItemsSource = _userFilter;
+            _hasRefreshWhenFinished = true;
             new Thread(Refresh).Start();
             new Thread(Load).Start();
         }
@@ -215,6 +224,22 @@ namespace Server
                 tmpList[i].Rank = i + 1;
                 Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
             }
+            Dispatcher.Invoke(() =>
+            {
+                _problemFilter.Clear();
+                _userFilter.Clear();
+            });
+            foreach (var judgeInfo in x)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    _curJudgeInfo.Add(judgeInfo);
+                    if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                    if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                });
+            }
+            if (DateTime.Now < _competition.EndTime)
+                _hasRefreshWhenFinished = false;
         }
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)

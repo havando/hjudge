@@ -1246,30 +1246,13 @@ namespace Server
                                         ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
                                         break;
                                     }
-                                case "GetProblemSolvedCount":
-                                    {
-                                        if (res.Client.UserId == 0) break;
-                                        var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
-                                        ActionList.Enqueue(new Task(() =>
-                                        {
-                                            var x = QueryJudgeLogBelongsToCompetition(cid, res.Client.UserId);
-                                            var problems = GetCompetition(cid).ProblemSet;
-                                            var cnt = 0;
-                                            foreach (var i in problems)
-                                            {
-                                                if (x.Any(j => j.ResultSummery == "Accepted" && j.ProblemId == i)) cnt++;
-                                            }
-                                            SendData("GetProblemSolvedCount", cnt.ToString(), res.Client.ConnId);
-                                        }));
-                                        break;
-                                    }
                                 case "RequestCompetitionList":
                                     {
                                         if (res.Client.UserId == 0) break;
                                         var id = Encoding.Unicode.GetString(res.Content[0]);
                                         ActionList.Enqueue(new Task(() =>
                                         {
-                                            foreach (var i in QueryCompetition())
+                                            foreach (var i in QueryCompetition()?.Reverse())
                                             {
                                                 SendData("RequestCompetitionList", id + Divpar + JsonConvert.SerializeObject(i), res.Client.ConnId);
                                             }
@@ -1351,6 +1334,7 @@ namespace Server
                         }
                         catch (Exception ex)
                         {
+                            MessageBox.Show($"{ex.Message}\n{ex.StackTrace}");
                             SendData(res.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace, res.Client.ConnId);
                         }
                     }

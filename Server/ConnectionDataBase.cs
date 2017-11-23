@@ -397,7 +397,7 @@ namespace Server
                     parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                     parameters[3].Value = JsonConvert.SerializeObject(new int[0]);
-                    parameters[4].Value = 97;
+                    parameters[4].Value = 25;
                     parameters[5].Value = string.Empty;
                     parameters[6].Value = string.Empty;
                     parameters[7].Value = 0;

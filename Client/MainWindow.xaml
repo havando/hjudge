@@ -223,7 +223,6 @@
                                 <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
                                 <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
                                 <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
-                                <GridViewColumn Header="完成数量" DisplayMemberBinding="{Binding ProblemSolved}" Width="100" />
                             </GridView>
                         </ListView.View>
                     </ListView>
