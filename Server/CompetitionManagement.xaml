@@ -88,7 +88,7 @@
         <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="83" Margin="380,355,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
             VerticalAlignment="Top" Width="204" />
         <Label Content="Tips：单击编辑比赛，双击进入比赛" HorizontalAlignment="Left" Margin="10,412,0,0"
-            VerticalAlignment="Top" Cursor="Hand" Foreground="Red" />
+            VerticalAlignment="Top" Foreground="Red" />
 
     </Grid>
 </Window>
