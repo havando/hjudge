@@ -233,7 +233,6 @@ namespace Server
             {
                 Dispatcher.Invoke(() =>
                 {
-                    _curJudgeInfo.Add(judgeInfo);
                     if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
                     if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                 });
