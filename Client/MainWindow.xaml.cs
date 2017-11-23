@@ -232,7 +232,7 @@ namespace Client
                             {
                                 MessageBox.Show("注册还未通过审核，请耐心等待", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
-                            else MessageBox.Show("登录失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                            else MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                             break;
                         }
                     case "Logout":
@@ -265,6 +265,7 @@ namespace Client
                                 Loading1.Visibility = Visibility.Hidden;
                                 Loading2.Visibility = Visibility.Hidden;
                                 Loading3.Visibility = Visibility.Hidden;
+                                ChangePasswordExpander.IsExpanded = false;
                             });
                             break;
                         }

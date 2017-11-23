@@ -531,6 +531,35 @@ namespace Client
                                         _updateCompetitionState = true;
                                         break;
                                     }
+                                case "GetServerConfig":
+                                    {
+                                        _getServerConfigResult = JsonConvert.DeserializeObject<ServerConfig>(content);
+                                        _getServerConfigState = true;
+                                        break;
+                                    }
+                                case "UpdateServerConfig":
+                                    {
+                                        _updateServerConfigState = true;
+                                        break;
+                                    }
+                                case "GetUserBelongings":
+                                    {
+                                        _getUserBelongingsType = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                        var x = string.Empty;
+                                        for (var i = 1; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        _getUserBelongingsResult = JsonConvert.DeserializeObject<List<UserInfo>>(x);
+                                        _getUserBelongingsState = true;
+                                        break;
+                                    }
+                                case "UpdateUserBelongings":
+                                    {
+                                        _updateUserBelongingsState = true;
+                                        break;
+                                    }
                                 default:
                                     {
                                         UpdateMainPage.Invoke(

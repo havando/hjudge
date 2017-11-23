@@ -1361,7 +1361,7 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             DeleteCompetition(cid);
-                                            SendData("DeleteCompetitionClient",string.Empty, res.Client.ConnId);
+                                            SendData("DeleteCompetitionClient", string.Empty, res.Client.ConnId);
                                         }));
                                         break;
                                     }
@@ -1392,6 +1392,86 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             SendData("GetProblem", JsonConvert.SerializeObject(GetProblem(pid)), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "GetServerConfig":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 3) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var x = new ServerConfig
+                                            {
+                                                AllowCompetitorMessaging = Configuration.Configurations.AllowCompetitorMessaging,
+                                                AllowRequestDataSet = Configuration.Configurations.AllowRequestDataSet,
+                                                MutiThreading = Configuration.Configurations.MutiThreading,
+                                                RegisterMode = Configuration.Configurations.RegisterMode
+                                            };
+                                            SendData("GetServerConfig", JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "UpdateServerConfig":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 3) break;
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var config = JsonConvert.DeserializeObject<ServerConfig>(x);
+                                            Configuration.Configurations.AllowCompetitorMessaging = config.AllowCompetitorMessaging;
+                                            Configuration.Configurations.AllowRequestDataSet = config.AllowRequestDataSet;
+                                            Configuration.Configurations.MutiThreading = config.MutiThreading;
+                                            Configuration.Configurations.RegisterMode = config.RegisterMode;
+                                            Configuration.Save();
+                                            SendData("UpdateServerConfig", string.Empty, res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "GetUserBelongings":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            var x = GetUsersBelongs(t.Type);
+                                            foreach (var i in x)
+                                            {
+                                                i.Achievement = string.Empty;
+                                                i.Icon = string.Empty;
+                                                i.RegisterDate = string.Empty;
+                                            }
+                                            SendData("GetUserBelongings", t.Type.ToString() + Divpar + JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        }));
+                                        break;
+                                    }
+                                case "UpdateUserBelongings":
+                                    {
+                                        if (res.Client.UserId == 0) break;
+                                        var t = GetUser(res.Client.UserId);
+                                        if (t.Type <= 0 || t.Type >= 4) break;
+                                        var x = string.Empty;
+                                        for (var i = 0; i < res.Content.Count; i++)
+                                            if (i != res.Content.Count - 1)
+                                                x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                            else
+                                                x += Encoding.Unicode.GetString(res.Content[i]);
+                                        var users = JsonConvert.DeserializeObject<List<List<UserInfo>>>(x);
+                                        if (users.Count != 2) continue;
+                                        ActionList.Enqueue(new Task(() =>
+                                        {
+                                            DeleteUser(users[0]?.Select(i => i.UserId));
+                                            UpdateUser(users[1]);
+                                            SendData("UpdateUserBelongings", string.Empty, res.Client.ConnId);
                                         }));
                                         break;
                                     }

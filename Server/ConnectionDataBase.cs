@@ -669,6 +669,83 @@ namespace Server
             }
         }
 
+        public static void DeleteUser(IEnumerable<int> toDelete)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    foreach (var t in toDelete)
+                    {
+                        cmd.CommandText = "DELETE From User Where UserId=@1";
+                        SQLiteParameter[] parameters =
+                        {
+                            new SQLiteParameter("@1", DbType.Int32)
+                        };
+                        parameters[0].Value = t;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        cmd.Parameters.Clear();
+                    }
+                }
+            }
+        }
+
+        public static void UpdateUser(IEnumerable<UserInfo> toUpdate)
+        {
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    foreach (var t in toUpdate)
+                    {
+                        if (CheckUser(t.UserName) != 0)
+                        {
+                            cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.Int32),
+                            };
+                            parameters[0].Value = t.Password;
+                            parameters[1].Value = t.Type;
+                            parameters[2].Value = t.UserId;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                            cmd.Parameters.Clear();
+                        }
+                        else
+                        {
+                            cmd.CommandText = "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.String),
+                                new SQLiteParameter("@3", DbType.String),
+                                new SQLiteParameter("@4", DbType.Int32),
+                                new SQLiteParameter("@5", DbType.String),
+                                new SQLiteParameter("@6", DbType.String),
+                                new SQLiteParameter("@7", DbType.Int32),
+                                new SQLiteParameter("@8", DbType.Int32)
+                            };
+                            parameters[0].Value = t.UserName;
+                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                            parameters[2].Value = t.Password;
+                            parameters[3].Value = t.Type;
+                            parameters[4].Value = string.Empty;
+                            parameters[5].Value = string.Empty;
+                            parameters[6].Value = 0;
+                            parameters[7].Value = 0;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                            cmd.Parameters.Clear();
+                        }
+                    }
+                }
+            }
+        }
+
         public static List<string> SaveUser(IEnumerable<int> toDelete)
         {
             var failed = new List<string>();
@@ -686,6 +763,7 @@ namespace Server
                         parameters[0].Value = t;
                         cmd.Parameters.AddRange(parameters);
                         cmd.ExecuteNonQuery();
+                        cmd.Parameters.Clear();
                     }
                     foreach (var t in UserHelper.UsersBelongs)
                         if (t.UserId != 0)
@@ -703,6 +781,7 @@ namespace Server
                             parameters[2].Value = t.UserId;
                             cmd.Parameters.AddRange(parameters);
                             cmd.ExecuteNonQuery();
+                            cmd.Parameters.Clear();
                         }
                         else
                         {
@@ -734,6 +813,7 @@ namespace Server
                             parameters[7].Value = 0;
                             cmd.Parameters.AddRange(parameters);
                             cmd.ExecuteNonQuery();
+                            cmd.Parameters.Clear();
                         }
                 }
             }

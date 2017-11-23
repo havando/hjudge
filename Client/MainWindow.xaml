@@ -21,7 +21,7 @@
                                VerticalAlignment="Top" FontSize="14" />
                         <Button Content="注销" HorizontalAlignment="Left" Margin="629,277,0,0" VerticalAlignment="Top"
                                 Width="58" Height="32" Click="Button_Click_1" />
-                        <Expander Header="修改密码" HorizontalAlignment="Left" Height="148" Margin="33,161,0,0"
+                        <Expander Name="ChangePasswordExpander"  Header="修改密码" HorizontalAlignment="Left" Height="148" Margin="33,161,0,0"
                                   VerticalAlignment="Top" Width="283" Expanded="Expander_Expanded"
                                   Collapsed="Expander_Collapsed">
                             <Grid Background="White">

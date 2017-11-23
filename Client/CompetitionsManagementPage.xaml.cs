@@ -205,6 +205,7 @@ namespace Client
         public static List<Competition> QueryCompetition()
         {
             _queryCompetitionState = false;
+            _queryCompetitionResult?.Clear();
             SendData("QueryCompetitionClient", string.Empty);
             while (!_queryCompetitionState)
             {
