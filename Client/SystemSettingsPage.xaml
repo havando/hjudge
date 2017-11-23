@@ -9,22 +9,22 @@
       Title="SystemSettingsPage" Loaded="Page_Loaded">
 
     <Grid>
-        <CheckBox x:Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="10,41,0,0"
+        <CheckBox x:Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="0,31,0,0"
             VerticalAlignment="Top" />
-        <Label Content="评测最大并发数量：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
-        <TextBox x:Name="MutiThreading" HorizontalAlignment="Left" Height="26" Margin="133,11,0,0" TextWrapping="Wrap"
+        <Label Content="评测最大并发数量：" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <TextBox x:Name="MutiThreading" HorizontalAlignment="Left" Height="26" Margin="123,1,0,0" TextWrapping="Wrap"
             Text="0" VerticalAlignment="Top" Width="37" />
-        <Label Content="*注：0 表示自动控制" HorizontalAlignment="Left" Margin="175,12,0,0" VerticalAlignment="Top"
+        <Label Content="*注：0 表示自动控制" HorizontalAlignment="Left" Margin="165,2,0,0" VerticalAlignment="Top"
             Foreground="Red" />
-        <Label Content="注册模式：" HorizontalAlignment="Left" Margin="10,61,0,0" VerticalAlignment="Top" />
-        <RadioButton x:Name="BanRegister" Content="禁止" HorizontalAlignment="Left" Margin="85,67,0,0"
+        <Label Content="注册模式：" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top" />
+        <RadioButton x:Name="BanRegister" Content="禁止" HorizontalAlignment="Left" Margin="75,57,0,0"
             VerticalAlignment="Top" IsChecked="True" />
-        <RadioButton x:Name="InquiryRegister" Content="审核" HorizontalAlignment="Left" Margin="133,67,0,0"
+        <RadioButton x:Name="InquiryRegister" Content="审核" HorizontalAlignment="Left" Margin="123,57,0,0"
             VerticalAlignment="Top" />
-        <RadioButton x:Name="AllowRegister" Content="开放" HorizontalAlignment="Left" Margin="181,67,0,0"
+        <RadioButton x:Name="AllowRegister" Content="开放" HorizontalAlignment="Left" Margin="171,57,0,0"
             VerticalAlignment="Top" />
-        <CheckBox x:Name="AllowMessagingCheckBox" Content="允许选手互发消息" HorizontalAlignment="Left" Margin="159,41,0,0"
+        <CheckBox x:Name="AllowMessagingCheckBox" Content="允许选手互发消息" HorizontalAlignment="Left" Margin="149,31,0,0"
             VerticalAlignment="Top" />
-        <Button Content="保存" HorizontalAlignment="Left" Margin="245,61,0,0" VerticalAlignment="Top" Width="51" Height="26" Click="Button_Click"/>
+        <Button Content="保存" HorizontalAlignment="Left" Margin="235,51,0,0" VerticalAlignment="Top" Width="51" Height="26" Click="Button_Click"/>
     </Grid>
 </Page>
