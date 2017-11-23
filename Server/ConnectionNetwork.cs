@@ -69,6 +69,7 @@ namespace Server
                     SendData("Logout", "Succeed", i.Info.ConnId);
                     i.Info.UserId = 0;
                     while (i.Data.TryDequeue(out var temp)) { temp.Clear(); }
+                    HServer.Disconnect(i.Info.ConnId);
                 }
         }
 

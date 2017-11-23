@@ -338,6 +338,7 @@ namespace Server
                     ConnId = id,
                     IpAddress = ip,
                     Port = port,
+                    LastCheck = DateTime.Now,
                     PkgInfo = new PkgInfo
                     {
                         IsHeader = true,
