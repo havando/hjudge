@@ -61,6 +61,11 @@ namespace Client
             return true;
         }
 
+        public static void ReConnect()
+        {
+            Connect(_ip, _port);
+        }
+
         private static void Connect(string ip, ushort port)
         {
             Task.Run(() =>
@@ -596,6 +601,7 @@ namespace Client
 
         private static void StayConnection()
         {
+            _hasNotify = false;
             var cnt = 0;
             while (!IsExited)
             {
@@ -616,16 +622,13 @@ namespace Client
                     if (cnt <= 3) continue;
                     else cnt = 0;
                 }
-                UpdateMainPage.Invoke($"Connection{Divpar}Break");
                 if (!_hasNotify)
                 {
-                    MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    UpdateMainPage.Invoke($"Connection{Divpar}Break");
                     _hasNotify = true;
                 }
                 break;
             }
-            Thread.Sleep(1000);
-            Connect(_ip, _port);
         }
 
         #endregion

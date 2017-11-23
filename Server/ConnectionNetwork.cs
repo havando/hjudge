@@ -66,7 +66,6 @@ namespace Server
             foreach (var i in Recv)
                 if (i.Info.UserId != 0)
                 {
-                    SendData("Logout", "Succeed", i.Info.ConnId);
                     i.Info.UserId = 0;
                     while (i.Data.TryDequeue(out var temp)) { temp.Clear(); }
                     HServer.Disconnect(i.Info.ConnId);

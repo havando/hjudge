@@ -167,6 +167,7 @@ namespace Client
                                     {
                                         _userName = string.Empty;
                                         _curId = 0;
+                                        Connection.ReConnect();
                                         Dispatcher.Invoke(() =>
                                         {
                                             CodeSubmit.Visibility = Messaging.Visibility =
@@ -196,6 +197,7 @@ namespace Client
                                             Loading4.Visibility = Visibility.Hidden;
                                             Loading5.Visibility = Visibility.Hidden;
                                             ChangePasswordExpander.IsExpanded = false;
+                                            MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                                         });
                                         break;
                                     }
