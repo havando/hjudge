@@ -440,7 +440,7 @@ namespace Server
                                         if (filePath.Substring(0, 1) == "\\")
                                             filePath = filePath.Substring(1);
                                         if (filePath.Substring(filePath.Length - 1) == "\\")
-                                            filePath = filePath.Substring(filePath.Length - 1);
+                                            filePath = filePath.Substring(0, filePath.Length - 1);
                                     }
                                     filePath = AppDomain.CurrentDomain.BaseDirectory + "\\Files\\" + filePath;
                                     if (File.Exists(filePath))
