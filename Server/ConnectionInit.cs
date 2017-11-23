@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using HPSocketCS;
+using System.Threading;
 
 namespace Server
 {
@@ -362,8 +363,8 @@ namespace Server
             HServer.Port = 23333;
             if (!HServer.Start())
                 MessageBox.Show("服务端网络初始化失败，请检查系统设置", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-            DealingBytes();
-            DealingOperations();
+            new Thread(DealingBytes).Start();
+            new Thread(DealingOperations).Start();
 
             #endregion
         }

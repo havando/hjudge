@@ -193,6 +193,9 @@ namespace Client
                                             Loading1.Visibility = Visibility.Hidden;
                                             Loading2.Visibility = Visibility.Hidden;
                                             Loading3.Visibility = Visibility.Hidden;
+                                            Loading4.Visibility = Visibility.Hidden;
+                                            Loading5.Visibility = Visibility.Hidden;
+                                            ChangePasswordExpander.IsExpanded = false;
                                         });
                                         break;
                                     }
@@ -265,6 +268,8 @@ namespace Client
                                 Loading1.Visibility = Visibility.Hidden;
                                 Loading2.Visibility = Visibility.Hidden;
                                 Loading3.Visibility = Visibility.Hidden;
+                                Loading4.Visibility = Visibility.Hidden;
+                                Loading5.Visibility = Visibility.Hidden;
                                 ChangePasswordExpander.IsExpanded = false;
                             });
                             break;

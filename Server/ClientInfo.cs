@@ -10,6 +10,7 @@ namespace Server
         public IntPtr ConnId { get; set; }
         public string IpAddress { get; set; }
         public ushort Port { get; set; }
+        public DateTime LastCheck { get; set; }
 
         public bool IsChecked
         {
