@@ -37,7 +37,7 @@ namespace Server
             if (t != null)
             {
                 var tableName = new[] { "JudgeId", "UserId", "Date", "ProblemId", "Code", "Timeused", "Memoryused", "Exitcode",
-                    "Result", "Score", "Type", "Description", "CompetitionId" };
+                    "Result", "Score", "Type", "Description", "CompetitionId", "AdditionInfo" };
                 if (tableName.Length != t.Rows.Count) return false;
                 for (var i = 0; i < t.Rows.Count; i++)
                 {
@@ -65,7 +65,8 @@ namespace Server
                 sqlTable.Append("Score ntext,");
                 sqlTable.Append("Type ntext,");
                 sqlTable.Append("Description ntext,");
-                sqlTable.Append("CompetitionId int)");
+                sqlTable.Append("CompetitionId int,");
+                sqlTable.Append("AdditionInfo ntext)");
                 cmd.CommandText = sqlTable.ToString();
                 try
                 {

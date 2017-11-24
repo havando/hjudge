@@ -47,7 +47,8 @@ namespace Server
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                     Type = reader.GetString(10),
                                     Description = reader.GetString(11),
-                                    CompetitionId = reader.GetInt32(12)
+                                    CompetitionId = reader.GetInt32(12),
+                                    AdditionInfo = reader.GetString(13)
                                 };
                             }
                             catch
@@ -139,7 +140,8 @@ namespace Server
                                     Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                     Type = reader.GetString(10),
                                     Description = reader.GetString(11),
-                                    CompetitionId = reader.GetInt32(12)
+                                    CompetitionId = reader.GetInt32(12),
+                                    AdditionInfo = reader.GetString(13)
                                 };
                                 if (t.ResultSummery == "Judging...") continue;
                                 if (start-- > 0) continue;
@@ -952,7 +954,8 @@ namespace Server
                                 Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                 Type = reader.GetString(10),
                                 Description = reader.GetString(11),
-                                CompetitionId = reader.GetInt32(12)
+                                CompetitionId = reader.GetInt32(12),
+                                AdditionInfo = reader.GetString(13)
                             };
                             if (t.ResultSummery == "Judging...") continue;
                             a.Add(t);
@@ -1000,7 +1003,8 @@ namespace Server
                                 Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
                                 Type = reader.GetString(10),
                                 Description = reader.GetString(11),
-                                CompetitionId = reader.GetInt32(12)
+                                CompetitionId = reader.GetInt32(12),
+                                AdditionInfo = reader.GetString(13)
                             });
                         }
                         catch
@@ -1290,7 +1294,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     cmd.CommandText =
-                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12 Where JudgeId=@9";
+                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.Int32),
@@ -1304,7 +1308,8 @@ namespace Server
                         new SQLiteParameter("@9", DbType.Int32),
                         new SQLiteParameter("@10", DbType.String),
                         new SQLiteParameter("@11", DbType.String),
-                        new SQLiteParameter("@12", DbType.Int32)
+                        new SQLiteParameter("@12", DbType.Int32),
+                        new SQLiteParameter("@13", DbType.String)
                     };
                     parameters[0].Value = pInfo.UserId;
                     parameters[1].Value = pInfo.ProblemId;
@@ -1340,6 +1345,7 @@ namespace Server
                     parameters[9].Value = pInfo.Type;
                     parameters[10].Value = pInfo.Description;
                     parameters[11].Value = pInfo.CompetitionId;
+                    parameters[12].Value = pInfo.AdditionInfo;
                     cmd.Parameters.AddRange(parameters);
                     cmd.ExecuteNonQuery();
                 }

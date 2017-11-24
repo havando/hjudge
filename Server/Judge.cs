@@ -57,6 +57,7 @@ namespace Server
                 JudgeResult.Type = type;
                 JudgeResult.Description = description;
                 JudgeResult.CompetitionId = competitionId;
+                JudgeResult.AdditionInfo = string.Empty;
                 if (competitionId != 0)
                 {
                     var comp = Connection.GetCompetition(competitionId);
@@ -314,8 +315,9 @@ namespace Server
                 }
                 return;
             }
-
-            if (Compile(compiler))
+            var compileResult = Compile(compiler);
+            JudgeResult.AdditionInfo = compileResult.compileLog;
+            if (compileResult.isSucceeded)
                 Judging(textBlock);
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -816,7 +818,7 @@ namespace Server
             return "\"" + filename + "\"";
         }
 
-        private bool Compile(string compiler)
+        private (bool isSucceeded, string compileLog) Compile(string compiler)
         {
             try
             {
@@ -824,18 +826,26 @@ namespace Server
                 {
                     FileName = compiler,
                     ErrorDialog = false,
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     Arguments = _problem.CompileCommand,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
-                Process.Start(a)?.WaitForExit();
+                var b = new Process { StartInfo = a };
+                b.Start();
+                var stdErr = b.StandardError.ReadToEndAsync();
+                var stdOut = b.StandardOutput.ReadToEndAsync();
+                b?.WaitForExit();
+                var log = stdOut.Result + "\n" + stdErr.Result;
+                log = log.Replace(_workingdir, "...");
                 Thread.Sleep(1);
-                return File.Exists(_workingdir + "\\test_hjudge.exe");
+                return (File.Exists(_workingdir + "\\test_hjudge.exe"), log);
             }
             catch
             {
-                return false;
+                return (false, string.Empty);
             }
         }
     }

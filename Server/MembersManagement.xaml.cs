@@ -147,7 +147,7 @@ namespace Server
                 else
                     t += failed[i];
             if (failed.Count != 0)
-                MessageBox.Show("以下用户未能保存，因为已存在相同用户名的用户：\r\n" + t, "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("以下用户未能保存，因为已存在相同用户名的用户：\n" + t, "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             UserHelper.GetUserBelongs();
             Close();
         }

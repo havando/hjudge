@@ -64,13 +64,13 @@ namespace Client
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListView.SelectedItem is JudgeInfo a)) return;
-            var details = "详情：\r\n";
+            var details = "详情：\n";
             if (a.Result != null)
                 for (var i = 0; i < a.Result.Length; i++)
                     details +=
-                        $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\r\n";
+                        $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\n";
             JudgeDetails.Text = details;
-            Code.Text = "代码：\r\n" + (string.IsNullOrEmpty(a.Code) ? a.Code = Connection.GetJudgeCode(a.JudgeId)?.Code ?? string.Empty : a.Code);
+            Code.Text = "代码：\n" + (string.IsNullOrEmpty(a.Code) ? a.Code = Connection.GetJudgeCode(a.JudgeId)?.Code ?? string.Empty : a.Code);
         }
 
 

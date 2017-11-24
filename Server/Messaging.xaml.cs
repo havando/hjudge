@@ -38,7 +38,7 @@ namespace Server
                 MessageBox.Show("消息过长，无法发送", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            Connection.SendMsg($"回复消息：\r\n{ClientMsg.Text}\r\n消息内容：\r\n{MyMsg.Text}", UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, _userId);
+            Connection.SendMsg($"回复消息：\n{ClientMsg.Text}\n消息内容：\n{MyMsg.Text}", UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, _userId);
             Close();
         }
     }
