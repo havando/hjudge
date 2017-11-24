@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -18,6 +20,8 @@ namespace Server
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
         private bool _isExited;
         private readonly bool _isFinished;
+
+        private string _id;
 
         private bool _isFault;
 
@@ -40,7 +44,7 @@ namespace Server
             try
             {
                 _problem = Connection.GetProblem(problemId);
-                var id = Guid.NewGuid().ToString().Replace("-", string.Empty);
+                _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
                 JudgeResult.JudgeId = Connection.NewJudge(description);
                 if (defaultTime == null)
@@ -111,7 +115,7 @@ namespace Server
 
                 new Thread(Killwerfault).Start();
                 Connection.UpdateJudgeInfo(JudgeResult);
-                _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + id;
+                _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + _id;
 
                 var t = Configuration.Configurations.Compiler.FirstOrDefault(i => i.DisplayName == type);
                 if (t == null)
@@ -225,7 +229,7 @@ namespace Server
                 .Replace("${index0}", cur.ToString())
                 .Replace("${index}", (cur + 1).ToString())
                 .Replace("${file}", _workingdir + $"\\test{extName}")
-                .Replace("${targetfile}", _workingdir + "\\test_hjudge.exe");
+                .Replace("${targetfile}", _workingdir + $"\\test_hjudge_{_id}.exe");
         }
 
         private string GetFileNameWSL(string fileName)
@@ -241,7 +245,7 @@ namespace Server
                 .Replace("${index0}", cur.ToString())
                 .Replace("${index}", (cur + 1).ToString())
                 .Replace("${file}", GetFileNameWSL(_workingdir + $"\\test{extName}"))
-                .Replace("${targetfile}", GetFileNameWSL(_workingdir + "\\test_hjudge.exe"));
+                .Replace("${targetfile}", GetFileNameWSL(_workingdir + $"\\test_hjudge_{_id}.exe"));
         }
 
         private void DeleteFiles(string path)
@@ -428,7 +432,7 @@ namespace Server
                     {
                         StartInfo =
                         {
-                            FileName = string.IsNullOrEmpty(runCommand) ? _workingdir + "\\test_hjudge.exe" : runExec,
+                            FileName = string.IsNullOrEmpty(runCommand) ? _workingdir + $"\\test_hjudge_{_id}.exe" : runExec,
                             Arguments = string.IsNullOrEmpty(runCommand) ? string.Empty : runArgs,
                             WorkingDirectory = _workingdir,
                             WindowStyle = ProcessWindowStyle.Hidden,
@@ -457,16 +461,14 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
-                    Thread.Sleep(1);
                     var inputStream = execute.StandardInput;
                     var outputStream = execute.StandardOutput;
                     if (_problem.InputFileName == "stdin")
                     {
-                        //Thread.Sleep(1);
-                        res = outputStream.ReadToEndAsync();
-                        inputStream.AutoFlush = true;
                         try
                         {
+                            res = outputStream.ReadToEndAsync();
+                            inputStream.AutoFlush = true;
                             inputStream.WriteAsync(
                                 File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0").
                                 GetAwaiter().OnCompleted(() =>
@@ -493,18 +495,39 @@ namespace Server
                             //ignored
                         }
                     }
+                    Process[] processes = new Process[0];
                     long lastDt = 0;
                     var noChangeTime = DateTime.Now;
                     var isNoResponding = false;
+                    var cnt = 0;
                     while (!_isExited)
                     {
+                        if (processes.Length == 0)
+                        {
+                            processes = Process.GetProcessesByName($"test_hjudge_{_id}");
+                            continue;
+                        }
                         try
                         {
-                            execute?.Refresh();
-                            JudgeResult.Timeused[cur] =
-                                Convert.ToInt64(execute.UserProcessorTime.TotalMilliseconds);
-                            JudgeResult.Memoryused[cur] = execute.PeakWorkingSet64 / 1024;
-                            if (lastDt == Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds))
+                            long tmpTime = 0, tmpMem = 0;
+                            for (cnt = 0; cnt < processes.Length; cnt++)
+                            {
+                                try
+                                {
+                                    tmpTime += Convert.ToInt64(processes[cnt].UserProcessorTime.TotalMilliseconds);
+                                    tmpMem += processes[cnt].PeakWorkingSet64 / 1024;
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
+                                processes[cnt].Refresh();
+                            }
+                            if (tmpTime > JudgeResult.Timeused[cur])
+                                JudgeResult.Timeused[cur] = tmpTime;
+                            if (tmpMem > JudgeResult.Memoryused[cur])
+                                JudgeResult.Memoryused[cur] = tmpMem;
+                            if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit * (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 60)
                                 {
@@ -516,7 +539,7 @@ namespace Server
                             else
                             {
                                 noChangeTime = DateTime.Now;
-                                lastDt = Convert.ToInt64(execute.TotalProcessorTime.TotalMilliseconds);
+                                lastDt = JudgeResult.Timeused[cur];
                             }
                         }
                         catch
@@ -526,13 +549,16 @@ namespace Server
                         if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                         {
                             _isFault = true;
-                            try
+                            foreach (var i in processes)
                             {
-                                execute?.Kill();
-                            }
-                            catch
-                            {
-                                //ignored 
+                                try
+                                {
+                                    i.Kill();
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
                             }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Time Limit Exceeded";
@@ -542,13 +568,16 @@ namespace Server
                         if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
                         {
                             _isFault = true;
-                            try
+                            foreach (var i in processes)
                             {
-                                execute?.Kill();
-                            }
-                            catch
-                            {
-                                //ignored 
+                                try
+                                {
+                                    i.Kill();
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
                             }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Memory Limit Exceeded";
@@ -565,17 +594,21 @@ namespace Server
                         }
                         Thread.Sleep(1);
                     }
-                    try
+                    foreach (var i in processes)
                     {
-                        execute?.Kill();
-                    }
-                    catch
-                    {
-                        //ignored
+                        try
+                        {
+                            i.Kill();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
                     try
                     {
                         JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
+                        if (processes.Length != 0) JudgeResult.Exitcode[cur] = processes[0]?.ExitCode ?? 0;
                         if (JudgeResult.Exitcode[cur] != 0 && !_isFault)
                         {
                             JudgeResult.Result[cur] = "Runtime Error";
@@ -589,7 +622,7 @@ namespace Server
                     }
                     if (isNoResponding)
                     {
-                        JudgeResult.Result[cur] = "Unknown Error";
+                        JudgeResult.Result[cur] = "Time Limit Exceeded";
                         JudgeResult.Score[cur] = 0;
                         noRespondingTime[cur]++;
                         if (!noRespondingState)
@@ -860,7 +893,7 @@ namespace Server
                 var log = "±‡“Î»’÷æ£∫\n" + stdOut.Result + "\n" + stdErr.Result;
                 log = log.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...");
                 Thread.Sleep(1);
-                return (File.Exists(_workingdir + "\\test_hjudge.exe"), log);
+                return (File.Exists(_workingdir + $"\\test_hjudge_{_id}.exe"), log);
             }
             catch
             {
