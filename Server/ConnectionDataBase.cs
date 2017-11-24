@@ -938,7 +938,7 @@ namespace Server
                     while (reader.Read())
                         try
                         {
-                            a.Add(new JudgeInfo
+                            var t = new JudgeInfo
                             {
                                 JudgeId = reader.GetInt32(0),
                                 UserId = reader.GetInt32(1),
@@ -953,7 +953,9 @@ namespace Server
                                 Type = reader.GetString(10),
                                 Description = reader.GetString(11),
                                 CompetitionId = reader.GetInt32(12)
-                            });
+                            };
+                            if (t.ResultSummery == "Judging...") continue;
+                            a.Add(t);
                         }
                         catch
                         {
