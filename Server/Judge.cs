@@ -555,7 +555,7 @@ namespace Server
                     try
                     {
                         JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
-                        if (JudgeResult.Exitcode[cur] != 0)
+                        if (JudgeResult.Exitcode[cur] != 0 && !_isFault)
                         {
                             JudgeResult.Result[cur] = "Runtime Error";
                             JudgeResult.Score[cur] = 0;
