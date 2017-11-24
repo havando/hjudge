@@ -22,7 +22,7 @@ namespace Client
                 for (var i = 0; i < jInfo.Result.Length; i++)
                     details +=
                         $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数：{jInfo.Score[i]}\n";
-            details += "\n编译日志：\n" + jInfo.AdditionInfo;
+            details += "\n其他信息：\n" + jInfo.AdditionInfo;
             DetailsBox.Text = "详情：\n" + details;
         }
     }

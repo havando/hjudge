@@ -154,7 +154,7 @@ namespace Server
 
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
                 {
-                    _problem.CompileCommand = GetRealString(t.DefaultArgs, 0, extList[0]);
+                    _problem.CompileCommand = t.Linux ? GetRealStringWSL(t.DefaultArgs, 0, extList[0]) : GetRealString(t.DefaultArgs, 0, extList[0]);
                 }
                 else
                 {
@@ -165,7 +165,7 @@ namespace Server
                         if (comm.Length != 2) continue;
                         if (comm[0] == type)
                         {
-                            _problem.CompileCommand = GetRealString(comm[1], 0, extList[0]);
+                            _problem.CompileCommand = t.Linux ? GetRealStringWSL(comm[1], 0, extList[0]) : GetRealString(comm[1], 0, extList[0]);
                             break;
                         }
                     }
@@ -187,7 +187,7 @@ namespace Server
                 Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}", textBlock);
 
-                BeginJudge(t.CompilerPath, t.SafeCheck, textBlock);
+                BeginJudge(t.CompilerPath, t.StaticCheck, t.Linux ? GetRealStringWSL(t.RunCommand, 0, extList[0]) : GetRealString(t.RunCommand, 0, extList[0]), textBlock);
 
                 Connection.UpdateJudgeInfo(JudgeResult);
 
@@ -228,6 +228,22 @@ namespace Server
                 .Replace("${targetfile}", _workingdir + "\\test_hjudge.exe");
         }
 
+        private string GetFileNameWSL(string fileName)
+        {
+            return "/mnt/" + (fileName.Substring(0, 1).ToLower() + fileName.Substring(1)).Replace('\\', '/').Replace(":", string.Empty);
+        }
+
+        private string GetRealStringWSL(string origin, int cur, string extName)
+        {
+            return origin.Replace("${woringdir}", GetFileNameWSL(_workingdir))
+                .Replace("${datadir}", GetFileNameWSL(AppDomain.CurrentDomain.BaseDirectory + "\\Data"))
+                .Replace("${name}", GetEngName(_problem.ProblemName))
+                .Replace("${index0}", cur.ToString())
+                .Replace("${index}", (cur + 1).ToString())
+                .Replace("${file}", GetFileNameWSL(_workingdir + $"\\test{extName}"))
+                .Replace("${targetfile}", GetFileNameWSL(_workingdir + "\\test_hjudge.exe"));
+        }
+
         private void DeleteFiles(string path)
         {
             try
@@ -244,8 +260,9 @@ namespace Server
             }
         }
 
-        private void BeginJudge(string compiler, string safeCheck, UIElement textBlock)
+        private void BeginJudge(string compiler, string staticCheck, string runCommand, UIElement textBlock)
         {
+            var additionInfo = string.Empty;
             try
             {
                 Directory.CreateDirectory(_workingdir);
@@ -270,37 +287,25 @@ namespace Server
                         continue;
                     File.Copy(t, _workingdir + "\\" + Path.GetFileName(t), true);
                 }
-                if (!string.IsNullOrEmpty(safeCheck))
+                if (!string.IsNullOrEmpty(staticCheck))
                 {
-                    var a = new ProcessStartInfo
+                    var a = new Process
                     {
-                        FileName = safeCheck,
-                        Arguments = Dn(_workingdir + $"\\test{extList[0]}") + " " +
-                                    Dn(_workingdir + "\\security_check.res"),
-                        ErrorDialog = false,
-                        UseShellExecute = true,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    };
-                    Process.Start(a)?.WaitForExit();
-                    var fs = File.OpenRead(_workingdir + "\\security_check.res");
-                    var sr = new StreamReader(fs);
-                    if ((sr.ReadLine()?.Trim() ?? string.Empty) != "ok")
-                    {
-                        for (var i = 0; i < JudgeResult.Result.Length; i++)
+                        StartInfo =
                         {
-                            JudgeResult.Result[i] = "Runtime Error";
-                            JudgeResult.Exitcode[i] = 0;
-                            JudgeResult.Score[i] = 0;
-                            JudgeResult.Timeused[i] = 0;
-                            JudgeResult.Memoryused[i] = 0;
+                            FileName = staticCheck,
+                            Arguments = Dn(_workingdir + $"\\test{extList[0]}"),
+                            ErrorDialog = false,
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardOutput = true
                         }
-                        sr.Close();
-                        fs.Close();
-                        return;
-                    }
-                    sr.Close();
-                    fs.Close();
+                    };
+                    a.Start();
+                    var staticRes = a.StandardOutput.ReadToEndAsync();
+                    a.WaitForExit();
+                    additionInfo += "静态检查：\n" + staticRes.Result + "\n";
                 }
             }
             catch (Exception ex)
@@ -316,9 +321,10 @@ namespace Server
                 return;
             }
             var compileResult = Compile(compiler);
-            JudgeResult.AdditionInfo = compileResult.compileLog;
+            additionInfo += compileResult.compileLog;
+            JudgeResult.AdditionInfo = additionInfo;
             if (compileResult.isSucceeded)
-                Judging(textBlock);
+                Judging(textBlock, runCommand);
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
                 {
@@ -330,7 +336,7 @@ namespace Server
                 }
         }
 
-        private void Judging(UIElement textBlock)
+        private void Judging(UIElement textBlock, string runCommand)
         {
             var cur = -1;
             var noRespondingTime = new int[_problem.DataSets.Length];
@@ -406,11 +412,24 @@ namespace Server
                         {
                             //ignored
                         }
+                    var runExec = string.Empty;
+                    var runArgs = string.Empty;
+                    try
+                    {
+                        var splitIndex = runCommand.IndexOf(' ');
+                        runExec = runCommand.Substring(0, splitIndex).Trim();
+                        runArgs = runCommand.Substring(splitIndex).Trim();
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     var execute = new Process
                     {
                         StartInfo =
                         {
-                            FileName = _workingdir + "\\test_hjudge.exe",
+                            FileName = string.IsNullOrEmpty(runCommand) ? _workingdir + "\\test_hjudge.exe" : runExec,
+                            Arguments = string.IsNullOrEmpty(runCommand) ? string.Empty : runArgs,
                             WorkingDirectory = _workingdir,
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false,
@@ -838,8 +857,8 @@ namespace Server
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();
                 b?.WaitForExit();
-                var log = stdOut.Result + "\n" + stdErr.Result;
-                log = log.Replace(_workingdir, "...");
+                var log = "编译日志：\n" + stdOut.Result + "\n" + stdErr.Result;
+                log = log.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...");
                 Thread.Sleep(1);
                 return (File.Exists(_workingdir + "\\test_hjudge.exe"), log);
             }

@@ -466,7 +466,7 @@ namespace Server
                 for (var i = 0; i < a.Result.Length; i++)
                     details +=
                         $"#{i + 1} 时间：{a.Timeused[i]}ms，内存：{a.Memoryused[i]}kb，退出代码：{a.Exitcode[i]}，结果：{a.Result[i]}，分数：{a.Score[i]}\n";
-            details += "\n编译日志：\n" + a.AdditionInfo;
+            details += "\n其他信息：\n" + a.AdditionInfo;
             JudgeDetails.Text = details;
         }
 

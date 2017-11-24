@@ -28,21 +28,31 @@ namespace Server
                             (CompilerBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                CompilerBox.Items.Add((UIElement) obj);
-                if ((CompilerBox.Items[CompilerBox.Items.Count - 1] as GroupBox)?.Content is Grid tmp)
+                CompilerBox.Items.Add((UIElement)obj);
+                if ((CompilerBox.Items[CompilerBox.Items.Count - 1] as GroupBox)?.Content is StackPanel tmp)
                     foreach (var j in tmp.Children)
-                        if (j is TextBox t)
+                        if (j is DockPanel tmp2)
+                            foreach (var k in tmp2.Children)
+                            {
+                                if (k is TextBox t)
+                                {
+                                    if (t.Name.Contains("Name"))
+                                        t.Text = i.DisplayName;
+                                    if (t.Name.Contains("Compiler"))
+                                        t.Text = i.CompilerPath;
+                                    if (t.Name.Contains("Args"))
+                                        t.Text = i.DefaultArgs;
+                                    if (t.Name.Contains("Ext"))
+                                        t.Text = i.ExtName;
+                                    if (t.Name.Contains("Static"))
+                                        t.Text = i.StaticCheck;
+                                    if (t.Name.Contains("Run"))
+                                        t.Text = i.RunCommand;
+                                }
+                            }
+                        else if (j is CheckBox p)
                         {
-                            if (t.Name.Contains("Name"))
-                                t.Text = i.DisplayName;
-                            if (t.Name.Contains("Compiler"))
-                                t.Text = i.CompilerPath;
-                            if (t.Name.Contains("Args"))
-                                t.Text = i.DefaultArgs;
-                            if (t.Name.Contains("Ext"))
-                                t.Text = i.ExtName;
-                            if (t.Name.Contains("Safe"))
-                                t.Text = i.SafeCheck;
+                            p.IsChecked = i.Linux;
                         }
             }
         }
@@ -55,7 +65,7 @@ namespace Server
                         (CompilerBox.Items.Count + 1).ToString()));
             var xmlreader = new XmlTextReader(strreader);
             var obj = XamlReader.Load(xmlreader);
-            CompilerBox.Items.Add((UIElement) obj);
+            CompilerBox.Items.Add((UIElement)obj);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -65,20 +75,30 @@ namespace Server
             {
                 var cTmp = new Compiler();
                 if (i is GroupBox gpBox)
-                    if (gpBox.Content is Grid tmp)
+                    if (gpBox.Content is StackPanel tmp)
                         foreach (var j in tmp.Children)
-                            if (j is TextBox t)
+                            if (j is DockPanel tmp2)
+                                foreach (var k in tmp2.Children)
+                                {
+                                    if (k is TextBox t)
+                                    {
+                                        if (t.Name.Contains("Name"))
+                                            cTmp.DisplayName = t.Text;
+                                        if (t.Name.Contains("Compiler"))
+                                            cTmp.CompilerPath = t.Text;
+                                        if (t.Name.Contains("Args"))
+                                            cTmp.DefaultArgs = t.Text;
+                                        if (t.Name.Contains("Ext"))
+                                            cTmp.ExtName = t.Text;
+                                        if (t.Name.Contains("Static"))
+                                            cTmp.StaticCheck = t.Text;
+                                        if (t.Name.Contains("Run"))
+                                            cTmp.RunCommand = t.Text;
+                                    }
+                                }
+                            else if (j is CheckBox p)
                             {
-                                if (t.Name.Contains("Name"))
-                                    cTmp.DisplayName = t.Text;
-                                if (t.Name.Contains("Compiler"))
-                                    cTmp.CompilerPath = t.Text;
-                                if (t.Name.Contains("Args"))
-                                    cTmp.DefaultArgs = t.Text;
-                                if (t.Name.Contains("Ext"))
-                                    cTmp.ExtName = t.Text;
-                                if (t.Name.Contains("Safe"))
-                                    cTmp.SafeCheck = t.Text;
+                                cTmp.Linux = p.IsChecked ?? false;
                             }
                 if (!string.IsNullOrEmpty(cTmp.DisplayName))
                 {
