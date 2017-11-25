@@ -96,7 +96,7 @@ namespace Server
                                 };
                                 var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
                                 var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                    .Concat(new long[] {0})
+                                    .Concat(new long[] { 0 })
                                     .Max();
                                 if (cpuCounter.NextValue() <= 75 &&
                                     ramCounter.NextValue() > maxMemoryNeeded + 262144)
@@ -137,7 +137,7 @@ namespace Server
                     _isFinished = true;
                     return;
                 }
-                var extList = t.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+                var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 if (extList.Length == 0)
                 {
                     for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -169,7 +169,7 @@ namespace Server
                 }
                 else
                 {
-                    var commList = _problem.CompileCommand.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
+                    var commList = _problem.CompileCommand.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var s in commList)
                     {
                         var comm = s.Split(':');
@@ -641,7 +641,15 @@ namespace Server
                     try
                     {
                         JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
-                        if (processes.Length != 0) JudgeResult.Exitcode[cur] = processes[0]?.ExitCode ?? 0;
+                        if (processes.Length != 0)
+                            try
+                            {
+                                JudgeResult.Exitcode[cur] = processes[0]?.ExitCode ?? 0;
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         if (JudgeResult.Exitcode[cur] != 0 && !_isFault)
                         {
                             JudgeResult.Result[cur] = "Runtime Error";
@@ -918,7 +926,7 @@ namespace Server
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 };
-                var b = new Process {StartInfo = a};
+                var b = new Process { StartInfo = a };
                 b.Start();
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();
