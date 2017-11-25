@@ -15,7 +15,7 @@ namespace Client
     /// </summary>
     public partial class CompetitionsManagementPage : Page
     {
-        private static readonly ObservableCollection<Competition> _competitions =
+        private static readonly ObservableCollection<Competition> Competitions =
             new ObservableCollection<Competition>();
 
         public CompetitionsManagementPage()
@@ -116,7 +116,7 @@ namespace Client
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var t = Connection.NewCompetition();
-            _competitions.Add(t);
+            Competitions.Add(t);
             ListView.SelectedItem = t;
         }
 
@@ -125,7 +125,7 @@ namespace Client
             if (ListView.SelectedItem is Competition t)
             {
                 Connection.DeleteCompetition(t.CompetitionId);
-                _competitions.Remove(t);
+                Competitions.Remove(t);
             }
         }
 
@@ -170,10 +170,10 @@ namespace Client
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            _competitions.Clear();
-            ListView.ItemsSource = _competitions;
+            Competitions.Clear();
+            ListView.ItemsSource = Competitions;
             foreach (var i in Connection.QueryCompetition())
-                _competitions.Add(i);
+                Competitions.Add(i);
         }
     }
 

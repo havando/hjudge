@@ -90,7 +90,7 @@ namespace Client
                         ComTimeC.Text = $"{st.Days * 24 + st.Hours}:{st.Minutes}:{st.Seconds}";
                         ComTimeR.Text = $"{et.Days * 24 + et.Hours}:{et.Minutes}:{et.Seconds}";
                         ComState.Text =
-                            $"进行中 ({Math.Round(st.TotalSeconds * 100 / ((_competition.EndTime - _competition.StartTime).TotalSeconds == 0 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
+                            $"进行中 ({Math.Round(st.TotalSeconds * 100 / (Math.Abs((_competition.EndTime - _competition.StartTime).TotalSeconds) < 0.00001 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
                     }
                 });
                 Thread.Sleep(1000);
@@ -192,7 +192,7 @@ namespace Client
                                 {
                                     var m = Convert.ToInt32(l.Name.Substring(13));
                                     l.Text =
-                                        $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                                        $"{x.Count(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")}/{x.Count(p => p.ProblemId == _competition.ProblemSet[m])}";
                                 }
                 });
             var tmpList = new List<CompetitionUserInfo>();
@@ -200,6 +200,7 @@ namespace Client
             var user = x.Select(p => p.UserName).Distinct();
             foreach (var i in user)
             {
+                if (_competition.ProblemSet == null) continue;
                 var tmp = new CompetitionUserInfo
                 {
                     UserName = i,
@@ -211,18 +212,16 @@ namespace Client
                 {
                     tmp.ProblemInfo[j] = new CompetitionProblemInfo();
                     if ((_competition.Option & 8) == 0 && GetNowDateTime() < _competition.EndTime) continue;
-                    var ac = x.Where(p =>
-                                 p.UserName == i && p.ResultSummery == "Accepted" &&
-                                 p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
-                    var all = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
-                    if (ac != 0) tmp.ProblemInfo[j].Color = Brushes.LightGreen;
-                    else tmp.ProblemInfo[j].Color = Brushes.LightPink;
+                    var ac = x.Count(p => p.UserName == i && p.ResultSummery == "Accepted" &&
+                                          p.ProblemId == _competition.ProblemSet[j]);
+                    var all = x.Count(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
+                    tmp.ProblemInfo[j].Color = ac != 0 ? Brushes.LightGreen : Brushes.LightPink;
                     var time = new TimeSpan(0);
                     var cnt = 0;
-                    var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
+                    var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]).ToList();
                     if ((_competition.Option & 2) == 0)
                     {
-                        if (tmpScoreBase.Count() > 0) score += tmpScoreBase.Max(p => p.FullScore);
+                        if (tmpScoreBase.Any()) score += tmpScoreBase.Max(p => p.FullScore);
                         tmp.ProblemInfo[j].State = $"{ac}/{all}";
                         foreach (var k in x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]))
                         {
@@ -243,9 +242,8 @@ namespace Client
                     }
                     else
                     {
-                        if (tmpScoreBase.Count() > 0) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
-                        var y = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
-                                    ?.LastOrDefault() ?? null;
+                        if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
+                        var y = x.LastOrDefault(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
                         if (y != null && y.ResultSummery == "Accepted")
                         {
                             tmp.ProblemInfo[j].State = "Solved";
@@ -271,7 +269,7 @@ namespace Client
             }
             tmpList.Sort((x1, x2) =>
             {
-                if (x1.Score != x2.Score) return x2.Score.CompareTo(x1.Score);
+                if (Math.Abs(x1.Score - x2.Score) > 0.00001) return x2.Score.CompareTo(x1.Score);
                 return x1.TotTime.CompareTo(x2.TotTime);
             });
             for (var i = 0; i < tmpList.Count; i++)
@@ -287,8 +285,8 @@ namespace Client
             foreach (var judgeInfo in x)
                 Dispatcher.Invoke(() =>
                 {
-                    if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
-                    if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                    if (_problemFilter.All(i => i != judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                    if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                 });
             if (GetNowDateTime() < _competition.EndTime)
                 _hasRefreshWhenFinished = false;
@@ -415,8 +413,8 @@ namespace Client
             var tf = -1;
             Dispatcher.Invoke(() =>
             {
-                pf = ProblemFilter.SelectedItem as string ?? null;
-                uf = UserFilter.SelectedItem as string ?? null;
+                pf = ProblemFilter.SelectedItem as string;
+                uf = UserFilter.SelectedItem as string;
                 tf = TimeFilter.SelectedIndex;
             });
             if (pf != null) if (p.ProblemName != pf) return false;
@@ -497,7 +495,7 @@ namespace Client
                 foreach (var p in _curJudgeInfo)
                     Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
                 Dispatcher.Invoke(() => _curJudgeInfo.Clear());
-                foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
+                foreach (var p in _curJudgeInfoBak.Where(Filter))
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
             });
         }
@@ -573,34 +571,34 @@ namespace Client
 
     public static partial class Connection
     {
-        public static List<Problem> _queryProblemsForCompetitionResult = new List<Problem>();
-        public static bool _queryProblemsForCompetitionState;
-        public static List<JudgeInfo> _queryJudgeLogBelongsToCompetitionResult = new List<JudgeInfo>();
-        public static bool _queryJudgeLogBelongsToCompetitionState;
-        public static List<Compiler> _queryLanguagesForCompetitionResult = new List<Compiler>();
-        public static bool _queryLanguagesForCompetitionState;
-        public static DateTime _getCurrentDateTimeResult;
-        public static bool _getCurrentDateTimeState;
+        private static readonly List<Problem> QueryProblemsForCompetitionResult = new List<Problem>();
+        private static bool _queryProblemsForCompetitionState;
+        private static readonly List<JudgeInfo> QueryJudgeLogBelongsToCompetitionResult = new List<JudgeInfo>();
+        private static bool _queryJudgeLogBelongsToCompetitionState;
+        private static List<Compiler> _queryLanguagesForCompetitionResult = new List<Compiler>();
+        private static bool _queryLanguagesForCompetitionState;
+        private static DateTime _getCurrentDateTimeResult;
+        private static bool _getCurrentDateTimeState;
 
 
         public static List<JudgeInfo> QueryJudgeLogBelongsToCompetition(int competitionId)
         {
             _queryJudgeLogBelongsToCompetitionState = false;
-            _queryJudgeLogBelongsToCompetitionResult.Clear();
+            QueryJudgeLogBelongsToCompetitionResult.Clear();
             SendData("QueryJudgeLogBelongsToCompetition", competitionId.ToString());
             while (!_queryJudgeLogBelongsToCompetitionState)
                 Thread.Sleep(1);
-            return _queryJudgeLogBelongsToCompetitionResult;
+            return QueryJudgeLogBelongsToCompetitionResult;
         }
 
         public static List<Problem> QueryProblemsForCompetition(int competitionId)
         {
             _queryProblemsForCompetitionState = false;
-            _queryProblemsForCompetitionResult.Clear();
+            QueryProblemsForCompetitionResult.Clear();
             SendData("QueryProblemsForCompetition", competitionId.ToString());
             while (!_queryProblemsForCompetitionState)
                 Thread.Sleep(1);
-            return _queryProblemsForCompetitionResult;
+            return QueryProblemsForCompetitionResult;
         }
 
         public static List<Compiler> QueryLanguagesForCompetition()

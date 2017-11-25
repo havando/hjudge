@@ -15,7 +15,7 @@ namespace Server
     /// </summary>
     public partial class CompetitionManagement : Window
     {
-        private static readonly ObservableCollection<Competition> _competitions =
+        private static readonly ObservableCollection<Competition> Competitions =
             new ObservableCollection<Competition>();
 
         public CompetitionManagement()
@@ -100,10 +100,10 @@ namespace Server
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _competitions.Clear();
-            ListView.ItemsSource = _competitions;
+            Competitions.Clear();
+            ListView.ItemsSource = Competitions;
             foreach (var i in Connection.QueryCompetition())
-                _competitions.Add(i);
+                Competitions.Add(i);
         }
 
         private void LimitedSubmitTime_TextChanged(object sender, TextChangedEventArgs e)
@@ -124,7 +124,7 @@ namespace Server
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var t = Connection.GetCompetition(Connection.NewCompetition());
-            _competitions.Add(t);
+            Competitions.Add(t);
             ListView.SelectedItem = t;
         }
 
@@ -133,7 +133,7 @@ namespace Server
             if (ListView.SelectedItem is Competition t)
             {
                 Connection.DeleteCompetition(t.CompetitionId);
-                _competitions.Remove(t);
+                Competitions.Remove(t);
             }
         }
 

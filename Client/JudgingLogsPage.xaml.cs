@@ -215,9 +215,9 @@ namespace Client
                     Dispatcher.Invoke(() =>
                     {
                         _curJudgeInfo.Add(judgeInfo);
-                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName))
+                        if (_problemFilter.All(i => i != judgeInfo.ProblemName))
                             _problemFilter.Add(judgeInfo.ProblemName);
-                        if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                        if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                     });
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
             });
@@ -312,7 +312,7 @@ namespace Client
                 foreach (var p in _curJudgeInfo)
                     Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
                 Dispatcher.Invoke(() => _curJudgeInfo.Clear());
-                foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
+                foreach (var p in _curJudgeInfoBak.Where(Filter))
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
             });
         }
