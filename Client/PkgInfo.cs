@@ -1,14 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Server
+namespace Client
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public class PkgHeader
-    {
-        public int BodySize;
-        public int Id;
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     public class PkgInfo
     {

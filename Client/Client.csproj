@@ -86,9 +86,11 @@
     </ApplicationDefinition>
     <Compile Include="ByteImageConverter.cs" />
     <Compile Include="Competition.cs" />
+    <Compile Include="CompetitionProblemInfo.cs" />
     <Compile Include="CompetitionsManagementPage.xaml.cs">
       <DependentUpon>CompetitionsManagementPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CompetitionUserInfo.cs" />
     <Compile Include="CompetitionViewer.xaml.cs">
       <DependentUpon>CompetitionViewer.xaml</DependentUpon>
     </Compile>
@@ -114,7 +116,8 @@
       <DependentUpon>MembersManagementPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Message.cs" />
-    <Compile Include="Package.cs" />
+    <Compile Include="PkgHeader.cs" />
+    <Compile Include="PkgInfo.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="ProblemDescription.xaml.cs">
       <DependentUpon>ProblemDescription.xaml</DependentUpon>
@@ -122,6 +125,7 @@
     <Compile Include="ProblemsManagementPage.xaml.cs">
       <DependentUpon>ProblemsManagementPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ServerConfig.cs" />
     <Compile Include="SystemSettingsPage.xaml.cs">
       <DependentUpon>SystemSettingsPage.xaml</DependentUpon>
     </Compile>

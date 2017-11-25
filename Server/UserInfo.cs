@@ -4,6 +4,7 @@ namespace Server
 {
     public class UserInfo : INotifyPropertyChanged
     {
+        private bool _isChecked;
         private string _userName;
         public int UserId { get; set; }
         public string RegisterDate { get; set; }
@@ -60,7 +61,6 @@ namespace Server
             }
         }
 
-        private bool _isChecked;
         public bool IsChecked
         {
             get => _isChecked;

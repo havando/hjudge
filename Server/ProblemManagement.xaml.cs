@@ -1,10 +1,10 @@
-﻿using Markdig;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Xml;
+using Markdig;
 
 namespace Server
 {
@@ -20,26 +21,28 @@ namespace Server
     /// </summary>
     public partial class ProblemManagement : Window
     {
-        private ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
+        private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
 
         public ProblemManagement()
         {
             InitializeComponent();
         }
 
-        static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
+        private static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
         {
             webBrowser.Navigating += (s, e) =>
             {
-                var fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var fiComWebBrowser =
+                    typeof(WebBrowser).GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (fiComWebBrowser == null)
                     return;
 
-                object objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
+                var objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
                 if (objComWebBrowser == null)
                     return;
 
-                objComWebBrowser.GetType().InvokeMember("Silent", System.Reflection.BindingFlags.SetProperty, null, objComWebBrowser, new object[] { hide });
+                objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser,
+                    new object[] {hide});
             };
         }
 
@@ -56,9 +59,7 @@ namespace Server
             Task.Run(() =>
             {
                 foreach (var queryProblem in Connection.QueryProblems(true))
-                {
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
-                }
             });
         }
 
@@ -80,7 +81,7 @@ namespace Server
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement)obj);
+                    ListBox.Items.Add((UIElement) obj);
                 }
             }
         }
@@ -142,7 +143,8 @@ namespace Server
             Description.Text = problem.Description;
             Public.IsChecked = (problem.Option & 1) != 0;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
+            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) +
+                         "\n" + Properties.Resources.MarkdownStyleTail;
             DescriptionViewer.NavigateToString(result);
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
@@ -160,7 +162,7 @@ namespace Server
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -275,7 +277,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -284,14 +286,14 @@ namespace Server
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is TabControl t)
-            {
                 if (t.SelectedIndex == 1)
                 {
                     var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                    var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
+                    var result = Properties.Resources.MarkdownStyleHead + "\n" +
+                                 Markdown.ToHtml(Description.Text, pipeline) + "\n" +
+                                 Properties.Resources.MarkdownStyleTail;
                     DescriptionViewer.NavigateToString(result);
                 }
-            }
         }
     }
 }

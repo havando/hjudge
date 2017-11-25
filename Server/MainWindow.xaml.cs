@@ -125,7 +125,7 @@ namespace Server
                         ListBox.Items.Refresh();
                         return tb;
                     }
-                    var t = new TextBlock { Text = content };
+                    var t = new TextBlock {Text = content};
                     ListBox.Items.Add(t);
                     ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
                     return t;
@@ -142,16 +142,16 @@ namespace Server
             switch (res)
             {
                 case 1:
-                    {
-                        MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
-                    }
+                {
+                    MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                }
                 default:
-                    {
-                        if (res != 0)
-                            MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        break;
-                    }
+                {
+                    if (res != 0)
+                        MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                }
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;

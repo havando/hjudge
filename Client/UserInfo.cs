@@ -4,6 +4,7 @@ namespace Client
 {
     public class UserInfo : INotifyPropertyChanged
     {
+        private bool _isChecked;
         private string _userName;
         public int UserId { get; set; }
         public string RegisterDate { get; set; }
@@ -59,7 +60,7 @@ namespace Client
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Type2"));
             }
         }
-        private bool _isChecked;
+
         public bool IsChecked
         {
             get => _isChecked;
@@ -69,6 +70,7 @@ namespace Client
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsChecked"));
             }
         }
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

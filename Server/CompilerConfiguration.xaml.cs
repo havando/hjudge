@@ -28,7 +28,7 @@ namespace Server
                             (CompilerBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                CompilerBox.Items.Add((UIElement)obj);
+                CompilerBox.Items.Add((UIElement) obj);
                 if ((CompilerBox.Items[CompilerBox.Items.Count - 1] as GroupBox)?.Content is StackPanel tmp)
                     foreach (var j in tmp.Children)
                         if (j is DockPanel tmp2)
@@ -51,9 +51,7 @@ namespace Server
                                 }
                             }
                         else if (j is CheckBox p)
-                        {
                             p.IsChecked = i.Linux;
-                        }
             }
         }
 
@@ -65,7 +63,7 @@ namespace Server
                         (CompilerBox.Items.Count + 1).ToString()));
             var xmlreader = new XmlTextReader(strreader);
             var obj = XamlReader.Load(xmlreader);
-            CompilerBox.Items.Add((UIElement)obj);
+            CompilerBox.Items.Add((UIElement) obj);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -97,9 +95,7 @@ namespace Server
                                     }
                                 }
                             else if (j is CheckBox p)
-                            {
                                 cTmp.Linux = p.IsChecked ?? false;
-                            }
                 if (!string.IsNullOrEmpty(cTmp.DisplayName))
                 {
                     if (Configuration.Configurations.Compiler.Any(j => j.DisplayName == cTmp.DisplayName))

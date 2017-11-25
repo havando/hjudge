@@ -19,10 +19,10 @@ namespace Server
     public partial class JudgeLogs : Window
     {
         private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
-        private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
-        private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
-        private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
-        private bool _isFilterActivated = false;
+        private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private bool _isFilterActivated;
+        private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _userFilter = new ObservableCollection<string>();
 
         public JudgeLogs()
         {
@@ -82,14 +82,13 @@ namespace Server
             {
                 var t = Connection.QueryJudgeLog(true);
                 foreach (var judgeInfo in t)
-                {
                     Dispatcher.Invoke(() =>
                     {
                         _curJudgeInfo.Add(judgeInfo);
-                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
+                        if (!_problemFilter.Any(i => i == judgeInfo.ProblemName))
+                            _problemFilter.Add(judgeInfo.ProblemName);
                         if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                     });
-                }
             });
         }
 
@@ -169,7 +168,7 @@ namespace Server
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -196,7 +195,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -229,6 +228,7 @@ namespace Server
             var p = _curJudgeInfo.Count(i => i.IsChecked);
             CheckBox.IsChecked = p == _curJudgeInfo.Count;
         }
+
         private bool Filter(JudgeInfo p)
         {
             var now = DateTime.Now;
@@ -248,40 +248,40 @@ namespace Server
                 switch (tf)
                 {
                     case 0:
-                        {
-                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                            break;
-                        }
+                    {
+                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                        break;
+                    }
                     case 1:
-                        {
-                            if ((now - ti).TotalDays > 3) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 3) return false;
+                        break;
+                    }
                     case 2:
-                        {
-                            if ((now - ti).TotalDays > 7) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 7) return false;
+                        break;
+                    }
                     case 3:
-                        {
-                            if ((now - ti).TotalDays > 30) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 30) return false;
+                        break;
+                    }
                     case 4:
-                        {
-                            if ((now - ti).TotalDays > 91) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 91) return false;
+                        break;
+                    }
                     case 5:
-                        {
-                            if ((now - ti).TotalDays > 182) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 182) return false;
+                        break;
+                    }
                     case 6:
-                        {
-                            if ((now - ti).TotalDays > 365) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 365) return false;
+                        break;
+                    }
                 }
             }
             return true;
@@ -294,12 +294,7 @@ namespace Server
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(p);
-                    });
-                }
+                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
             }
             _isFilterActivated = false;
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
@@ -314,26 +309,17 @@ namespace Server
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(p);
-                    });
-                }
+                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
             }
             _isFilterActivated = true;
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
                 foreach (var p in _curJudgeInfo)
-                {
                     Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
-                }
                 Dispatcher.Invoke(() => _curJudgeInfo.Clear());
                 foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
-                {
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
-                }
             });
         }
     }

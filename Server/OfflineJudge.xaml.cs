@@ -21,10 +21,10 @@ namespace Server
     public partial class OfflineJudge : Window
     {
         private readonly ObservableCollection<JudgeResult> _results = new ObservableCollection<JudgeResult>();
+        private bool _isFinished;
         private ObservableCollection<Problem> _problems;
 
         private bool _stop;
-        private bool _isFinished;
 
         public OfflineJudge()
         {
@@ -129,8 +129,9 @@ namespace Server
                                                throw new InvalidOperationException();
                                 code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
-                                               c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile), StringComparison.CurrentCultureIgnoreCase)))
+                                               c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
+                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile),
+                                                       StringComparison.CurrentCultureIgnoreCase)))
                                            ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
@@ -144,8 +145,9 @@ namespace Server
                                     throw new InvalidOperationException();
                                 code = File.ReadAllText(codeFile, Encoding.Default);
                                 type = Configuration.Configurations.Compiler.FirstOrDefault(c =>
-                                               c.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
-                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile), StringComparison.CurrentCultureIgnoreCase)))
+                                               c.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)
+                                                   .Any(d => string.Equals(d, Path.GetExtension(codeFile),
+                                                       StringComparison.CurrentCultureIgnoreCase)))
                                            ?.DisplayName ??
                                        throw new InvalidOperationException();
                             }
@@ -173,7 +175,7 @@ namespace Server
                                 lock (cntLock)
                                 {
                                     cur++;
-                                    JudgingProcess.Value = (double)cur * 100 / all;
+                                    JudgingProcess.Value = (double) cur * 100 / all;
                                 }
                                 JudgingLog.Items.Add(new TextBlock
                                 {
@@ -187,8 +189,8 @@ namespace Server
                         {
                             if (_stop) break;
                             if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
-                                ? Configuration.ProcessorCount
-                                : Configuration.Configurations.MutiThreading) && Connection.CanPostJudgTask) break;
+                                    ? Configuration.ProcessorCount
+                                    : Configuration.Configurations.MutiThreading) && Connection.CanPostJudgTask) break;
                             Thread.Sleep(100);
                         }
                     }
@@ -237,9 +239,9 @@ namespace Server
                         Content = $"#{j + 1}：{t.Result[i].Result[j]}，{t.Result[i].Score[j]}",
                         Children = new ObservableCollection<ResultTree>()
                     });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"时间：{t.Result[i].Timeused[j]}ms" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"内存：{t.Result[i].Memoryused[j]}kb" });
-                    f[i].Children[j].Children.Add(new ResultTree { Content = $"退出代码：{t.Result[i].Exitcode[j]}" });
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"时间：{t.Result[i].Timeused[j]}ms"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"内存：{t.Result[i].Memoryused[j]}kb"});
+                    f[i].Children[j].Children.Add(new ResultTree {Content = $"退出代码：{t.Result[i].Exitcode[j]}"});
                 }
                 f[i].Children.Add(new ResultTree
                 {
@@ -265,7 +267,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -372,7 +374,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));

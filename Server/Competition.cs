@@ -5,8 +5,11 @@ namespace Server
 {
     public class Competition : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        private string _competitionName;
+        private DateTime _endTime;
+        private DateTime _startTime;
         public int CompetitionId { get; set; }
+
         public string CompetitionName
         {
             get => _competitionName;
@@ -46,16 +49,13 @@ namespace Server
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ProblemCount"));
             }
         }
+
         public int Option { get; set; }
         public string Password { get; set; }
         public string Description { get; set; }
         public int ProblemCount => ProblemSet?.Length ?? 0;
         public int SubmitLimit { get; set; }
-
-        private string _competitionName;
         private int[] _problemSet { get; set; }
-        private DateTime _startTime;
-        private DateTime _endTime;
-
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

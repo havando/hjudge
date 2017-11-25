@@ -21,7 +21,8 @@
                                VerticalAlignment="Top" FontSize="14" />
                         <Button Content="注销" HorizontalAlignment="Left" Margin="629,277,0,0" VerticalAlignment="Top"
                                 Width="58" Height="32" Click="Button_Click_1" />
-                        <Expander Name="ChangePasswordExpander"  Header="修改密码" HorizontalAlignment="Left" Height="148" Margin="33,161,0,0"
+                        <Expander Name="ChangePasswordExpander" Header="修改密码" HorizontalAlignment="Left" Height="148"
+                                  Margin="33,161,0,0"
                                   VerticalAlignment="Top" Width="283" Expanded="Expander_Expanded"
                                   Collapsed="Expander_Collapsed">
                             <Grid Background="White">
@@ -41,7 +42,8 @@
                                         VerticalAlignment="Top" Width="55" Height="26" Click="Button_Click_2" />
                             </Grid>
                         </Expander>
-                        <Label Content="Tips：点击头像可修改" HorizontalAlignment="Left" Margin="20,131,0,0" VerticalAlignment="Top" Foreground="Red" />
+                        <Label Content="Tips：点击头像可修改" HorizontalAlignment="Left" Margin="20,131,0,0"
+                               VerticalAlignment="Top" Foreground="Red" />
                         <Label Content="动态：" HorizontalAlignment="Left" Margin="346,26,0,0" VerticalAlignment="Top" />
                         <ListBox Name="ActiveBox" HorizontalAlignment="Left" Height="216" Margin="346,56,0,0"
                                  VerticalAlignment="Top" Width="341" />
@@ -108,7 +110,7 @@
                     <Image Name="Loading2" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
                            Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
                     <Label Content="点此查看题目描述" HorizontalAlignment="Right" Margin="0,288,82,0"
-                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_4" />
+                           VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_4" />
                 </Grid>
             </TabItem>
             <TabItem Name="Messaging" Header="发送消息">
@@ -122,13 +124,14 @@
                     <Label Content="Tips：消息费用 10 金币/条" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
                     <Label Content="发送对象：" HorizontalAlignment="Left" Margin="10,9,0,0" VerticalAlignment="Top" />
-                    <ListBox Name="SendingTarget" HorizontalAlignment="Left" Height="239" Margin="10,40,0,0" VerticalAlignment="Top" Width="167"/>
+                    <ListBox Name="SendingTarget" HorizontalAlignment="Left" Height="239" Margin="10,40,0,0"
+                             VerticalAlignment="Top" Width="167" />
                     <Label Content="全选" HorizontalAlignment="Left" Margin="109,9,0,0"
-                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_2" />
+                           VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_2" />
                     <Label Content="反选" HorizontalAlignment="Left" Margin="143,9,0,0"
-                        VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_3" />
+                           VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF" MouseDown="Label_MouseDown_3" />
                     <Image x:Name="Loading4" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
-                               Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+                           Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
                 </Grid>
             </TabItem>
             <TabItem Name="Messages" Header="消息记录">
@@ -150,7 +153,7 @@
                     <Label Content="Tips：双击查看详情。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
                     <Image x:Name="Loading5" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
-                               Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+                           Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
                 </Grid>
             </TabItem>
             <TabItem Name="JudgeResult" Header="评测记录">
@@ -215,11 +218,13 @@
             <TabItem Name="Competitions" Header="查看比赛">
                 <Grid>
                     <ListView x:Name="CompetitionList" MouseDoubleClick="CompetitionList_MouseDoubleClick"
-                        SelectionMode="Single" Margin="0,0,0,39">
+                              SelectionMode="Single" Margin="0,0,0,39">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}" Width="50" />
-                                <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"  Width="100" />
+                                <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}"
+                                                Width="50" />
+                                <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"
+                                                Width="100" />
                                 <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
                                 <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
                                 <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
@@ -227,13 +232,15 @@
                         </ListView.View>
                     </ListView>
                     <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
-                        VerticalAlignment="Top" Foreground="Red" />
+                           VerticalAlignment="Top" Foreground="Red" />
                 </Grid>
             </TabItem>
             <TabItem Header="管理后台" Name="AdminConsole">
                 <Grid>
-                    <ListBox Name="ManagementToolsList" HorizontalAlignment="Left" Height="298" Margin="10,10,0,0" VerticalAlignment="Top" Width="97"/>
-                    <Frame Name="ManagementToolsPage" Margin="112,10,10,10" Height="298" NavigationUIVisibility="Hidden"/>
+                    <ListBox Name="ManagementToolsList" HorizontalAlignment="Left" Height="298" Margin="10,10,0,0"
+                             VerticalAlignment="Top" Width="97" />
+                    <Frame Name="ManagementToolsPage" Margin="112,10,10,10" Height="298"
+                           NavigationUIVisibility="Hidden" />
                 </Grid>
             </TabItem>
         </TabControl>

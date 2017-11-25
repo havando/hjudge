@@ -86,7 +86,6 @@
     <Reference Include="System.IO.Packaging, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Packaging.4.0.0\lib\net46\System.IO.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
@@ -116,6 +115,8 @@
     <Compile Include="CompetitionManagement.xaml.cs">
       <DependentUpon>CompetitionManagement.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CompetitionProblemInfo.cs" />
+    <Compile Include="CompetitionUserInfo.cs" />
     <Compile Include="CompetitionViewer.xaml.cs">
       <DependentUpon>CompetitionViewer.xaml</DependentUpon>
     </Compile>
@@ -151,7 +152,8 @@
     <Compile Include="OfflineJudge.xaml.cs">
       <DependentUpon>OfflineJudge.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Package.cs" />
+    <Compile Include="PkgHeader.cs" />
+    <Compile Include="PkgInfo.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="ProblemManagement.xaml.cs">
       <DependentUpon>ProblemManagement.xaml</DependentUpon>
@@ -164,6 +166,7 @@
     <Compile Include="SendMessaging.xaml.cs">
       <DependentUpon>SendMessaging.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ServerConfig.cs" />
     <Compile Include="SystemConfiguration.xaml.cs">
       <DependentUpon>SystemConfiguration.xaml</DependentUpon>
     </Compile>
@@ -193,7 +196,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConnectionBase.cs" />
+    <Compile Include="Connection.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

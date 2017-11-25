@@ -25,9 +25,7 @@ namespace Client
                 SendUser.Content = $"发送用户：{msg.User}";
             }));
             if (msg.State == 0)
-            {
-                Connection.SendData("SetMsgState", msg.MsgId.ToString() + Connection.Divpar + "1");
-            }
+                Connection.SendData("SetMsgState", msg.MsgId + Connection.Divpar + "1");
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

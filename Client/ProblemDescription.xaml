@@ -6,5 +6,5 @@
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
         Title="题目描述" Height="425.425" Width="673.079" Icon="Resources/list.png">
-    <WebBrowser Name="Description"></WebBrowser>
+    <WebBrowser Name="Description" />
 </Window>

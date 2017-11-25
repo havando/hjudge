@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,25 +15,27 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xml;
+using Microsoft.Win32;
 
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for CompetitionViewer.xaml
+    ///     Interaction logic for CompetitionViewer.xaml
     /// </summary>
-
     public partial class CompetitionViewer : Window
     {
-
-        private ObservableCollection<CompetitionUserInfo> _competitionInfo = new ObservableCollection<CompetitionUserInfo>();
-        private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
-        private ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
         private Competition _competition;
-        private ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
-        private ObservableCollection<string> _userFilter = new ObservableCollection<string>();
-        private bool _isFilterActivated = false;
-        private bool _hasFirstLoad = false;
-        private bool _hasRefreshWhenFinished = false;
+
+        private readonly ObservableCollection<CompetitionUserInfo> _competitionInfo =
+            new ObservableCollection<CompetitionUserInfo>();
+
+        private readonly ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
+        private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
+        private bool _hasFirstLoad;
+        private bool _hasRefreshWhenFinished;
+        private bool _isFilterActivated;
+        private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _userFilter = new ObservableCollection<string>();
 
         public CompetitionViewer()
         {
@@ -77,7 +78,8 @@ namespace Server
                         var et = _competition.EndTime - DateTime.Now;
                         ComTimeC.Text = $"{st.Days * 24 + st.Hours}:{st.Minutes}:{st.Seconds}";
                         ComTimeR.Text = $"{et.Days * 24 + et.Hours}:{et.Minutes}:{et.Seconds}";
-                        ComState.Text = $"进行中 ({Math.Round(st.TotalSeconds * 100 / ((_competition.EndTime - _competition.StartTime).TotalSeconds == 0 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
+                        ComState.Text =
+                            $"进行中 ({Math.Round(st.TotalSeconds * 100 / ((_competition.EndTime - _competition.StartTime).TotalSeconds == 0 ? st.TotalSeconds : (_competition.EndTime - _competition.StartTime).TotalSeconds), 2, MidpointRounding.AwayFromZero)} %)";
                     }
                 });
                 Thread.Sleep(1000);
@@ -88,7 +90,9 @@ namespace Server
         {
             if (_competition == null) Close();
             ComName.Content = $"({_competition.CompetitionId}) {_competition.CompetitionName}";
-            if ((_competition.Option & 1) != 0) ComMode.Text = $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
+            if ((_competition.Option & 1) != 0)
+                ComMode.Text =
+                    $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
             if ((_competition.Option & 2) != 0) ComMode.Text = $"最后提交赛";
             if ((_competition.Option & 4) != 0) ComMode.Text = $"罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
@@ -108,7 +112,7 @@ namespace Server
                 for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
                 {
                     var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                                       $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
+                        $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
                     var strreader = new StringReader(t);
                     var xmlreader = new XmlTextReader(strreader);
                     Dispatcher.Invoke(() =>
@@ -121,27 +125,24 @@ namespace Server
             }
             Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
             var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
-            Dispatcher.Invoke(() => { _curJudgeInfo.Clear(); _competitionInfo.Clear(); });
-            for (var i = x.Count - 1; i >= 0; i--)
+            Dispatcher.Invoke(() =>
             {
+                _curJudgeInfo.Clear();
+                _competitionInfo.Clear();
+            });
+            for (var i = x.Count - 1; i >= 0; i--)
                 Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
-            }
             Dispatcher.Invoke(() =>
             {
                 foreach (var i in CompetitionStateColumn.Columns)
-                {
                     if (i.Header is StackPanel j)
-                    {
                         foreach (var k in j.Children)
-                        {
                             if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
                             {
                                 var m = Convert.ToInt32(l.Name.Substring(13));
-                                l.Text = $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
+                                l.Text =
+                                    $"{x.Where(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")?.Count() ?? 0}/{x.Where(p => p.ProblemId == _competition.ProblemSet[m])?.Count() ?? 0}";
                             }
-                        }
-                    }
-                }
             });
             var tmpList = new List<CompetitionUserInfo>();
             Dispatcher.Invoke(() => _competitionInfo.Clear());
@@ -159,7 +160,9 @@ namespace Server
                 for (var j = 0; j < _competition.ProblemSet.Length; j++)
                 {
                     tmp.ProblemInfo[j] = new CompetitionProblemInfo();
-                    var ac = x.Where(p => p.UserName == i && p.ResultSummery == "Accepted" && p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
+                    var ac = x.Where(p =>
+                                 p.UserName == i && p.ResultSummery == "Accepted" &&
+                                 p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
                     var all = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])?.Count() ?? 0;
                     if (ac != 0) tmp.ProblemInfo[j].Color = Brushes.LightGreen;
                     else tmp.ProblemInfo[j].Color = Brushes.LightPink;
@@ -172,11 +175,14 @@ namespace Server
                         tmp.ProblemInfo[j].State = $"{ac}/{all}";
                         foreach (var k in x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]))
                         {
-                            var tmpTime = (Convert.ToDateTime(k.JudgeDate) - _competition.StartTime);
+                            var tmpTime = Convert.ToDateTime(k.JudgeDate) - _competition.StartTime;
                             time += tmpTime;
                             totTime += tmpTime;
-                            if (k.ResultSummery == "Accepted") break;
-                            else if ((_competition.Option & 4) != 0)
+                            if (k.ResultSummery == "Accepted")
+                            {
+                                break;
+                            }
+                            if ((_competition.Option & 4) != 0)
                             {
                                 time += new TimeSpan(0, 20, 0);
                                 totTime += new TimeSpan(0, 20, 0);
@@ -187,8 +193,12 @@ namespace Server
                     else
                     {
                         if (tmpScoreBase.Count() > 0) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
-                        var y = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])?.LastOrDefault() ?? null;
-                        if (y != null && y.ResultSummery == "Accepted") tmp.ProblemInfo[j].State = "Solved";
+                        var y = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
+                                    ?.LastOrDefault() ?? null;
+                        if (y != null && y.ResultSummery == "Accepted")
+                        {
+                            tmp.ProblemInfo[j].State = "Solved";
+                        }
                         else
                         {
                             tmp.ProblemInfo[j].Color = Brushes.LightPink;
@@ -196,14 +206,13 @@ namespace Server
                         }
                         if (y != null)
                         {
-                            var tmpTime = (Convert.ToDateTime(y.JudgeDate) - _competition.StartTime);
+                            var tmpTime = Convert.ToDateTime(y.JudgeDate) - _competition.StartTime;
                             time += tmpTime;
                             totTime += tmpTime;
                         }
                     }
                     if ((_competition.Option & 4) != 0 && cnt != 0) tmp.ProblemInfo[j].State += $" (-{cnt})";
                     tmp.ProblemInfo[j].Time = $"{time.Days * 24 + time.Hours}:{time.Minutes}:{time.Seconds}";
-
                 }
                 tmp.Score = score;
                 tmp.TotTime = totTime;
@@ -212,7 +221,7 @@ namespace Server
             tmpList.Sort((x1, x2) =>
             {
                 if (x1.Score != x2.Score) return x2.Score.CompareTo(x1.Score);
-                else return x1.TotTime.CompareTo(x2.TotTime);
+                return x1.TotTime.CompareTo(x2.TotTime);
             });
             for (var i = 0; i < tmpList.Count; i++)
             {
@@ -225,13 +234,11 @@ namespace Server
                 _userFilter.Clear();
             });
             foreach (var judgeInfo in x)
-            {
                 Dispatcher.Invoke(() =>
                 {
                     if (!_problemFilter.Any(i => i == judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
                     if (!_userFilter.Any(i => i == judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                 });
-            }
             if (DateTime.Now < _competition.EndTime)
                 _hasRefreshWhenFinished = false;
         }
@@ -288,7 +295,7 @@ namespace Server
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -316,7 +323,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -349,6 +356,7 @@ namespace Server
             var p = _curJudgeInfo.Count(i => i.IsChecked);
             CheckBox.IsChecked = p == _curJudgeInfo.Count;
         }
+
         private bool Filter(JudgeInfo p)
         {
             var now = DateTime.Now;
@@ -368,40 +376,40 @@ namespace Server
                 switch (tf)
                 {
                     case 0:
-                        {
-                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                            break;
-                        }
+                    {
+                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                        break;
+                    }
                     case 1:
-                        {
-                            if ((now - ti).TotalDays > 3) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 3) return false;
+                        break;
+                    }
                     case 2:
-                        {
-                            if ((now - ti).TotalDays > 7) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 7) return false;
+                        break;
+                    }
                     case 3:
-                        {
-                            if ((now - ti).TotalDays > 30) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 30) return false;
+                        break;
+                    }
                     case 4:
-                        {
-                            if ((now - ti).TotalDays > 91) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 91) return false;
+                        break;
+                    }
                     case 5:
-                        {
-                            if ((now - ti).TotalDays > 182) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 182) return false;
+                        break;
+                    }
                     case 6:
-                        {
-                            if ((now - ti).TotalDays > 365) return false;
-                            break;
-                        }
+                    {
+                        if ((now - ti).TotalDays > 365) return false;
+                        break;
+                    }
                 }
             }
             return true;
@@ -414,12 +422,7 @@ namespace Server
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(p);
-                    });
-                }
+                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
             }
             _isFilterActivated = false;
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
@@ -434,26 +437,17 @@ namespace Server
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(p);
-                    });
-                }
+                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
             }
             _isFilterActivated = true;
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
                 foreach (var p in _curJudgeInfo)
-                {
                     Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
-                }
                 Dispatcher.Invoke(() => _curJudgeInfo.Clear());
                 foreach (var p in _curJudgeInfoBak.Where(i => Filter(i)))
-                {
                     Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
-                }
             });
         }
 
@@ -477,22 +471,5 @@ namespace Server
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             new Thread(Load).Start();
         }
-    }
-
-    class CompetitionUserInfo
-    {
-        public int Rank { get; set; }
-        public string UserName { get; set; }
-        public float Score { get; set; }
-        public string TimeCost => $"{TotTime.Days * 24 + TotTime.Hours}:{TotTime.Minutes}:{TotTime.Seconds}";
-        public TimeSpan TotTime { get; set; }
-        public CompetitionProblemInfo[] ProblemInfo { get; set; }
-    }
-
-    class CompetitionProblemInfo
-    {
-        public string Time { get; set; }
-        public string State { get; set; }
-        public Brush Color { get; set; }
     }
 }

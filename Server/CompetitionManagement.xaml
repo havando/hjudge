@@ -5,14 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="比赛管理" Height="490.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False" Loaded="Window_Loaded">
+        Title="比赛管理" Height="490.5" Width="671.5" Icon="Resources/edit.png" ResizeMode="NoResize" ShowInTaskbar="False"
+        Loaded="Window_Loaded">
     <Grid>
-        <ListView Name="ListView" HorizontalAlignment="Left" Height="397" Margin="10,10,0,0" VerticalAlignment="Top" Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click" MouseDoubleClick="ListView_MouseDoubleClick"
+        <ListView Name="ListView" HorizontalAlignment="Left" Height="397" Margin="10,10,0,0" VerticalAlignment="Top"
+                  Width="302" SelectionChanged="ListView_SelectionChanged" GridViewColumnHeader.Click="ListView_Click"
+                  MouseDoubleClick="ListView_MouseDoubleClick"
                   SelectionMode="Single">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}" Width="50" />
-                    <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"  Width="100" />
+                    <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}" Width="100" />
                     <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
                     <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
                     <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
@@ -53,26 +56,27 @@
         <Label Content="比赛选项" HorizontalAlignment="Left" Margin="317,223,0,0" VerticalAlignment="Top" />
         <ListBox HorizontalAlignment="Left" Height="65" Margin="323,254,0,0" VerticalAlignment="Top" Width="261">
             <DockPanel>
-                <TextBlock Text="赛制："></TextBlock>
+                <TextBlock Text="赛制：" />
                 <RadioButton IsChecked="True" Name="LimitedSubmit">
                     <DockPanel>
-                        <TextBlock Text="限制提交赛"></TextBlock>
-                        <TextBox Name="LimitedSubmitTime" Width="30" Text="0" TextChanged="LimitedSubmitTime_TextChanged"></TextBox>
-                        <TextBlock Text="次（0 代表不限）"></TextBlock>
+                        <TextBlock Text="限制提交赛" />
+                        <TextBox Name="LimitedSubmitTime" Width="30" Text="0"
+                                 TextChanged="LimitedSubmitTime_TextChanged" />
+                        <TextBlock Text="次（0 代表不限）" />
                     </DockPanel>
                 </RadioButton>
-                <RadioButton Name="LastSubmit" Content="最后提交赛"></RadioButton>
-                <RadioButton Name="TimeCount" Content="罚时计时赛"></RadioButton>
+                <RadioButton Name="LastSubmit" Content="最后提交赛" />
+                <RadioButton Name="TimeCount" Content="罚时计时赛" />
             </DockPanel>
             <DockPanel>
-                <TextBlock Text="评测结果："></TextBlock>
-                <RadioButton Name="IntimeNotify" IsChecked="True" Content="即时通知"></RadioButton>
-                <RadioButton Name="DelayNotify" Content="赛后通知"></RadioButton>
+                <TextBlock Text="评测结果：" />
+                <RadioButton Name="IntimeNotify" IsChecked="True" Content="即时通知" />
+                <RadioButton Name="DelayNotify" Content="赛后通知" />
             </DockPanel>
             <DockPanel>
-                <TextBlock Text="排名："></TextBlock>
-                <RadioButton Name="ShowRank" IsChecked="True" Content="显示"></RadioButton>
-                <RadioButton Name="HideRank" Content="不显示"></RadioButton>
+                <TextBlock Text="排名：" />
+                <RadioButton Name="ShowRank" IsChecked="True" Content="显示" />
+                <RadioButton Name="HideRank" Content="不显示" />
             </DockPanel>
         </ListBox>
         <Button Content="添加" HorizontalAlignment="Left" Margin="589,10,0,0" VerticalAlignment="Top" Width="57"
@@ -83,12 +87,13 @@
                 Height="30" Click="Button_Click_2" />
         <Label Content="比赛密码（无密码请留空）" HorizontalAlignment="Left" Margin="317,324,0,0" VerticalAlignment="Top" />
         <TextBox x:Name="ComPassword" HorizontalAlignment="Left" Height="26" Margin="476,324,0,0" TextWrapping="Wrap"
-            VerticalAlignment="Top" Width="108" />
+                 VerticalAlignment="Top" Width="108" />
         <Label Content="比赛说明" HorizontalAlignment="Left" Margin="317,355,0,0" VerticalAlignment="Top" />
-        <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="83" Margin="380,355,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
-            VerticalAlignment="Top" Width="204" />
+        <TextBox x:Name="ComNote" HorizontalAlignment="Left" Height="83" Margin="380,355,0,0" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"
+                 VerticalAlignment="Top" Width="204" />
         <Label Content="Tips：单击编辑比赛，双击进入比赛" HorizontalAlignment="Left" Margin="10,412,0,0"
-            VerticalAlignment="Top" Foreground="Red" />
+               VerticalAlignment="Top" Foreground="Red" />
 
     </Grid>
 </Window>

@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -14,18 +12,18 @@ namespace Server
 {
     public class Judge
     {
+        private readonly string _id;
+        private readonly bool _isFinished;
         private readonly Problem _problem;
         private readonly string _workingdir;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
         private bool _isExited;
-        private readonly bool _isFinished;
-
-        private string _id;
 
         private bool _isFault;
 
-        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description, string defaultTime, int competitionId)
+        public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description,
+            string defaultTime, int competitionId)
         {
             while (true)
             {
@@ -34,7 +32,9 @@ namespace Server
                         : Configuration.Configurations.MutiThreading))
                 {
                     lock (Connection.JudgeListCntLock)
+                    {
                         Connection.CurJudgingCnt++;
+                    }
                     break;
                 }
                 Thread.Sleep(100);
@@ -67,21 +67,21 @@ namespace Server
                     var comp = Connection.GetCompetition(competitionId);
                     var judgeLogs = Connection.QueryJudgeLogBelongsToCompetition(competitionId, userId);
                     if ((comp.Option & 1) != 0 && comp.SubmitLimit != 0)
-                    {
-                        if (judgeLogs.Where(i => i.ProblemId == problemId).Count() >= comp.SubmitLimit)
+                        if (judgeLogs.Count(i => i.ProblemId == problemId) >= comp.SubmitLimit)
                         {
                             _isFinished = true;
-                            lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
+                            lock (Connection.JudgeListCntLock)
+                            {
+                                Connection.CurJudgingCnt--;
+                            }
                             return;
                         }
-                    }
                 }
 
                 var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
                 if (Configuration.Configurations.MutiThreading == 0)
-                {
                     while (true)
                     {
                         try
@@ -96,13 +96,11 @@ namespace Server
                                 };
                                 var ramCounter = new PerformanceCounter("Memory", "Available KBytes");
                                 var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
-                                    .Concat(new long[] { 0 })
+                                    .Concat(new long[] {0})
                                     .Max();
                                 if (cpuCounter.NextValue() <= 75 &&
                                     ramCounter.NextValue() > maxMemoryNeeded + 262144)
-                                {
                                     break;
-                                }
                             }
                         }
                         catch
@@ -111,7 +109,6 @@ namespace Server
                         }
                         Thread.Sleep(100);
                     }
-                }
 
                 new Thread(Killwerfault).Start();
                 Connection.UpdateJudgeInfo(JudgeResult);
@@ -130,13 +127,17 @@ namespace Server
                     }
                     Connection.UpdateJudgeInfo(JudgeResult);
 
-                    lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
+                    lock (Connection.JudgeListCntLock)
+                    {
+                        Connection.CurJudgingCnt--;
+                    }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                        textBlock);
                     _isFinished = true;
                     return;
                 }
-                var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                var extList = t.ExtName.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
                 if (extList.Length == 0)
                 {
                     for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -149,27 +150,35 @@ namespace Server
                     }
                     Connection.UpdateJudgeInfo(JudgeResult);
 
-                    lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
+                    lock (Connection.JudgeListCntLock)
+                    {
+                        Connection.CurJudgingCnt--;
+                    }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                        textBlock);
                     _isFinished = true;
                     return;
                 }
 
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
                 {
-                    _problem.CompileCommand = t.Linux ? GetRealStringWSL(t.DefaultArgs, 0, extList[0]) : GetRealString(t.DefaultArgs, 0, extList[0]);
+                    _problem.CompileCommand = t.Linux
+                        ? GetRealStringWSL(t.DefaultArgs, 0, extList[0])
+                        : GetRealString(t.DefaultArgs, 0, extList[0]);
                 }
                 else
                 {
-                    var commList = _problem.CompileCommand.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                    var commList = _problem.CompileCommand.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var s in commList)
                     {
                         var comm = s.Split(':');
                         if (comm.Length != 2) continue;
                         if (comm[0] == type)
                         {
-                            _problem.CompileCommand = t.Linux ? GetRealStringWSL(comm[1], 0, extList[0]) : GetRealString(comm[1], 0, extList[0]);
+                            _problem.CompileCommand = t.Linux
+                                ? GetRealStringWSL(comm[1], 0, extList[0])
+                                : GetRealString(comm[1], 0, extList[0]);
                             break;
                         }
                     }
@@ -189,14 +198,19 @@ namespace Server
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}", textBlock);
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}",
+                    textBlock);
 
-                BeginJudge(t.CompilerPath, t.StaticCheck, t.Linux ? GetRealStringWSL(t.RunCommand, 0, extList[0]) : GetRealString(t.RunCommand, 0, extList[0]), textBlock);
+                BeginJudge(t.CompilerPath, t.StaticCheck,
+                    t.Linux
+                        ? GetRealStringWSL(t.RunCommand, 0, extList[0])
+                        : GetRealString(t.RunCommand, 0, extList[0]), textBlock);
 
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}", textBlock);
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                    textBlock);
             }
             catch
             {
@@ -212,7 +226,10 @@ namespace Server
                 //ignored
             }
             _isFinished = true;
-            lock (Connection.JudgeListCntLock) Connection.CurJudgingCnt--;
+            lock (Connection.JudgeListCntLock)
+            {
+                Connection.CurJudgingCnt--;
+            }
         }
 
         public static string GetEngName(string origin)
@@ -234,7 +251,8 @@ namespace Server
 
         private string GetFileNameWSL(string fileName)
         {
-            return "/mnt/" + (fileName.Substring(0, 1).ToLower() + fileName.Substring(1)).Replace('\\', '/').Replace(":", string.Empty);
+            return "/mnt/" + (fileName.Substring(0, 1).ToLower() + fileName.Substring(1)).Replace('\\', '/')
+                   .Replace(":", string.Empty);
         }
 
         private string GetRealStringWSL(string origin, int cur, string extName)
@@ -351,10 +369,9 @@ namespace Server
                 var failToCatchProcess = false;
                 cur++;
                 if (cur != 0)
-                {
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[cur - 1]}", textBlock);
-                }
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[cur - 1]}",
+                        textBlock);
                 if (!File.Exists(_problem.DataSets[cur].InputFile) || !File.Exists(_problem.DataSets[cur].OutputFile))
                 {
                     JudgeResult.Result[cur] = "Problem Configuration Error";
@@ -366,7 +383,6 @@ namespace Server
                 else
                 {
                     if (_problem.InputFileName != "stdin")
-                    {
                         try
                         {
                             File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
@@ -385,7 +401,8 @@ namespace Server
                                 Thread.Sleep(3000);
                                 try
                                 {
-                                    File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
+                                    File.Copy(_problem.DataSets[cur].InputFile,
+                                        _workingdir + "\\" + _problem.InputFileName,
                                         true);
                                 }
                                 catch (Exception ex)
@@ -399,7 +416,6 @@ namespace Server
                                 }
                             }
                         }
-                    }
                     if (_problem.InputFileName == "stdin")
                         try
                         {
@@ -434,7 +450,9 @@ namespace Server
                     {
                         StartInfo =
                         {
-                            FileName = string.IsNullOrEmpty(runCommand) ? _workingdir + $"\\test_hjudge_{_id}.exe" : runExec,
+                            FileName = string.IsNullOrEmpty(runCommand)
+                                ? _workingdir + $"\\test_hjudge_{_id}.exe"
+                                : runExec,
                             Arguments = string.IsNullOrEmpty(runCommand) ? string.Empty : runArgs,
                             WorkingDirectory = _workingdir,
                             WindowStyle = ProcessWindowStyle.Hidden,
@@ -451,7 +469,7 @@ namespace Server
                     _isFault = false;
                     _isExited = false;
                     var startCatch = DateTime.Now;
-                    Process[] processes = new Process[0];
+                    var processes = new Process[0];
                     try
                     {
                         execute.Start();
@@ -494,14 +512,13 @@ namespace Server
                     var inputStream = execute.StandardInput;
                     var outputStream = execute.StandardOutput;
                     if (_problem.InputFileName == "stdin")
-                    {
                         try
                         {
                             res = outputStream.ReadToEndAsync();
                             inputStream.AutoFlush = true;
                             inputStream.WriteAsync(
-                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0").
-                                GetAwaiter().OnCompleted(() =>
+                                    File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                .GetAwaiter().OnCompleted(() =>
                                 {
                                     inputStream.Close();
                                     inputStream.Dispose();
@@ -511,9 +528,7 @@ namespace Server
                         {
                             //ignored
                         }
-                    }
                     else
-                    {
                         try
                         {
                             inputStream.Write("\0");
@@ -524,7 +539,6 @@ namespace Server
                         {
                             //ignored
                         }
-                    }
                     long lastDt = 0;
                     var noChangeTime = DateTime.Now;
                     var isNoResponding = false;
@@ -553,7 +567,8 @@ namespace Server
                                 JudgeResult.Memoryused[cur] = tmpMem;
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
-                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit * (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 60)
+                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
+                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 60)
                                 {
                                     _isExited = true;
                                     isNoResponding = true;
@@ -574,7 +589,6 @@ namespace Server
                         {
                             _isFault = true;
                             foreach (var i in processes)
-                            {
                                 try
                                 {
                                     i.Kill();
@@ -583,7 +597,6 @@ namespace Server
                                 {
                                     //ignored
                                 }
-                            }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Time Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
@@ -593,7 +606,6 @@ namespace Server
                         {
                             _isFault = true;
                             foreach (var i in processes)
-                            {
                                 try
                                 {
                                     i.Kill();
@@ -602,7 +614,6 @@ namespace Server
                                 {
                                     //ignored
                                 }
-                            }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Memory Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
@@ -619,7 +630,6 @@ namespace Server
                         Thread.Sleep(1);
                     }
                     foreach (var i in processes)
-                    {
                         try
                         {
                             i.Kill();
@@ -628,7 +638,6 @@ namespace Server
                         {
                             //ignored
                         }
-                    }
                     try
                     {
                         JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
@@ -652,7 +661,9 @@ namespace Server
                         if (!noRespondingState)
                         {
                             lock (Connection.AdditionWorkingThreadLock)
+                            {
                                 Connection.IntelligentAdditionWorkingThread++;
+                            }
                             noRespondingState = true;
                         }
                         try
@@ -692,7 +703,8 @@ namespace Server
                     }
                     else
                     {
-                        File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp", res?.Result ?? string.Empty, Encoding.Default);
+                        File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp",
+                            res?.Result ?? string.Empty, Encoding.Default);
                     }
                     try
                     {
@@ -716,7 +728,6 @@ namespace Server
                     lock (Connection.ComparingLock)
                     {
                         if (!string.IsNullOrEmpty(_problem.SpecialJudge))
-                        {
                             if (File.Exists(_problem.SpecialJudge))
                             {
                                 try
@@ -782,9 +793,7 @@ namespace Server
                                 JudgeResult.Result[cur] = "Special Judge Error";
                                 JudgeResult.Score[cur] = 0;
                             }
-                        }
                         else
-                        {
                             try
                             {
                                 var fs1 = new FileStream(_problem.DataSets[cur].OutputFile, FileMode.Open,
@@ -851,18 +860,18 @@ namespace Server
                                 JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
                                 JudgeResult.Score[cur] = 0;
                             }
-                        }
                     }
                 }
                 Thread.Sleep(1);
             }
             if (noRespondingState)
-            {
                 lock (Connection.AdditionWorkingThreadLock)
+                {
                     Connection.IntelligentAdditionWorkingThread--;
-            }
+                }
             Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}", textBlock);
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}",
+                textBlock);
         }
 
         private void Killwerfault()
@@ -909,7 +918,7 @@ namespace Server
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 };
-                var b = new Process { StartInfo = a };
+                var b = new Process {StartInfo = a};
                 b.Start();
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();

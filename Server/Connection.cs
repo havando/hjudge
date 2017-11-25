@@ -13,7 +13,7 @@ namespace Server
         private static int _id;
         public static bool CanPostJudgTask;
         public static int IntelligentAdditionWorkingThread;
-        
+
         private static readonly ConcurrentQueue<Task> ActionList = new ConcurrentQueue<Task>();
 
         public static int CurJudgingCnt = 0;
@@ -32,7 +32,5 @@ namespace Server
         {
             _updateMain.Invoke(string.Empty, textBlock, true);
         }
-
-
     }
 }

@@ -122,7 +122,7 @@ namespace Client
                     {
                         if (PkgInfo.IsHeader)
                         {
-                            var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
+                            var header = (PkgHeader) Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
                         }
                         else
@@ -153,7 +153,6 @@ namespace Client
 
         #region Network
 
-
         public static void SendFile(string fileName, string title)
         {
             _isSendingData = true;
@@ -174,7 +173,7 @@ namespace Client
                     var tempc = GetSendBuffer(Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
-                        .Concat(bytes.Take((int)cnt)).ToArray());
+                        .Concat(bytes.Take((int) cnt)).ToArray());
                     tot += cnt;
                     HClient.Send(tempc, tempc.Length);
                 }
@@ -205,7 +204,7 @@ namespace Client
 
         public static void SendMsg(string sendString, string targetUser)
         {
-            var t = new Message { Content = sendString, Direction = "发送", MessageTime = DateTime.Now, User = targetUser };
+            var t = new Message {Content = sendString, Direction = "发送", MessageTime = DateTime.Now, User = targetUser};
             SendData("Messaging", JsonConvert.SerializeObject(t));
         }
 
@@ -271,20 +270,20 @@ namespace Client
                         switch (operation)
                         {
                             case "&":
-                                {
-                                    _isConnecting = true;
-                                    break;
-                                }
+                            {
+                                _isConnecting = true;
+                                break;
+                            }
                             default:
+                            {
+                                temp2.RemoveAt(0);
+                                Operations.Enqueue(new ObjOperation
                                 {
-                                    temp2.RemoveAt(0);
-                                    Operations.Enqueue(new ObjOperation
-                                    {
-                                        Operation = operation,
-                                        Content = temp2
-                                    });
-                                    break;
-                                }
+                                    Operation = operation,
+                                    Content = temp2
+                                });
+                                break;
+                            }
                         }
                     }
                     catch
@@ -307,7 +306,9 @@ namespace Client
                         {
                             if (Encoding.Unicode.GetString(res.Content[0]) == "ActionFailed")
                             {
-                                MessageBox.Show($"抱歉，程序异常，请重新启动本客户端。\n因为 {Encoding.Unicode.GetString(res.Content[1])}\n操作：{res.Operation}\n堆栈跟踪：\n{Encoding.Unicode.GetString(res.Content[2])}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(
+                                    $"抱歉，程序异常，请重新启动本客户端。\n因为 {Encoding.Unicode.GetString(res.Content[1])}\n操作：{res.Operation}\n堆栈跟踪：\n{Encoding.Unicode.GetString(res.Content[2])}",
+                                    "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                                 continue;
                             }
                         }
@@ -331,252 +332,252 @@ namespace Client
                         switch (res.Operation)
                         {
                             case "Logout":
-                                {
-                                    while (Recv.TryDequeue(out var temp)) { temp.Clear(); }
-                                    UpdateMainPage.Invoke($"Logout{Divpar}Succeed");
-                                    break;
-                                }
+                            {
+                                while (Recv.TryDequeue(out var temp)) temp.Clear();
+                                UpdateMainPage.Invoke($"Logout{Divpar}Succeed");
+                                break;
+                            }
                             case "ProblemDataSet":
+                            {
+                                if (Encoding.Unicode.GetString(res.Content[0]) == "Denied")
                                 {
-                                    if (Encoding.Unicode.GetString(res.Content[0]) == "Denied")
-                                    {
-                                        UpdateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
-                                        break;
-                                    }
-                                    UpdateMainPage.Invoke($"ProblemDataSet{Divpar}Accepted");
-                                    var problemId = Encoding.Unicode.GetString(res.Content[0]);
-                                    var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
-                                    File.WriteAllBytes(
-                                        $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                        res.Content[1]);
-                                    Process.Start("explorer.exe",
-                                        $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                    UpdateMainPage.Invoke($"ProblemDataSet{Divpar}Denied");
                                     break;
                                 }
+                                UpdateMainPage.Invoke($"ProblemDataSet{Divpar}Accepted");
+                                var problemId = Encoding.Unicode.GetString(res.Content[0]);
+                                var fileName = $"{problemId}_{DateTime.Now:yyyyMMddHHmmssffff}.zip";
+                                File.WriteAllBytes(
+                                    $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                    res.Content[1]);
+                                Process.Start("explorer.exe",
+                                    $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                break;
+                            }
                             case "File":
+                            {
+                                var fileName = Encoding.Unicode.GetString(res.Content[0]);
+                                if (fileName == "NotFound")
                                 {
-                                    var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                    if (fileName == "NotFound")
-                                    {
-                                        UpdateMainPage($"FileReceived{Divpar}Error");
-                                        continue;
-                                    }
-                                    var fileId = Encoding.Unicode.GetString(res.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
-                                    if (FrInfo.Any(i => i.FileId == fileId))
-                                    {
-                                        var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
-                                        var x = new List<byte>();
-                                        for (var i = 3; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                            {
-                                                x.AddRange(res.Content[i]);
-                                                x.AddRange(Encoding.Unicode.GetBytes(Divpar));
-                                            }
-                                            else
-                                            {
-                                                x.AddRange(res.Content[i]);
-                                            }
-                                        fs.Fs.Position = length;
-                                        fs.Fs.Write(x.ToArray(), 0, x.Count);
-                                        fs.CurrentLength += x.Count;
-                                        if (fs.CurrentLength >= fs.TotLength)
+                                    UpdateMainPage($"FileReceived{Divpar}Error");
+                                    continue;
+                                }
+                                var fileId = Encoding.Unicode.GetString(res.Content[1]);
+                                var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                if (FrInfo.Any(i => i.FileId == fileId))
+                                {
+                                    var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                    var x = new List<byte>();
+                                    for (var i = 3; i < res.Content.Count; i++)
+                                        if (i != res.Content.Count - 1)
                                         {
-                                            fs.Fs.Close();
-                                            fs.Fs.Dispose();
-                                            FrInfo.Remove(fs);
-                                            Process.Start("explorer.exe",
-                                                $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                            UpdateMainPage($"FileReceived{Divpar}Done");
+                                            x.AddRange(res.Content[i]);
+                                            x.AddRange(Encoding.Unicode.GetBytes(Divpar));
                                         }
                                         else
                                         {
-                                            UpdateMainPage(
-                                                $"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
+                                            x.AddRange(res.Content[i]);
                                         }
+                                    fs.Fs.Position = length;
+                                    fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                    fs.CurrentLength += x.Count;
+                                    if (fs.CurrentLength >= fs.TotLength)
+                                    {
+                                        fs.Fs.Close();
+                                        fs.Fs.Dispose();
+                                        FrInfo.Remove(fs);
+                                        Process.Start("explorer.exe",
+                                            $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                        UpdateMainPage($"FileReceived{Divpar}Done");
                                     }
                                     else
                                     {
-                                        FrInfo.Add(new FileRecvInfo
-                                        {
-                                            CurrentLength = 0,
-                                            FileId = fileId,
-                                            FileName = fileName,
-                                            Fs = new FileStream(
-                                                $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
-                                                FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
-                                            TotLength = length
-                                        });
+                                        UpdateMainPage(
+                                            $"FileReceiving{Divpar}{Math.Round((double) fs.CurrentLength * 100 / fs.TotLength, 1)} %");
                                     }
-                                    break;
                                 }
+                                else
+                                {
+                                    FrInfo.Add(new FileRecvInfo
+                                    {
+                                        CurrentLength = 0,
+                                        FileId = fileId,
+                                        FileName = fileName,
+                                        Fs = new FileStream(
+                                            $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}",
+                                            FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
+                                        TotLength = length
+                                    });
+                                }
+                                break;
+                            }
                             case "ChangePassword":
-                                {
-                                    UpdateMainPage.Invoke(
-                                        $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                            {
+                                UpdateMainPage.Invoke(
+                                    $"ChangePassword{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
 
-                                    break;
-                                }
+                                break;
+                            }
                             case "UpdateProfile":
-                                {
-                                    UpdateMainPage.Invoke(
-                                        $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
-                                    break;
-                                }
+                            {
+                                UpdateMainPage.Invoke(
+                                    $"UpdateProfile{Divpar}{Encoding.Unicode.GetString(res.Content[0])}");
+                                break;
+                            }
                             case "AddProblem":
-                                {
-                                    _addProblemResult = JsonConvert.DeserializeObject<Problem>(content);
-                                    _addProblemState = true;
-                                    break;
-                                }
+                            {
+                                _addProblemResult = JsonConvert.DeserializeObject<Problem>(content);
+                                _addProblemState = true;
+                                break;
+                            }
                             case "DeleteProblem":
-                                {
-                                    _deleteProblemResult = true;
-                                    break;
-                                }
+                            {
+                                _deleteProblemResult = true;
+                                break;
+                            }
                             case "UpdateProblem":
-                                {
-                                    _updateProblemResult = true;
-                                    break;
-                                }
+                            {
+                                _updateProblemResult = true;
+                                break;
+                            }
                             case "QueryProblems":
-                                {
-                                    _queryProblemsResult = JsonConvert.DeserializeObject<ObservableCollection<Problem>>(content);
-                                    _queryProblemsResultState = true;
-                                    break;
-                                }
+                            {
+                                _queryProblemsResult =
+                                    JsonConvert.DeserializeObject<ObservableCollection<Problem>>(content);
+                                _queryProblemsResultState = true;
+                                break;
+                            }
                             case "QueryJudgeLogs":
-                                {
-                                    _queryJudgeLogResult = JsonConvert.DeserializeObject<ObservableCollection<JudgeInfo>>(content);
-                                    _queryJudgeLogResultState = true;
-                                    break;
-                                }
+                            {
+                                _queryJudgeLogResult =
+                                    JsonConvert.DeserializeObject<ObservableCollection<JudgeInfo>>(content);
+                                _queryJudgeLogResultState = true;
+                                break;
+                            }
                             case "DataFile":
                             case "PublicFile":
+                            {
+                                switch (Encoding.Unicode.GetString(res.Content[0]))
                                 {
-                                    switch (Encoding.Unicode.GetString(res.Content[0]))
+                                    case "Succeeded":
                                     {
-                                        case "Succeeded":
-                                            {
-                                                MessageBox.Show("上传成功", "提示", MessageBoxButton.OK,
-                                                    MessageBoxImage.Information);
-                                                break;
-                                            }
-                                        default:
-                                            {
-                                                MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
-                                                    MessageBoxImage.Error);
-                                                break;
-                                            }
+                                        MessageBox.Show("上传成功", "提示", MessageBoxButton.OK,
+                                            MessageBoxImage.Information);
+                                        break;
                                     }
-                                    UploadFileResult = true;
-                                    break;
+                                    default:
+                                    {
+                                        MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
+                                            MessageBoxImage.Error);
+                                        break;
+                                    }
                                 }
+                                UploadFileResult = true;
+                                break;
+                            }
                             case "RequestCode":
-                                {
-                                    _getJudgeCodeResult = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                                    _getJudgeCodeState = true;
-                                    break;
-                                }
+                            {
+                                _getJudgeCodeResult = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                                _getJudgeCodeState = true;
+                                break;
+                            }
                             case "GetProblemDescription":
-                                {
-                                    _detailsProblemResult = JsonConvert.DeserializeObject<Problem>(content)?.Description ?? string.Empty;
-                                    _detailsProblemState = true;
-                                    break;
-                                }
+                            {
+                                _detailsProblemResult =
+                                    JsonConvert.DeserializeObject<Problem>(content)?.Description ?? string.Empty;
+                                _detailsProblemState = true;
+                                break;
+                            }
                             case "QueryJudgeLogBelongsToCompetition":
-                                {
-                                    foreach (var i in JsonConvert.DeserializeObject<List<JudgeInfo>>(content))
-                                    {
-                                        _queryJudgeLogBelongsToCompetitionResult.Add(i);
-                                    }
-                                    _queryJudgeLogBelongsToCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                foreach (var i in JsonConvert.DeserializeObject<List<JudgeInfo>>(content))
+                                    _queryJudgeLogBelongsToCompetitionResult.Add(i);
+                                _queryJudgeLogBelongsToCompetitionState = true;
+                                break;
+                            }
                             case "QueryProblemsForCompetition":
-                                {
-                                    foreach (var i in JsonConvert.DeserializeObject<List<Problem>>(content))
-                                    {
-                                        _queryProblemsForCompetitionResult.Add(i);
-                                    }
-                                    _queryProblemsForCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                foreach (var i in JsonConvert.DeserializeObject<List<Problem>>(content))
+                                    _queryProblemsForCompetitionResult.Add(i);
+                                _queryProblemsForCompetitionState = true;
+                                break;
+                            }
                             case "QueryLanguagesForCompetition":
-                                {
-                                    _queryLanguagesForCompetitionResult = JsonConvert.DeserializeObject<List<Compiler>>(content);
-                                    _queryLanguagesForCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                _queryLanguagesForCompetitionResult =
+                                    JsonConvert.DeserializeObject<List<Compiler>>(content);
+                                _queryLanguagesForCompetitionState = true;
+                                break;
+                            }
                             case "GetCurrentDateTime":
-                                {
-                                    _getCurrentDateTimeResult = Convert.ToDateTime(content);
-                                    _getCurrentDateTimeState = true;
-                                    break;
-                                }
+                            {
+                                _getCurrentDateTimeResult = Convert.ToDateTime(content);
+                                _getCurrentDateTimeState = true;
+                                break;
+                            }
                             case "QueryCompetitionClient":
-                                {
-                                    _queryCompetitionResult = JsonConvert.DeserializeObject<List<Competition>>(content);
-                                    _queryCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                _queryCompetitionResult = JsonConvert.DeserializeObject<List<Competition>>(content);
+                                _queryCompetitionState = true;
+                                break;
+                            }
                             case "NewCompetitionClient":
-                                {
-                                    _newCompetitionResult = JsonConvert.DeserializeObject<Competition>(content);
-                                    _newCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                _newCompetitionResult = JsonConvert.DeserializeObject<Competition>(content);
+                                _newCompetitionState = true;
+                                break;
+                            }
                             case "DeleteCompetitionClient":
-                                {
-                                    _deleteCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                _deleteCompetitionState = true;
+                                break;
+                            }
                             case "GetProblem":
-                                {
-                                    _getProblemResult = JsonConvert.DeserializeObject<Problem>(content);
-                                    _getProblemState = true;
-                                    break;
-                                }
+                            {
+                                _getProblemResult = JsonConvert.DeserializeObject<Problem>(content);
+                                _getProblemState = true;
+                                break;
+                            }
                             case "UpdateCompetitionClient":
-                                {
-                                    _updateCompetitionState = true;
-                                    break;
-                                }
+                            {
+                                _updateCompetitionState = true;
+                                break;
+                            }
                             case "GetServerConfig":
-                                {
-                                    _getServerConfigResult = JsonConvert.DeserializeObject<ServerConfig>(content);
-                                    _getServerConfigState = true;
-                                    break;
-                                }
+                            {
+                                _getServerConfigResult = JsonConvert.DeserializeObject<ServerConfig>(content);
+                                _getServerConfigState = true;
+                                break;
+                            }
                             case "UpdateServerConfig":
-                                {
-                                    _updateServerConfigState = true;
-                                    break;
-                                }
+                            {
+                                _updateServerConfigState = true;
+                                break;
+                            }
                             case "GetUserBelongings":
-                                {
-                                    _getUserBelongingsType = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
-                                    var x = string.Empty;
-                                    for (var i = 1; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
-                                        else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
-                                    _getUserBelongingsResult = JsonConvert.DeserializeObject<List<UserInfo>>(x);
-                                    _getUserBelongingsState = true;
-                                    break;
-                                }
+                            {
+                                _getUserBelongingsType = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                var x = string.Empty;
+                                for (var i = 1; i < res.Content.Count; i++)
+                                    if (i != res.Content.Count - 1)
+                                        x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    else
+                                        x += Encoding.Unicode.GetString(res.Content[i]);
+                                _getUserBelongingsResult = JsonConvert.DeserializeObject<List<UserInfo>>(x);
+                                _getUserBelongingsState = true;
+                                break;
+                            }
                             case "UpdateUserBelongings":
-                                {
-                                    _updateUserBelongingsState = true;
-                                    break;
-                                }
+                            {
+                                _updateUserBelongingsState = true;
+                                break;
+                            }
                             default:
-                                {
-                                    UpdateMainPage.Invoke(
-                                         $"{res.Operation}{Divpar}{content}");
-                                    break;
-                                }
+                            {
+                                UpdateMainPage.Invoke(
+                                    $"{res.Operation}{Divpar}{content}");
+                                break;
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -584,9 +585,9 @@ namespace Client
                         try
                         {
                             if (Encoding.Unicode.GetString(res.Content[0]) == "ActionFailed")
-                            {
-                                MessageBox.Show($"抱歉，命令解析出现错误，请重新启动本客户端。\n因为 {ex.Message}\n操作：{res.Operation}\n堆栈跟踪：\n{ex.StackTrace}", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
+                                MessageBox.Show(
+                                    $"抱歉，命令解析出现错误，请重新启动本客户端。\n因为 {ex.Message}\n操作：{res.Operation}\n堆栈跟踪：\n{ex.StackTrace}",
+                                    "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         catch
                         {
@@ -616,12 +617,9 @@ namespace Client
                     _hasNotify = false;
                     continue;
                 }
-                else
-                {
-                    cnt++;
-                    if (cnt <= 3) continue;
-                    else cnt = 0;
-                }
+                cnt++;
+                if (cnt <= 3) continue;
+                cnt = 0;
                 if (!_hasNotify)
                 {
                     UpdateMainPage.Invoke($"Connection{Divpar}Break");

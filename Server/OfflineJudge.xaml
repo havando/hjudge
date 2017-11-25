@@ -61,10 +61,10 @@
                               VerticalAlignment="Top" />
                     <Label Content="平均速度：" HorizontalAlignment="Left" Margin="418,100,0,0" VerticalAlignment="Top" />
                     <Label x:Name="JudgingSpeed" Content="0 题/分钟" HorizontalAlignment="Left" Margin="494,100,0,0"
-                        VerticalAlignment="Top" Width="80" />
+                           VerticalAlignment="Top" Width="80" />
                     <Label Content="已用时间：" HorizontalAlignment="Left" Margin="579,100,0,0" VerticalAlignment="Top" />
                     <Label x:Name="TimeConsume" Content="0:0:0" HorizontalAlignment="Left" Margin="654,100,0,0"
-                        VerticalAlignment="Top" Width="81" />
+                           VerticalAlignment="Top" Width="81" />
                 </Grid>
             </TabItem>
             <TabItem Header="评测结果">

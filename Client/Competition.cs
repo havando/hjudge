@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 namespace Client
 {
@@ -19,5 +18,4 @@ namespace Client
         public int ProblemCount { get; set; }
         public int SubmitLimit { get; set; }
     }
-
 }

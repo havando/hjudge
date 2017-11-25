@@ -33,7 +33,8 @@ namespace Server
         {
             var x = from c in _myClientInfo where c.IsChecked select c;
             foreach (var i in x)
-                Connection.SendMsg($"{Msg.Text}", UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, i.UserId);
+                Connection.SendMsg($"{Msg.Text}",
+                    UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, i.UserId);
             Msg.Text = string.Empty;
         }
 
@@ -49,7 +50,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));

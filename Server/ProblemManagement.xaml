@@ -52,14 +52,17 @@
                     <Label Content="数据组数：" HorizontalAlignment="Left" Margin="257,41,0,0" VerticalAlignment="Top" />
                     <TextBox Name="DataSetsNumber" HorizontalAlignment="Left" Height="23" Margin="332,44,0,0"
                              TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="41" KeyDown="TextBox_KeyDown" />
-                    <CheckBox Name="Public" Content="公开" HorizontalAlignment="Left" Margin="329,16,0,0" VerticalAlignment="Top"/>
+                    <CheckBox Name="Public" Content="公开" HorizontalAlignment="Left" Margin="329,16,0,0"
+                              VerticalAlignment="Top" />
                 </Grid>
             </TabItem>
             <TabItem Header="数据设置">
                 <Grid>
                     <ComboBox Name="ComboBox" Margin="0,0,58,225" IsEditable="True" SelectedIndex="0">
-                        <TextBlock Text="${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10"/>
-                        <TextBlock Text="${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10"/>
+                        <TextBlock
+                            Text="${datadir}\${name}\${name}${index}.in|${datadir}\${name}\${name}${index}.out|1000|131072|10" />
+                        <TextBlock
+                            Text="${datadir}\${name}\${name}${index0}.in|${datadir}\${name}\${name}${index0}.out|1000|131072|10" />
                     </ComboBox>
                     <ListBox Name="ListBox" Margin="0,24,0,0" SelectionMode="Single" />
                     <Button Content="填充" HorizontalAlignment="Left" Margin="325,0,0,0" VerticalAlignment="Top"
@@ -70,10 +73,11 @@
                 <Grid>
                     <TabControl SelectionChanged="TabControl_SelectionChanged">
                         <TabItem Header="编辑">
-                            <TextBox Name="Description" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"></TextBox>
+                            <TextBox Name="Description" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True" />
                         </TabItem>
                         <TabItem Header="预览">
-                            <WebBrowser Name="DescriptionViewer"></WebBrowser>
+                            <WebBrowser Name="DescriptionViewer" />
                         </TabItem>
                     </TabControl>
                 </Grid>

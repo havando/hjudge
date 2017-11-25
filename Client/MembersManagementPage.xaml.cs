@@ -1,36 +1,29 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace Client
 {
     /// <summary>
-    /// Interaction logic for MembersManagementPage.xaml
+    ///     Interaction logic for MembersManagementPage.xaml
     /// </summary>
     public partial class MembersManagementPage : Page
     {
+        private readonly List<UserInfo> _toDelete = new List<UserInfo>();
+        private UserInfo _curItem = new UserInfo();
+        private readonly ObservableCollection<UserInfo> _curUserList = new ObservableCollection<UserInfo>();
+
         public MembersManagementPage()
         {
             InitializeComponent();
         }
-        private readonly List<UserInfo> _toDelete = new List<UserInfo>();
-        private UserInfo _curItem = new UserInfo();
-        private ObservableCollection<UserInfo> _curUserList = new ObservableCollection<UserInfo>();
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -86,7 +79,7 @@ namespace Client
         private void PasswordReset_Click(object sender, RoutedEventArgs e)
         {
             _curItem.Password =
-                    "ec278a38901287b2771a13739520384d43e4b078f78affe702def108774cce24";
+                "ec278a38901287b2771a13739520384d43e4b078f78affe702def108774cce24";
             MessageBox.Show("密码已重置为初始密码", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -106,6 +99,7 @@ namespace Client
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             if (_curItem.UserId == -1)
+            {
                 _curUserList.Add(new UserInfo
                 {
                     UserId = 0,
@@ -114,6 +108,7 @@ namespace Client
                     Password = "ec278a38901287b2771a13739520384d43e4b078f78affe702def108774cce24",
                     RegisterDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
                 });
+            }
             else
             {
                 _curItem.Type2 = UserIdentity.Text;
@@ -149,18 +144,19 @@ namespace Client
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
         }
     }
+
     public static partial class Connection
     {
-        private static bool _getUserBelongingsState = false;
+        private static bool _getUserBelongingsState;
         private static int _getUserBelongingsType;
         private static List<UserInfo> _getUserBelongingsResult;
-        private static bool _updateUserBelongingsState = false;
+        private static bool _updateUserBelongingsState;
 
         public static (int type, List<UserInfo> list) GetUserBelongings()
         {
@@ -168,11 +164,10 @@ namespace Client
             _getUserBelongingsResult?.Clear();
             SendData("GetUserBelongings", string.Empty);
             while (!_getUserBelongingsState)
-            {
                 Thread.Sleep(1);
-            }
             return (_getUserBelongingsType, _getUserBelongingsResult);
         }
+
         public static void UpdateUserBelongings(List<UserInfo> toDelete, List<UserInfo> toUpdate)
         {
             _updateUserBelongingsState = false;
@@ -183,10 +178,7 @@ namespace Client
             };
             SendData("UpdateUserBelongings", JsonConvert.SerializeObject(t));
             while (!_updateUserBelongingsState)
-            {
                 Thread.Sleep(1);
-            }
-            return;
         }
     }
 }

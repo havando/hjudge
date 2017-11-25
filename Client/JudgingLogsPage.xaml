@@ -1,16 +1,17 @@
 ﻿<Page x:Class="Client.JudgingLogsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:Client"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="298" d:DesignWidth="585"
       Title="JudgingLogsPage" Loaded="Page_Loaded">
 
     <Grid>
-        <ListView x:Name="ListView" HorizontalAlignment="Left" Height="246" VerticalAlignment="Top" Width="214" SelectionChanged="ListView_SelectionChanged"
-            ButtonBase.Click="ListView_Click" SelectionMode="Single" Margin="0,26,0,0">
+        <ListView x:Name="ListView" HorizontalAlignment="Left" Height="246" VerticalAlignment="Top" Width="214"
+                  SelectionChanged="ListView_SelectionChanged"
+                  ButtonBase.Click="ListView_Click" SelectionMode="Single" Margin="0,26,0,0">
             <ListView.View>
                 <GridView>
                     <GridViewColumn>
@@ -34,36 +35,41 @@
             </ListView.View>
         </ListView>
         <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="120" Margin="217,26,0,0"
-            TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Auto" />
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" />
         <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="147" Margin="217,151,0,0"
-            TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="358" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
         <Label x:Name="Refresh" Content="刷新" HorizontalAlignment="Left" Margin="179,272,0,0" VerticalAlignment="Top"
-            Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1" Height="26" Width="33" />
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown_1" Height="26" Width="33" />
         <Label x:Name="ClearLabel" Content="清空" HorizontalAlignment="Left" Margin="141,272,0,0" VerticalAlignment="Top"
-            Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown" Height="26" Width="33" />
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Label_MouseDown" Height="26" Width="33" />
         <Label x:Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="0,272,0,0" VerticalAlignment="Top"
-            Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" Height="26" Width="33" />
+               Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" Height="26" Width="33" />
 
         <Image Name="Dealing" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
                Margin="279,118,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
-        <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Label Content="题目：" HorizontalAlignment="Left" Margin="39,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="ProblemFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="90,3,0,0" VerticalAlignment="Top" Width="96" Height="21"/>
-        <Label Content="用户：" HorizontalAlignment="Left" Margin="191,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="UserFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="242,3,0,0" VerticalAlignment="Top" Width="96" Height="21"/>
-        <Label Content="时间：" HorizontalAlignment="Left" Margin="343,0,0,0" VerticalAlignment="Top"/>
-        <ComboBox Name="TimeFilter" HorizontalAlignment="Left" Margin="394,3,0,0" VerticalAlignment="Top" Width="96" Height="21">
-            <ComboBoxItem Content="今天"/>
-            <ComboBoxItem Content="近三天"/>
-            <ComboBoxItem Content="近一周"/>
-            <ComboBoxItem Content="近一个月"/>
-            <ComboBoxItem Content="近三个月"/>
-            <ComboBoxItem Content="近半年"/>
-            <ComboBoxItem Content="近一年"/>
+        <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <Label Content="题目：" HorizontalAlignment="Left" Margin="39,0,0,0" VerticalAlignment="Top" />
+        <ComboBox Name="ProblemFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="90,3,0,0"
+                  VerticalAlignment="Top" Width="96" Height="21" />
+        <Label Content="用户：" HorizontalAlignment="Left" Margin="191,0,0,0" VerticalAlignment="Top" />
+        <ComboBox Name="UserFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left" Margin="242,3,0,0"
+                  VerticalAlignment="Top" Width="96" Height="21" />
+        <Label Content="时间：" HorizontalAlignment="Left" Margin="343,0,0,0" VerticalAlignment="Top" />
+        <ComboBox Name="TimeFilter" HorizontalAlignment="Left" Margin="394,3,0,0" VerticalAlignment="Top" Width="96"
+                  Height="21">
+            <ComboBoxItem Content="今天" />
+            <ComboBoxItem Content="近三天" />
+            <ComboBoxItem Content="近一周" />
+            <ComboBoxItem Content="近一个月" />
+            <ComboBoxItem Content="近三个月" />
+            <ComboBoxItem Content="近半年" />
+            <ComboBoxItem Content="近一年" />
         </ComboBox>
-        <Button Content="确定" HorizontalAlignment="Left" Margin="495,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="DoFilterButton_Click"/>
-        <Button Content="重置" HorizontalAlignment="Left" Margin="537,2,0,0" VerticalAlignment="Top" Width="38" Height="22" Click="ResetFilterButton_Click"/>
+        <Button Content="确定" HorizontalAlignment="Left" Margin="495,2,0,0" VerticalAlignment="Top" Width="38"
+                Height="22" Click="DoFilterButton_Click" />
+        <Button Content="重置" HorizontalAlignment="Left" Margin="537,2,0,0" VerticalAlignment="Top" Width="38"
+                Height="22" Click="ResetFilterButton_Click" />
     </Grid>
 </Page>

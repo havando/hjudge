@@ -1,24 +1,13 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace Client
 {
     /// <summary>
-    /// Interaction logic for SystemSettingsPage.xaml
+    ///     Interaction logic for SystemSettingsPage.xaml
     /// </summary>
     public partial class SystemSettingsPage : Page
     {
@@ -84,14 +73,13 @@ namespace Client
         private static ServerConfig _getServerConfigResult;
         private static bool _getServerConfigState;
         private static bool _updateServerConfigState;
+
         public static ServerConfig GetServerConfig()
         {
             _getServerConfigState = false;
             SendData("GetServerConfig", string.Empty);
             while (!_getServerConfigState)
-            {
                 Thread.Sleep(1);
-            }
             return _getServerConfigResult;
         }
 
@@ -100,10 +88,7 @@ namespace Client
             _updateServerConfigState = false;
             SendData("UpdateServerConfig", JsonConvert.SerializeObject(serverConfig));
             while (!_updateServerConfigState)
-            {
                 Thread.Sleep(1);
-            }
-            return;
         }
     }
 }

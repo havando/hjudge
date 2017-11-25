@@ -36,7 +36,7 @@ namespace Server
             var rdr =
                 new StringReader(
                     File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\Config.xml", Encoding.UTF8));
-            Configurations = (Config)xmlDeserializer.Deserialize(rdr);
+            Configurations = (Config) xmlDeserializer.Deserialize(rdr);
             var pathlist = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("PATH", Configurations.EnvironmentValues + ";" + pathlist,
                 EnvironmentVariableTarget.Process);

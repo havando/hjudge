@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,37 +15,39 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Xml;
+using Markdig;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using Markdig;
 
 namespace Client
 {
     /// <summary>
-    /// Interaction logic for ProblemsManagementPage.xaml
+    ///     Interaction logic for ProblemsManagementPage.xaml
     /// </summary>
     public partial class ProblemsManagementPage : Page
     {
-        private ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
+        private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
 
         public ProblemsManagementPage()
         {
             InitializeComponent();
         }
 
-        static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
+        private static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
         {
             webBrowser.Navigating += (s, e) =>
             {
-                var fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var fiComWebBrowser =
+                    typeof(WebBrowser).GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (fiComWebBrowser == null)
                     return;
 
-                object objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
+                var objComWebBrowser = fiComWebBrowser.GetValue(webBrowser);
                 if (objComWebBrowser == null)
                     return;
 
-                objComWebBrowser.GetType().InvokeMember("Silent", System.Reflection.BindingFlags.SetProperty, null, objComWebBrowser, new object[] { hide });
+                objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser,
+                    new object[] {hide});
             };
         }
 
@@ -72,7 +75,7 @@ namespace Client
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement)obj);
+                    ListBox.Items.Add((UIElement) obj);
                 }
             }
         }
@@ -132,9 +135,12 @@ namespace Client
             Level.Value = Convert.ToInt32(problem.Level);
             LevelShow.Content = Level.Value;
             Public.IsChecked = (problem.Option & 1) != 0;
-            Description.Text = string.IsNullOrEmpty(problem.Description) ? Connection.GetProblemDescription(problem.ProblemId) : problem.Description;
+            Description.Text = string.IsNullOrEmpty(problem.Description)
+                ? Connection.GetProblemDescription(problem.ProblemId)
+                : problem.Description;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
+            var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) +
+                         "\n" + Properties.Resources.MarkdownStyleTail;
             DescriptionViewer.NavigateToString(result);
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
@@ -152,7 +158,7 @@ namespace Client
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement)obj);
+                ListBox.Items.Add((UIElement) obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -266,7 +272,7 @@ namespace Client
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -275,14 +281,14 @@ namespace Client
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is TabControl t)
-            {
                 if (t.SelectedIndex == 1)
                 {
                     var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                    var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) + "\n" + Properties.Resources.MarkdownStyleTail;
+                    var result = Properties.Resources.MarkdownStyleHead + "\n" +
+                                 Markdown.ToHtml(Description.Text, pipeline) + "\n" +
+                                 Properties.Resources.MarkdownStyleTail;
                     DescriptionViewer.NavigateToString(result);
                 }
-            }
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -294,9 +300,7 @@ namespace Client
             {
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
                 foreach (var queryProblem in Connection.QueryProblems())
-                {
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
-                }
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
             });
             var rtf = new RotateTransform
@@ -344,9 +348,7 @@ namespace Client
                         Connection.DealingWithLargeData = true;
                         Connection.SendFile(ofg.FileName, "DataFile");
                         while (!Connection.UploadFileResult)
-                        {
                             Thread.Sleep(1);
-                        }
                         Connection.DealingWithLargeData = false;
                         Dispatcher.Invoke(() =>
                         {
@@ -391,9 +393,7 @@ namespace Client
                         Connection.DealingWithLargeData = true;
                         Connection.SendFile(ofg.FileName, "PublicFile");
                         while (!Connection.UploadFileResult)
-                        {
                             Thread.Sleep(1);
-                        }
                         Connection.DealingWithLargeData = false;
                         Dispatcher.Invoke(() =>
                         {
@@ -409,12 +409,17 @@ namespace Client
         private void Label_MouseDown_2(object sender, MouseButtonEventArgs e)
         {
             if (!(ListView.SelectedItem is Problem problem)) return;
-            if (MessageBox.Show("删除后不可恢复，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show("删除后不可恢复，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                MessageBoxResult.Yes)
             {
                 Connection.SendData("ClearData", problem.ProblemId.ToString());
-                if (problem.ExtraFiles.Length > 0 && MessageBox.Show("是否删除额外文件？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (problem.ExtraFiles.Length > 0 &&
+                    MessageBox.Show("是否删除额外文件？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                    MessageBoxResult.Yes)
                     Connection.SendData("DeleteExtra", problem.ProblemId.ToString());
-                if (!string.IsNullOrEmpty(problem.SpecialJudge) && MessageBox.Show("是否删除比较程序？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (!string.IsNullOrEmpty(problem.SpecialJudge) &&
+                    MessageBox.Show("是否删除比较程序？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                    MessageBoxResult.Yes)
                     Connection.SendData("DeleteJudge", problem.ProblemId.ToString());
             }
         }
@@ -438,9 +443,7 @@ namespace Client
             _queryProblemsResult = new ObservableCollection<Problem>();
             SendData("QueryProblems", string.Empty);
             while (!_queryProblemsResultState)
-            {
                 Thread.Sleep(1);
-            }
             return _queryProblemsResult;
         }
 
@@ -450,9 +453,7 @@ namespace Client
             _detailsProblemResult = string.Empty;
             SendData("GetProblemDescription", problemId.ToString());
             while (!_detailsProblemState)
-            {
                 Thread.Sleep(1);
-            }
             return _detailsProblemResult;
         }
 
@@ -461,9 +462,7 @@ namespace Client
             _deleteProblemResult = false;
             SendData("DeleteProblem", problemId.ToString());
             while (!_deleteProblemResult)
-            {
                 Thread.Sleep(1);
-            }
         }
 
         public static Problem AddProblem()
@@ -472,9 +471,7 @@ namespace Client
             _addProblemResult = null;
             SendData("AddProblem", string.Empty);
             while (!_addProblemState)
-            {
                 Thread.Sleep(1);
-            }
             return _addProblemResult;
         }
 
@@ -483,10 +480,7 @@ namespace Client
             _updateProblemResult = false;
             SendData("UpdateProblem", JsonConvert.SerializeObject(problem));
             while (!_updateProblemResult)
-            {
                 Thread.Sleep(1);
-            }
         }
     }
-
 }

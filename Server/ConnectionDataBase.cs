@@ -15,6 +15,7 @@ namespace Server
         #region DataBase
 
         private static SQLiteConnection _sqLite;
+
         private static JudgeInfo GetJudgeInfo(int judgeId)
         {
             lock (DataBaseLock)
@@ -123,7 +124,6 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (reader.HasRows)
                         while (reader.Read())
-                        {
                             try
                             {
                                 var t = new JudgeInfo
@@ -157,7 +157,6 @@ namespace Server
                                     Description = reader.GetString(11)
                                 });
                             }
-                        }
                 }
             }
             return ji.ToArray();
@@ -383,7 +382,8 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
+                    cmd.CommandText =
+                        "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
@@ -393,7 +393,7 @@ namespace Server
                         new SQLiteParameter("@5", DbType.Int32),
                         new SQLiteParameter("@6", DbType.String),
                         new SQLiteParameter("@7", DbType.String),
-                        new SQLiteParameter("@8", DbType.Int32),
+                        new SQLiteParameter("@8", DbType.Int32)
                     };
                     parameters[0].Value = string.Empty;
                     parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
@@ -417,7 +417,8 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
+                    cmd.CommandText =
+                        "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),
@@ -700,7 +701,6 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     foreach (var t in toUpdate)
-                    {
                         if (CheckUser(t.UserName) != 0)
                         {
                             cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
@@ -708,7 +708,7 @@ namespace Server
                             {
                                 new SQLiteParameter("@1", DbType.String),
                                 new SQLiteParameter("@2", DbType.Int32),
-                                new SQLiteParameter("@3", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.Int32)
                             };
                             parameters[0].Value = t.Password;
                             parameters[1].Value = t.Type;
@@ -719,7 +719,8 @@ namespace Server
                         }
                         else
                         {
-                            cmd.CommandText = "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                            cmd.CommandText =
+                                "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
                             SQLiteParameter[] parameters =
                             {
                                 new SQLiteParameter("@1", DbType.String),
@@ -743,7 +744,6 @@ namespace Server
                             cmd.ExecuteNonQuery();
                             cmd.Parameters.Clear();
                         }
-                    }
                 }
             }
         }
@@ -933,7 +933,8 @@ namespace Server
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
                     if (userId != 0)
-                        cmd.CommandText = $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}";
+                        cmd.CommandText =
+                            $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}";
                     else cmd.CommandText = $"SELECT * From Judge Where CompetitionId={competitionId}";
                     var reader = cmd.ExecuteReader();
                     if (!reader.HasRows) return a;
@@ -1020,6 +1021,7 @@ namespace Server
             }
             return curJudgeInfo;
         }
+
         public static Message GetMsg(int msgId)
         {
             var t = new Message();
@@ -1047,6 +1049,7 @@ namespace Server
             }
             return t;
         }
+
         public static List<Message> QueryMsg(int userId, bool withContent)
         {
             var t = new List<Message>();
@@ -1061,8 +1064,34 @@ namespace Server
                         try
                         {
                             if (withContent)
-                                t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收", State = reader.GetInt32(5) });
-                            else t.Add(new Message { MsgId = reader.GetInt32(0), User = reader.GetInt32(1) == userId ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1)), MessageTime = Convert.ToDateTime(reader.GetString(3)), Content = reader.GetString(4).Length > 30 ? reader.GetString(4).Substring(0, 30) + "..." : reader.GetString(4), Direction = reader.GetInt32(1) == userId ? "发送" : "接收", State = reader.GetInt32(5) });
+                                t.Add(new Message
+                                {
+                                    MsgId = reader.GetInt32(0),
+                                    User =
+                                        reader.GetInt32(1) == userId
+                                            ? GetUserName(reader.GetInt32(2))
+                                            : GetUserName(reader.GetInt32(1)),
+                                    MessageTime = Convert.ToDateTime(reader.GetString(3)),
+                                    Content = reader.GetString(4),
+                                    Direction = reader.GetInt32(1) == userId ? "发送" : "接收",
+                                    State = reader.GetInt32(5)
+                                });
+                            else
+                                t.Add(new Message
+                                {
+                                    MsgId = reader.GetInt32(0),
+                                    User =
+                                        reader.GetInt32(1) == userId
+                                            ? GetUserName(reader.GetInt32(2))
+                                            : GetUserName(reader.GetInt32(1)),
+                                    MessageTime = Convert.ToDateTime(reader.GetString(3)),
+                                    Content =
+                                        reader.GetString(4).Length > 30
+                                            ? reader.GetString(4).Substring(0, 30) + "..."
+                                            : reader.GetString(4),
+                                    Direction = reader.GetInt32(1) == userId ? "发送" : "接收",
+                                    State = reader.GetInt32(5)
+                                });
                         }
                         catch
                         {
@@ -1368,7 +1397,6 @@ namespace Server
                             if (!withPrivate)
                             {
                                 if ((reader.GetInt32(11) & 1) != 0)
-                                {
                                     curJudgeInfo.Add(new Problem
                                     {
                                         ProblemId = reader.GetInt32(0),
@@ -1383,11 +1411,11 @@ namespace Server
                                         OutputFileName = reader.GetString(9),
                                         CompileCommand = reader.GetString(10),
                                         Option = reader.GetInt32(11),
-                                        Description = reader.GetString(12),
+                                        Description = reader.GetString(12)
                                     });
-                                }
                             }
                             else
+                            {
                                 curJudgeInfo.Add(new Problem
                                 {
                                     ProblemId = reader.GetInt32(0),
@@ -1402,8 +1430,9 @@ namespace Server
                                     OutputFileName = reader.GetString(9),
                                     CompileCommand = reader.GetString(10),
                                     Option = reader.GetInt32(11),
-                                    Description = reader.GetString(12),
+                                    Description = reader.GetString(12)
                                 });
+                            }
                         }
                         catch
                         {
@@ -1424,7 +1453,8 @@ namespace Server
             {
                 using (var cmd = new SQLiteCommand(_sqLite))
                 {
-                    cmd.CommandText = "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
+                    cmd.CommandText =
+                        "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
                     SQLiteParameter[] parameters =
                     {
                         new SQLiteParameter("@1", DbType.String),

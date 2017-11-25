@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Server
@@ -14,7 +15,8 @@ namespace Server
     /// </summary>
     public partial class CompetitionManagement : Window
     {
-        private static ObservableCollection<Competition> _competitions = new ObservableCollection<Competition>();
+        private static readonly ObservableCollection<Competition> _competitions =
+            new ObservableCollection<Competition>();
 
         public CompetitionManagement()
         {
@@ -24,39 +26,31 @@ namespace Server
         private void Hour_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox t)
-            {
                 try
                 {
                     var value = Convert.ToInt32(t.Text);
                     if (t.Text != value.ToString() || value < 0 || value >= 24)
-                    {
                         t.Text = "0";
-                    }
                 }
                 catch
                 {
                     t.Text = "0";
                 }
-            }
         }
 
         private void NonHour_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox t)
-            {
                 try
                 {
                     var value = Convert.ToInt32(t.Text);
                     if (t.Text != value.ToString() || value < 0 || value >= 60)
-                    {
                         t.Text = "0";
-                    }
                 }
                 catch
                 {
                     t.Text = "0";
                 }
-            }
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -98,7 +92,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -109,28 +103,22 @@ namespace Server
             _competitions.Clear();
             ListView.ItemsSource = _competitions;
             foreach (var i in Connection.QueryCompetition())
-            {
                 _competitions.Add(i);
-            }
         }
 
         private void LimitedSubmitTime_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox t)
-            {
                 try
                 {
                     var value = Convert.ToInt32(t.Text);
                     if (t.Text != value.ToString() || value < 0)
-                    {
                         t.Text = "0";
-                    }
                 }
                 catch
                 {
                     t.Text = "0";
                 }
-            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -155,8 +143,10 @@ namespace Server
             t.CompetitionName = ComName.Text;
             var tmpSdate = StartDate.SelectedDate ?? DateTime.Now;
             var tmpEdate = EndDate.SelectedDate ?? DateTime.Now;
-            t.StartTime = Convert.ToDateTime($"{tmpSdate:yyyy/MM/dd} {(StartHour.Text.Length == 1 ? $"0{StartHour.Text}" : StartHour.Text)}:{(StartMinute.Text.Length == 1 ? $"0{StartMinute.Text}" : StartMinute.Text)}:{(StartSecond.Text.Length == 1 ? $"0{StartSecond.Text}" : StartSecond.Text)}");
-            t.EndTime = Convert.ToDateTime($"{tmpEdate:yyyy/MM/dd} {(EndHour.Text.Length == 1 ? $"0{EndHour.Text}" : EndHour.Text)}:{(EndMinute.Text.Length == 1 ? $"0{EndMinute.Text}" : EndMinute.Text)}:{(EndSecond.Text.Length == 1 ? $"0{EndSecond.Text}" : EndSecond.Text)}");
+            t.StartTime = Convert.ToDateTime(
+                $"{tmpSdate:yyyy/MM/dd} {(StartHour.Text.Length == 1 ? $"0{StartHour.Text}" : StartHour.Text)}:{(StartMinute.Text.Length == 1 ? $"0{StartMinute.Text}" : StartMinute.Text)}:{(StartSecond.Text.Length == 1 ? $"0{StartSecond.Text}" : StartSecond.Text)}");
+            t.EndTime = Convert.ToDateTime(
+                $"{tmpEdate:yyyy/MM/dd} {(EndHour.Text.Length == 1 ? $"0{EndHour.Text}" : EndHour.Text)}:{(EndMinute.Text.Length == 1 ? $"0{EndMinute.Text}" : EndMinute.Text)}:{(EndSecond.Text.Length == 1 ? $"0{EndSecond.Text}" : EndSecond.Text)}");
             t.Option = 0;
             if (LimitedSubmit.IsChecked ?? false) t.Option |= 1;
             if (LastSubmit.IsChecked ?? false) t.Option |= 2;
@@ -166,8 +156,7 @@ namespace Server
             t.Password = ComPassword.Text;
             t.SubmitLimit = Convert.ToInt32(LimitedSubmitTime.Text);
             var tmpProId = new List<int>();
-            foreach (var i in ComProblems.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries))
-            {
+            foreach (var i in ComProblems.Text.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries))
                 try
                 {
                     var x = Convert.ToInt32(i);
@@ -182,16 +171,16 @@ namespace Server
                 {
                     MessageBox.Show("输入的题目 ID 不合法，无法保存", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
             t.ProblemSet = tmpProId.ToArray();
             t.Description = ComNote.Text;
             Connection.UpdateCompetition(t);
         }
 
-        private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var originalSource = (DependencyObject)e.OriginalSource;
-            while ((originalSource != null) && !(originalSource is ListViewItem)) originalSource = VisualTreeHelper.GetParent(originalSource);
+            var originalSource = (DependencyObject) e.OriginalSource;
+            while (originalSource != null && !(originalSource is ListViewItem))
+                originalSource = VisualTreeHelper.GetParent(originalSource);
             if (originalSource == null) return;
             if (!(sender is ListView)) return;
             if (!(ListView.SelectedItem is Competition t)) return;

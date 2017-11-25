@@ -5,25 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="消息列表" Height="336.5" Width="624" Icon="Resources/Messaging.png" ResizeMode="CanMinimize" Loaded="Window_Loaded">
+        Title="消息列表" Height="336.5" Width="624" Icon="Resources/Messaging.png" ResizeMode="CanMinimize"
+        Loaded="Window_Loaded">
     <Grid>
         <ListView Name="MessagesList" HorizontalAlignment="Left" Height="257" Margin="10,10,0,0"
-            VerticalAlignment="Top" Width="587" SelectionMode="Single"
-            MouseDoubleClick="MessagesList_OnMouseDoubleClick">
+                  VerticalAlignment="Top" Width="587" SelectionMode="Single"
+                  MouseDoubleClick="MessagesList_OnMouseDoubleClick">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="50" Header="方向" DisplayMemberBinding="{Binding Direction}" />
                     <GridViewColumn Width="100" Header="用户名"
-                        DisplayMemberBinding="{Binding User}" />
+                                    DisplayMemberBinding="{Binding User}" />
                     <GridViewColumn Width="150" Header="发送时间"
-                        DisplayMemberBinding="{Binding DisplayDateTime}" />
+                                    DisplayMemberBinding="{Binding DisplayDateTime}" />
                     <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Summery}" />
                 </GridView>
             </ListView.View>
         </ListView>
         <Label Content="Tips：双击查看详情。" HorizontalAlignment="Left" Margin="10,272,0,0"
-            VerticalAlignment="Top" Foreground="Red" />
-        <Button Content="刷新" HorizontalAlignment="Left" Margin="536,272,0,0" VerticalAlignment="Top" Width="61" Height="26" Click="Button_Click"/>
+               VerticalAlignment="Top" Foreground="Red" />
+        <Button Content="刷新" HorizontalAlignment="Left" Margin="536,272,0,0" VerticalAlignment="Top" Width="61"
+                Height="26" Click="Button_Click" />
 
     </Grid>
 </Window>

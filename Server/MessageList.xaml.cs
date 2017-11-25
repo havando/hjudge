@@ -6,7 +6,7 @@ using System.Windows.Input;
 namespace Server
 {
     /// <summary>
-    /// Interaction logic for MessageList.xaml
+    ///     Interaction logic for MessageList.xaml
     /// </summary>
     public partial class MessageList : Window
     {
@@ -25,9 +25,7 @@ namespace Server
             Task.Run(() =>
             {
                 foreach (var i in Connection.QueryMsg(1, false))
-                {
                     Dispatcher.Invoke(() => _messages.Add(i));
-                }
             });
         }
 
@@ -36,9 +34,7 @@ namespace Server
             if (MessagesList.SelectedItem is Message t)
             {
                 if (t.Content.Length == 33)
-                {
                     t.Content = Connection.GetMsg(t.MsgId).Content;
-                }
                 var y = new Messaging();
                 y.SetMessage(t);
                 y.Show();
