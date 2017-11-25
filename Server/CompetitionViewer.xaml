@@ -71,7 +71,7 @@
                     <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="137"
                              Margin="270,28,0,0"
                              TextWrapping="Wrap" VerticalAlignment="Top" Width="386" VerticalScrollBarVisibility="Auto"
-                             HorizontalScrollBarVisibility="Auto" />
+                             HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
                     <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="129"
                              Margin="270,170,0,0"
                              TextWrapping="Wrap" VerticalAlignment="Top" Width="386" VerticalScrollBarVisibility="Auto"

@@ -12,7 +12,7 @@
                  HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
         <TextBox Name="DetailsBox" HorizontalAlignment="Left" Height="183" Margin="10,282,0,0" TextWrapping="Wrap"
                  VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto" />
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
         <Label Name="MyJudgeInfo" Content="" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
 
     </Grid>

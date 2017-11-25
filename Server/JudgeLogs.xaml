@@ -37,7 +37,7 @@
         </ListView>
         <TextBox Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="201" Margin="402,41,0,0"
                  TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto" />
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
         <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="373" Margin="402,247,0,0"
                  TextWrapping="Wrap" VerticalAlignment="Top" Width="644" VerticalScrollBarVisibility="Auto"
                  HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
