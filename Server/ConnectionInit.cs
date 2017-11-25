@@ -117,12 +117,43 @@ namespace Server
                 try
                 {
                     cmd.ExecuteNonQuery();
+                    InsertBossAccount(conn);
                     return true;
                 }
                 catch
                 {
                     return false;
                 }
+            }
+        }
+
+        private static void InsertBossAccount(SQLiteConnection conn)
+        {
+            using (var cmd = new SQLiteCommand(conn))
+            {
+                cmd.CommandText =
+                    "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                SQLiteParameter[] parameters =
+                {
+                    new SQLiteParameter("@1", DbType.String),
+                    new SQLiteParameter("@2", DbType.String),
+                    new SQLiteParameter("@3", DbType.String),
+                    new SQLiteParameter("@4", DbType.Int32),
+                    new SQLiteParameter("@5", DbType.String),
+                    new SQLiteParameter("@6", DbType.String),
+                    new SQLiteParameter("@7", DbType.Int32),
+                    new SQLiteParameter("@8", DbType.Int32)
+                };
+                parameters[0].Value = "hjudgeBOSS";
+                parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                parameters[2].Value = "cefb1f85346dfbfa4a341e9c41db918ba25bccc4e62c3939390084361126a417";
+                parameters[3].Value = 1;
+                parameters[4].Value = string.Empty;
+                parameters[5].Value = string.Empty;
+                parameters[6].Value = 0;
+                parameters[7].Value = 0;
+                cmd.Parameters.AddRange(parameters);
+                cmd.ExecuteNonQuery();
             }
         }
 
