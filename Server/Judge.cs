@@ -343,10 +343,12 @@ namespace Server
         private void Judging(UIElement textBlock, string runCommand)
         {
             var cur = -1;
-            var noRespondingTime = new int[_problem.DataSets.Length];
             var noRespondingState = false;
+            var noRespondingTime = new int[_problem.DataSets.Length];
+            var failToCatchProcessTime = new int[_problem.DataSets.Length];
             while (cur < _problem.DataSets.Length - 1)
             {
+                var failToCatchProcess = false;
                 cur++;
                 if (cur != 0)
                 {
@@ -448,6 +450,8 @@ namespace Server
                     Task<string> res = null;
                     _isFault = false;
                     _isExited = false;
+                    var startCatch = DateTime.Now;
+                    Process[] processes = new Process[0];
                     try
                     {
                         execute.Start();
@@ -459,6 +463,32 @@ namespace Server
                         JudgeResult.Score[cur] = 0;
                         JudgeResult.Timeused[cur] = 0;
                         JudgeResult.Memoryused[cur] = 0;
+                        continue;
+                    }
+                    while (processes.Length == 0)
+                    {
+                        if (_isExited || (DateTime.Now - startCatch).TotalMinutes > 1)
+                        {
+                            failToCatchProcess = true;
+                            break;
+                        }
+                        processes = Process.GetProcessesByName($"test_hjudge_{_id}");
+                    }
+                    if (failToCatchProcess)
+                    {
+                        JudgeResult.Result[cur] = "Unknown Error";
+                        JudgeResult.Score[cur] = 0;
+                        failToCatchProcessTime[cur]++;
+                        try
+                        {
+                            execute?.Close();
+                            execute?.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                        if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
                     var inputStream = execute.StandardInput;
@@ -495,18 +525,12 @@ namespace Server
                             //ignored
                         }
                     }
-                    Process[] processes = new Process[0];
                     long lastDt = 0;
                     var noChangeTime = DateTime.Now;
                     var isNoResponding = false;
                     var cnt = 0;
                     while (!_isExited)
                     {
-                        if (processes.Length == 0)
-                        {
-                            processes = Process.GetProcessesByName($"test_hjudge_{_id}");
-                            continue;
-                        }
                         try
                         {
                             long tmpTime = 0, tmpMem = 0;
