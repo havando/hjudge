@@ -36,6 +36,7 @@ namespace Server
         private bool _isFilterActivated;
         private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
         private readonly ObservableCollection<string> _userFilter = new ObservableCollection<string>();
+        private readonly object _loadLock = new object();
 
         public CompetitionViewer()
         {
@@ -106,142 +107,149 @@ namespace Server
 
         private void Load()
         {
-            if (!_hasFirstLoad)
+            lock (_loadLock)
             {
-                _hasFirstLoad = true;
-                for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
+                if (!_hasFirstLoad)
                 {
-                    if (_competition.ProblemSet != null)
+                    _hasFirstLoad = true;
+                    for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
                     {
-                        var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                            $"{i}").Replace("${ProblemName}", Connection.GetProblemName(_competition.ProblemSet[i]));
-                        var strreader = new StringReader(t);
-                        var xmlreader = new XmlTextReader(strreader);
-                        Dispatcher.Invoke(() =>
+                        if (_competition.ProblemSet != null)
                         {
-                            var obj = XamlReader.Load(xmlreader);
-                            CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
-                        });
-                    }
-                }
-                Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
-            }
-            Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
-            var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
-            Dispatcher.Invoke(() =>
-            {
-                _curJudgeInfo.Clear();
-                _competitionInfo.Clear();
-            });
-            for (var i = x.Count - 1; i >= 0; i--)
-                Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
-            Dispatcher.Invoke(() =>
-            {
-                foreach (var i in CompetitionStateColumn.Columns)
-                    if (i.Header is StackPanel j)
-                        foreach (var k in j.Children)
-                            if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
+                            var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
+                                $"{i}").Replace("${ProblemName}",
+                                Connection.GetProblemName(_competition.ProblemSet[i]));
+                            var strreader = new StringReader(t);
+                            var xmlreader = new XmlTextReader(strreader);
+                            Dispatcher.Invoke(() =>
                             {
-                                var m = Convert.ToInt32(l.Name.Substring(13));
-                                l.Text =
-                                    $"{x.Count(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")}/{x.Count(p => p.ProblemId == _competition.ProblemSet[m])}";
-                            }
-            });
-            var tmpList = new List<CompetitionUserInfo>();
-            Dispatcher.Invoke(() => _competitionInfo.Clear());
-            var user = x.Select(p => p.UserName).Distinct();
-            Dispatcher.Invoke(() => ComUserNumber.Text = $"{user.Count()}");
-            foreach (var i in user)
-            {
-                if (_competition.ProblemSet == null) continue;
-                var tmp = new CompetitionUserInfo
-                {
-                    UserName = i,
-                    ProblemInfo = new CompetitionProblemInfo[_competition.ProblemSet.Length]
-                };
-                float score = 0;
-                var totTime = new TimeSpan(0);
-                for (var j = 0; j < _competition.ProblemSet.Length; j++)
-                {
-                    tmp.ProblemInfo[j] = new CompetitionProblemInfo();
-                    var ac = x.Count(p => p.UserName == i && p.ResultSummery == "Accepted" &&
-                                          p.ProblemId == _competition.ProblemSet[j]);
-                    var all = x.Count(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
-                    tmp.ProblemInfo[j].Color = ac != 0 ? Brushes.LightGreen : Brushes.LightPink;
-                    var time = new TimeSpan(0);
-                    var cnt = 0;
-                    var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]).ToList();
-                    if ((_competition.Option & 2) == 0)
-                    {
-                        if (tmpScoreBase.Any()) score += tmpScoreBase.Max(p => p.FullScore);
-                        tmp.ProblemInfo[j].State = $"{ac}/{all}";
-                        foreach (var k in x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]))
-                        {
-                            var tmpTime = Convert.ToDateTime(k.JudgeDate) - _competition.StartTime;
-                            time += tmpTime;
-                            totTime += tmpTime;
-                            if (k.ResultSummery == "Accepted")
-                            {
-                                break;
-                            }
-                            if ((_competition.Option & 4) != 0)
-                            {
-                                time += new TimeSpan(0, 20, 0);
-                                totTime += new TimeSpan(0, 20, 0);
-                                cnt++;
-                            }
+                                var obj = XamlReader.Load(xmlreader);
+                                CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
+                            });
                         }
                     }
-                    else
+                    Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
+                }
+                Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
+                var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
+                Dispatcher.Invoke(() =>
+                {
+                    _curJudgeInfo.Clear();
+                    _competitionInfo.Clear();
+                });
+                for (var i = x.Count - 1; i >= 0; i--)
+                    Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
+                Dispatcher.Invoke(() =>
+                {
+                    foreach (var i in CompetitionStateColumn.Columns)
+                        if (i.Header is StackPanel j)
+                            foreach (var k in j.Children)
+                                if (k is TextBlock l && l.Name.Contains("ProblemColumn"))
+                                {
+                                    var m = Convert.ToInt32(l.Name.Substring(13));
+                                    l.Text =
+                                        $"{x.Count(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")}/{x.Count(p => p.ProblemId == _competition.ProblemSet[m])}";
+                                }
+                });
+                var tmpList = new List<CompetitionUserInfo>();
+                Dispatcher.Invoke(() => _competitionInfo.Clear());
+                var user = x.Select(p => p.UserName).Distinct();
+                Dispatcher.Invoke(() => ComUserNumber.Text = $"{user.Count()}");
+                foreach (var i in user)
+                {
+                    if (_competition.ProblemSet == null) continue;
+                    var tmp = new CompetitionUserInfo
                     {
-                        if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
-                        var y = x.LastOrDefault(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
-                        if (y != null && y.ResultSummery == "Accepted")
+                        UserName = i,
+                        ProblemInfo = new CompetitionProblemInfo[_competition.ProblemSet.Length]
+                    };
+                    float score = 0;
+                    var totTime = new TimeSpan(0);
+                    for (var j = 0; j < _competition.ProblemSet.Length; j++)
+                    {
+                        tmp.ProblemInfo[j] = new CompetitionProblemInfo();
+                        var ac = x.Count(p => p.UserName == i && p.ResultSummery == "Accepted" &&
+                                              p.ProblemId == _competition.ProblemSet[j]);
+                        var all = x.Count(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
+                        tmp.ProblemInfo[j].Color = ac != 0 ? Brushes.LightGreen : Brushes.LightPink;
+                        var time = new TimeSpan(0);
+                        var cnt = 0;
+                        var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
+                            .ToList();
+                        if ((_competition.Option & 2) == 0)
                         {
-                            tmp.ProblemInfo[j].State = "Solved";
+                            if (tmpScoreBase.Any()) score += tmpScoreBase.Max(p => p.FullScore);
+                            tmp.ProblemInfo[j].State = $"{ac}/{all}";
+                            foreach (var k in x.Where(p =>
+                                p.UserName == i && p.ProblemId == _competition.ProblemSet[j]))
+                            {
+                                var tmpTime = Convert.ToDateTime(k.JudgeDate) - _competition.StartTime;
+                                time += tmpTime;
+                                totTime += tmpTime;
+                                if (k.ResultSummery == "Accepted")
+                                {
+                                    break;
+                                }
+                                if ((_competition.Option & 4) != 0)
+                                {
+                                    time += new TimeSpan(0, 20, 0);
+                                    totTime += new TimeSpan(0, 20, 0);
+                                    cnt++;
+                                }
+                            }
                         }
                         else
                         {
-                            tmp.ProblemInfo[j].Color = Brushes.LightPink;
-                            tmp.ProblemInfo[j].State = "Unsolved";
+                            if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
+                            var y = x.LastOrDefault(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
+                            if (y != null && y.ResultSummery == "Accepted")
+                            {
+                                tmp.ProblemInfo[j].State = "Solved";
+                            }
+                            else
+                            {
+                                tmp.ProblemInfo[j].Color = Brushes.LightPink;
+                                tmp.ProblemInfo[j].State = "Unsolved";
+                            }
+                            if (y != null)
+                            {
+                                var tmpTime = Convert.ToDateTime(y.JudgeDate) - _competition.StartTime;
+                                time += tmpTime;
+                                totTime += tmpTime;
+                            }
                         }
-                        if (y != null)
-                        {
-                            var tmpTime = Convert.ToDateTime(y.JudgeDate) - _competition.StartTime;
-                            time += tmpTime;
-                            totTime += tmpTime;
-                        }
+                        if ((_competition.Option & 4) != 0 && cnt != 0) tmp.ProblemInfo[j].State += $" (-{cnt})";
+                        tmp.ProblemInfo[j].Time = $"{time.Days * 24 + time.Hours}:{time.Minutes}:{time.Seconds}";
                     }
-                    if ((_competition.Option & 4) != 0 && cnt != 0) tmp.ProblemInfo[j].State += $" (-{cnt})";
-                    tmp.ProblemInfo[j].Time = $"{time.Days * 24 + time.Hours}:{time.Minutes}:{time.Seconds}";
+                    tmp.Score = score;
+                    tmp.TotTime = totTime;
+                    tmpList.Add(tmp);
                 }
-                tmp.Score = score;
-                tmp.TotTime = totTime;
-                tmpList.Add(tmp);
-            }
-            tmpList.Sort((x1, x2) =>
-            {
-                if (Math.Abs(x1.Score - x2.Score) > 0.00001) return x2.Score.CompareTo(x1.Score);
-                return x1.TotTime.CompareTo(x2.TotTime);
-            });
-            for (var i = 0; i < tmpList.Count; i++)
-            {
-                tmpList[i].Rank = i + 1;
-                Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
-            }
-            Dispatcher.Invoke(() =>
-            {
-                _problemFilter.Clear();
-                _userFilter.Clear();
-            });
-            foreach (var judgeInfo in x)
+                tmpList.Sort((x1, x2) =>
+                {
+                    if (Math.Abs(x1.Score - x2.Score) > 0.00001) return x2.Score.CompareTo(x1.Score);
+                    return x1.TotTime.CompareTo(x2.TotTime);
+                });
+                for (var i = 0; i < tmpList.Count; i++)
+                {
+                    tmpList[i].Rank = i + 1;
+                    Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
+                }
                 Dispatcher.Invoke(() =>
                 {
-                    if (_problemFilter.All(i => i != judgeInfo.ProblemName)) _problemFilter.Add(judgeInfo.ProblemName);
-                    if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                    _problemFilter.Clear();
+                    _userFilter.Clear();
                 });
-            if (DateTime.Now < _competition.EndTime)
-                _hasRefreshWhenFinished = false;
+                foreach (var judgeInfo in x)
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (_problemFilter.All(i => i != judgeInfo.ProblemName))
+                            _problemFilter.Add(judgeInfo.ProblemName);
+                        if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
+                    });
+                if (DateTime.Now < _competition.EndTime)
+                    _hasRefreshWhenFinished = false;
+            }
         }
 
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
