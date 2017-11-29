@@ -325,9 +325,10 @@ namespace Server
                         }
                     };
                     a.Start();
-                    var staticRes = a.StandardOutput.ReadToEndAsync();
+                    var staticRes1 = a.StandardOutput.ReadToEndAsync();
+                    var staticRes2 = a.StandardError.ReadToEndAsync();
                     a.WaitForExit();
-                    additionInfo += "æ≤Ã¨ºÏ≤È£∫\n" + staticRes.Result + "\n";
+                    additionInfo += "æ≤Ã¨ºÏ≤È£∫\n" + staticRes1.Result.Replace(_workingdir, "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...") + "\n";
                 }
             }
             catch (Exception ex)
@@ -930,7 +931,7 @@ namespace Server
                 b.Start();
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();
-                b?.WaitForExit();
+                b.WaitForExit();
                 var log = "±‡“Î»’÷æ£∫\n" + stdOut.Result + "\n" + stdErr.Result;
                 log = log.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...");
                 Thread.Sleep(1);
