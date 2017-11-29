@@ -15,10 +15,10 @@ namespace Server
     {
         private static DataTable GetReaderSchema(string tableName, SQLiteConnection connection)
         {
-            DataTable schemaTable = null;
+            DataTable schemaTable;
             IDbCommand cmd = new SQLiteCommand
             {
-                CommandText = string.Format("select * from [{0}]", tableName),
+                CommandText = $"select * from [{tableName}]",
                 Connection = connection
             };
             try
@@ -378,7 +378,6 @@ namespace Server
                     ConnId = id,
                     IpAddress = ip,
                     Port = port,
-                    LastCheck = DateTime.Now,
                     PkgInfo = new PkgInfo
                     {
                         IsHeader = true,

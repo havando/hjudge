@@ -21,11 +21,7 @@ namespace Client
         private static readonly ConcurrentQueue<List<byte>> Recv = new ConcurrentQueue<List<byte>>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullClient HClient = new TcpPullClient();
-        private static bool _isConnecting;
         private static bool _isConnected;
-        private static bool _isReceivingData;
-        private static bool _isSendingData;
-        public static bool DealingWithLargeData;
         public static bool IsExited;
         public static Action<string> UpdateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
@@ -51,7 +47,6 @@ namespace Client
             HClient.OnClose += (sender, enOperation, errorCode) =>
             {
                 updateMainPage.Invoke($"Connection{Divpar}Break");
-                Connect(_ip, _port);
                 return HandleResult.Ok;
             };
             Connect(ip, port);
@@ -76,7 +71,6 @@ namespace Client
                     HClient.Connect(ip, port);
                     Thread.Sleep(5000);
                 } while (!_isConnected);
-                new Thread(StayConnection).Start();
             });
         }
 
@@ -108,7 +102,6 @@ namespace Client
 
         private static HandleResult HClientOnOnReceive(TcpPullClient sender, int length)
         {
-            _isReceivingData = true;
             var required = PkgInfo.Length;
             var remain = length;
             while (remain >= required)
@@ -129,7 +122,6 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            _isReceivingData = false;
                             UpdateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                             Recv.Enqueue(buffer.ToList());
                             required = PkgHeaderSize;
@@ -155,7 +147,6 @@ namespace Client
 
         public static void SendFile(string fileName, string title)
         {
-            _isSendingData = true;
             var fileId = Guid.NewGuid().ToString();
             var temp = Encoding.Unicode.GetBytes(title + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
@@ -179,27 +170,22 @@ namespace Client
                 }
                 fs.Close();
             }
-            _isSendingData = false;
         }
 
         public static void SendData(string operation, IEnumerable<byte> sendBytes)
         {
-            _isSendingData = true;
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
-            _isSendingData = false;
         }
 
         public static void SendData(string operation, string sendString)
         {
-            _isSendingData = true;
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
             var final = GetSendBuffer(temp);
             HClient.Send(final, final.Length);
-            _isSendingData = false;
         }
 
         public static void SendMsg(string sendString, string targetUser)
@@ -267,24 +253,12 @@ namespace Client
                         if (temp2.Count == 0)
                             continue;
                         var operation = Encoding.Unicode.GetString(temp2[0]);
-                        switch (operation)
+                        temp2.RemoveAt(0);
+                        Operations.Enqueue(new ObjOperation
                         {
-                            case "&":
-                                {
-                                    _isConnecting = true;
-                                    break;
-                                }
-                            default:
-                                {
-                                    temp2.RemoveAt(0);
-                                    Operations.Enqueue(new ObjOperation
-                                    {
-                                        Operation = operation,
-                                        Content = temp2
-                                    });
-                                    break;
-                                }
-                        }
+                            Operation = operation,
+                            Content = temp2
+                        });
                     }
                     catch
                     {
@@ -597,29 +571,6 @@ namespace Client
                 Thread.Sleep(1);
             }
         }
-
-        private static void StayConnection()
-        {
-            var cnt = 0;
-            while (!IsExited)
-            {
-                SendData("@", string.Empty);
-                Thread.Sleep(30000);
-                while (_isReceivingData || _isSendingData || DealingWithLargeData)
-                    Thread.Sleep(5000);
-                if (_isConnecting)
-                {
-                    cnt = 0;
-                    _isConnecting = false;
-                    continue;
-                }
-                cnt++;
-                if (cnt <= 3) continue;
-                UpdateMainPage.Invoke($"Connection{Divpar}Break");
-                break;
-            }
-        }
-
         #endregion
     }
 }

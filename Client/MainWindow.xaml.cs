@@ -551,7 +551,6 @@ namespace Client
                                 ReceivingFile.Visibility = Visibility.Hidden;
                                 ReceivingProcess.Visibility = Visibility.Hidden;
                             });
-                            Connection.DealingWithLargeData = false;
                             if (content == "Error")
                             {
                                 Dispatcher.Invoke(() =>
@@ -1264,7 +1263,6 @@ namespace Client
                 CurrentLocation.Text + "\\" + si.Name);
             if (si.Type == "文件")
             {
-                Connection.DealingWithLargeData = true;
                 ActiveBox.Items.Add(new TextBlock
                 {
                     Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 请求文件 {si.Name}"
