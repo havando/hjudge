@@ -21,7 +21,6 @@ namespace Client
         private static readonly ConcurrentQueue<List<byte>> Recv = new ConcurrentQueue<List<byte>>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullClient HClient = new TcpPullClient();
-        private static bool _isConnected;
         public static bool IsExited;
         public static Action<string> UpdateMainPage;
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
@@ -40,7 +39,6 @@ namespace Client
             HClient.OnConnect += sender =>
             {
                 updateMainPage.Invoke($"Connection{Divpar}Connected");
-                _isConnected = true;
                 return HandleResult.Ok;
             };
             HClient.OnReceive += HClientOnOnReceive;
@@ -65,12 +63,11 @@ namespace Client
         {
             Task.Run(() =>
             {
-                do
+                while (!HClient.Connect(ip, port, false))
                 {
                     if (IsExited) break;
-                    HClient.Connect(ip, port);
-                    Thread.Sleep(5000);
-                } while (!_isConnected);
+                    Thread.Sleep(1000);
+                }
             });
         }
 

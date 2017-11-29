@@ -170,6 +170,7 @@ namespace Client
                                         _curId = 0;
                                         Dispatcher.Invoke(() =>
                                         {
+                                            LoginButton.IsEnabled = Register.IsEnabled = false;
                                             CodeSubmit.Visibility = Messaging.Visibility =
                                                 Messages.Visibility = JudgeResult.Visibility =
                                                     GetFiles.Visibility = ContentGrid.Visibility =
