@@ -233,6 +233,8 @@
                     </ListView>
                     <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
+                    <Button Content="刷新" HorizontalAlignment="Left" Margin="642,284,0,0" VerticalAlignment="Top"
+                        Width="55" Height="26" Click="Button_Click_9" />
                 </Grid>
             </TabItem>
             <TabItem Header="管理后台" Name="AdminConsole">

@@ -168,39 +168,8 @@ namespace Client
                                     {
                                         _userName = string.Empty;
                                         _curId = 0;
-                                        Dispatcher.Invoke(() =>
-                                        {
-                                            LoginButton.IsEnabled = Register.IsEnabled = false;
-                                            CodeSubmit.Visibility = Messaging.Visibility =
-                                                Messages.Visibility = JudgeResult.Visibility =
-                                                    GetFiles.Visibility = ContentGrid.Visibility =
-                                                        Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
-                                            LoginGrid.Visibility = Visibility.Visible;
-                                            Loading1.Visibility = Visibility.Hidden;
-                                            InitManagementTools(0);
-                                            OldPassword.Password =
-                                                NewPassword.Password = ConfirmPassword.Password = string.Empty;
-                                            ActiveBox.Items.Clear();
-                                            _judgeInfos.Clear();
-                                            _messagesCollection.Clear();
-                                            Experience.Content = Coins.Content = "0";
-                                            Level.Content = "-";
-                                            WelcomeLabel.Content = "你好，";
-                                            Identity.Content = "身份：";
-                                            CodeBox.Text = string.Empty;
-                                            _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                            TabControl.SelectedIndex = 0;
-                                            FileList.IsEnabled = true;
-                                            ReceivingFile.Visibility = Visibility.Hidden;
-                                            ReceivingProcess.Visibility = Visibility.Hidden;
-                                            Loading1.Visibility = Visibility.Hidden;
-                                            Loading2.Visibility = Visibility.Hidden;
-                                            Loading3.Visibility = Visibility.Hidden;
-                                            Loading4.Visibility = Visibility.Hidden;
-                                            Loading5.Visibility = Visibility.Hidden;
-                                            ChangePasswordExpander.IsExpanded = false;
-                                            MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                                        });
+                                        InitMainWindow();
+                                        MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                                         Connection.ReConnect();
                                         break;
                                     }
@@ -214,25 +183,14 @@ namespace Client
                             {
                                 Dispatcher.Invoke(() =>
                                 {
-                                    _userName = UserName.Text;
                                     Password.Password = string.Empty;
                                     CodeSubmit.Visibility = Messaging.Visibility = Messages.Visibility =
                                         JudgeResult.Visibility = Competitions.Visibility =
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Loading1.Visibility = Visibility.Visible;
-                                    _messagesCollection.Clear();
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {_userName} 登录"
-                                    });
+                                    Connection.SendData("RequestProfile", UserName.Text);
                                 });
-                                _requestMsgListId = Guid.NewGuid().ToString();
-                                Connection.SendData("RequestProfile", _userName);
-                                Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
-                                Connection.SendData("RequestFileList", string.Empty);
-                                Connection.SendData("RequestMsgList" + Divpar + _requestMsgListId, string.Empty);
-
                                 _currentGetJudgeRecordIndex = 20;
                                 _coins = _experience = _currentGetJudgeRecordIndex = 0;
                             }
@@ -250,36 +208,7 @@ namespace Client
                         {
                             _userName = string.Empty;
                             _curId = 0;
-                            Dispatcher.Invoke(() =>
-                            {
-                                CodeSubmit.Visibility = Messaging.Visibility =
-                                    Messages.Visibility = JudgeResult.Visibility =
-                                        GetFiles.Visibility = ContentGrid.Visibility =
-                                            Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
-                                LoginGrid.Visibility = Visibility.Visible;
-                                Loading1.Visibility = Visibility.Hidden;
-                                InitManagementTools(0);
-                                OldPassword.Password = NewPassword.Password = ConfirmPassword.Password = string.Empty;
-                                ActiveBox.Items.Clear();
-                                _judgeInfos.Clear();
-                                _messagesCollection.Clear();
-                                Experience.Content = Coins.Content = "0";
-                                Level.Content = "-";
-                                WelcomeLabel.Content = "你好，";
-                                Identity.Content = "身份：";
-                                CodeBox.Text = string.Empty;
-                                _coins = _experience = _currentGetJudgeRecordIndex = 0;
-                                TabControl.SelectedIndex = 0;
-                                FileList.IsEnabled = true;
-                                ReceivingFile.Visibility = Visibility.Hidden;
-                                ReceivingProcess.Visibility = Visibility.Hidden;
-                                Loading1.Visibility = Visibility.Hidden;
-                                Loading2.Visibility = Visibility.Hidden;
-                                Loading3.Visibility = Visibility.Hidden;
-                                Loading4.Visibility = Visibility.Hidden;
-                                Loading5.Visibility = Visibility.Hidden;
-                                ChangePasswordExpander.IsExpanded = false;
-                            });
+                            InitMainWindow();
                             break;
                         }
                     case "Register":
@@ -298,6 +227,7 @@ namespace Client
                         }
                     case "Messaging":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             var t = JsonConvert.DeserializeObject<Message>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -317,6 +247,7 @@ namespace Client
                         }
                     case "FileList":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 2) break;
                             Dispatcher.Invoke(() =>
@@ -344,6 +275,7 @@ namespace Client
                         }
                     case "JudgeResult":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -398,6 +330,7 @@ namespace Client
                         }
                     case "JudgeResultForCompetition":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             if (p.ResultSummery == "Judging...")
                                 MessageBox.Show("提交次数超出限制", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -454,6 +387,7 @@ namespace Client
                         }
                     case "ProblemList":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             if (id == _requestProblemListId)
                             {
                                 var x = JsonConvert.DeserializeObject<Problem>(contentWithoutId);
@@ -465,6 +399,11 @@ namespace Client
                         {
                             var x = JsonConvert.DeserializeObject<UserInfo>(content);
                             _curId = x.Type;
+                            _userName = x.UserName;
+                            Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
+                            Connection.SendData("RequestFileList", string.Empty);
+                            _requestMsgListId = Guid.NewGuid().ToString();
+                            Connection.SendData("RequestMsgList" + Divpar + _requestMsgListId, string.Empty);
                             Dispatcher.Invoke(() =>
                             {
                                 WelcomeLabel.Content = $"你好，{x.UserName}";
@@ -479,11 +418,16 @@ namespace Client
                                 InitManagementTools(x.Type);
                                 if (x.Type >= 1 && x.Type <= 3)
                                     AdminConsole.Visibility = Visibility.Visible;
+                                ActiveBox.Items.Add(new TextBlock
+                                {
+                                    Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {x.UserName} 登录"
+                                });
                             });
                             break;
                         }
                     case "UpdateProfile":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
@@ -503,6 +447,7 @@ namespace Client
                         }
                     case "ChangePassword":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
@@ -520,6 +465,7 @@ namespace Client
                         }
                     case "JudgeRecord":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 3) break;
@@ -535,6 +481,7 @@ namespace Client
                         }
                     case "JudgeCode":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             var j = (from c in _judgeInfos where c.JudgeId == jc.JudgeId select c)
@@ -546,6 +493,7 @@ namespace Client
                         }
                     case "FileReceived":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() =>
                             {
                                 FileList.IsEnabled = true;
@@ -566,11 +514,13 @@ namespace Client
                         }
                     case "FileReceiving":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { ReceivingProcess.Content = content; });
                             break;
                         }
                     case "ProblemDataSet":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() => { Loading2.Visibility = Visibility.Hidden; });
                             if (content != "Denied") break;
                             Dispatcher.Invoke(() =>
@@ -587,6 +537,7 @@ namespace Client
                         }
                     case "Compiler":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             Dispatcher.Invoke(() =>
                             {
                                 LangBox.Items.Clear();
@@ -611,6 +562,7 @@ namespace Client
                         }
                     case "RequestMsgTargetUser":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             if (id == _requestMsgTargetUserId)
                             {
                                 var t = JsonConvert.DeserializeObject<string>(contentWithoutId);
@@ -620,6 +572,7 @@ namespace Client
                         }
                     case "RequestMsgList":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             if (_requestMsgListId == id)
                             {
                                 var t = JsonConvert.DeserializeObject<Message>(contentWithoutId);
@@ -643,6 +596,7 @@ namespace Client
                         }
                     case "RequestMsg":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             var t = JsonConvert.DeserializeObject<Message>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -658,6 +612,7 @@ namespace Client
                         }
                     case "RequestCompetitionList":
                         {
+                            if (string.IsNullOrEmpty(_userName)) break;
                             if (_requestCompetitionListId == id)
                             {
                                 var t = JsonConvert.DeserializeObject<Competition>(contentWithoutId);
@@ -671,6 +626,55 @@ namespace Client
             {
                 //ignored
             }
+        }
+
+        private void InitMainWindow()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                CodeSubmit.Visibility = Messaging.Visibility =
+                   Messages.Visibility = JudgeResult.Visibility =
+                       GetFiles.Visibility = ContentGrid.Visibility =
+                           Competitions.Visibility = AdminConsole.Visibility = Visibility.Hidden;
+                LoginGrid.Visibility = Visibility.Visible;
+                Loading1.Visibility = Visibility.Hidden;
+                InitManagementTools(0);
+                OldPassword.Clear();
+                NewPassword.Clear();
+                ConfirmPassword.Clear();
+                ActiveBox.Items.Clear();
+                _judgeInfos.Clear();
+                _messagesCollection.Clear();
+                _competitionsCollection.Clear();
+                _problems.Clear();
+                LangBox.Items.Clear();
+                Experience.Content = Coins.Content = "0";
+                Level.Content = "-";
+                WelcomeLabel.Content = "你好，";
+                Identity.Content = "身份：";
+                UserIcon.Source = ByteImageConverter.ByteToImage(
+                    Convert.FromBase64String(Properties.Resources.default_user_icon_string));
+                CodeBox.Clear();
+                MessageContent.Clear();
+                _coins = _experience = _currentGetJudgeRecordIndex = 0;
+                TabControl.SelectedIndex = 0;
+                FileList.IsEnabled = true;
+                ReceivingFile.Visibility = Visibility.Hidden;
+                ReceivingProcess.Visibility = Visibility.Hidden;
+                Loading1.Visibility = Visibility.Hidden;
+                Loading2.Visibility = Visibility.Hidden;
+                Loading3.Visibility = Visibility.Hidden;
+                Loading4.Visibility = Visibility.Hidden;
+                Loading5.Visibility = Visibility.Hidden;
+                BonusGrid.Visibility = Visibility.Visible;
+                ChangePasswordExpander.IsExpanded = false;
+                CodeBox.IsUndoEnabled = false;
+                CodeBox.IsUndoEnabled = true;
+                UserName.IsUndoEnabled = false;
+                UserName.IsUndoEnabled = true;
+                MessageContent.IsUndoEnabled = false;
+                MessageContent.IsUndoEnabled = true;
+            });
         }
 
         private void InitManagementTools(int type)
@@ -1332,6 +1336,13 @@ namespace Client
             var x = new CompetitionViewer();
             x.SetCompetition(t);
             x.ShowDialog();
+        }
+
+        private void Button_Click_9(object sender, RoutedEventArgs e)
+        {
+            _requestCompetitionListId = Guid.NewGuid().ToString();
+            _competitionsCollection.Clear();
+            Connection.SendData("RequestCompetitionList", _requestCompetitionListId);
         }
 
         private void UserName_OnKeyDown(object sender, KeyEventArgs e)
