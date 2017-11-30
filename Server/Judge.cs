@@ -326,7 +326,7 @@ namespace Server
                         StartInfo =
                         {
                             FileName = staticCheck,
-                            Arguments = Dn(_workingdir + $"\\test{extList[0]}"),
+                            Arguments = staticArgs,
                             ErrorDialog = false,
                             UseShellExecute = false,
                             CreateNoWindow = true,
