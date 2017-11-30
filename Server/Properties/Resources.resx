@@ -149,11 +149,13 @@
                     &lt;/DockPanel&gt;
                     &lt;DockPanel&gt;
                         &lt;Label Content="编译器：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
-                        &lt;TextBox Name="Compiler${index}" HorizontalAlignment="Right" Height="23" Margin="0,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="350"/&gt;
+                        &lt;TextBox Name="Compiler${index}" HorizontalAlignment="Right" Height="23" Margin="17,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLComExec${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
                     &lt;/DockPanel&gt;
                     &lt;DockPanel&gt;
-                        &lt;Label Content="默认参数：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
-                        &lt;TextBox Name="Args${index}" HorizontalAlignment="Right" Height="23" Margin="0,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="350"/&gt;
+                        &lt;Label Content="编译参数：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
+                        &lt;TextBox Name="ComArgs${index}" HorizontalAlignment="Right" Height="23" Margin="5,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLComArgs${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
                     &lt;/DockPanel&gt;
                     &lt;DockPanel&gt;
                         &lt;Label Content="扩展名：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
@@ -161,13 +163,24 @@
                     &lt;/DockPanel&gt;
                     &lt;DockPanel&gt;
                         &lt;Label Content="静态检查：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
-                        &lt;TextBox Name="Static${index}" HorizontalAlignment="Right" Height="23" Margin="0,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="350"/&gt;
+                        &lt;TextBox Name="Static${index}" HorizontalAlignment="Right" Height="23" Margin="5,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLStaExec${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
                     &lt;/DockPanel&gt;
                     &lt;DockPanel&gt;
-                        &lt;Label Content="运行命令：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
-                        &lt;TextBox Name="Run${index}" HorizontalAlignment="Right" Height="23" Margin="0,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="350"/&gt;
+                        &lt;Label Content="检查参数：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
+                        &lt;TextBox Name="StaArgs${index}" HorizontalAlignment="Right" Height="23" Margin="5,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLStaArgs${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
                     &lt;/DockPanel&gt;
-                    &lt;CheckBox Name="WSL${index}" Margin="15,5,20,15" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
+                    &lt;DockPanel&gt;
+                        &lt;Label Content="运行程序：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
+                        &lt;TextBox Name="RunExec${index}" HorizontalAlignment="Right" Height="23" Margin="5,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLRunExec${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
+                    &lt;/DockPanel&gt;
+                    &lt;DockPanel&gt;
+                        &lt;Label Content="运行参数：" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/&gt;
+                        &lt;TextBox Name="RunArgs${index}" HorizontalAlignment="Right" Height="23" Margin="5,5,13,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="238"/&gt;
+                        &lt;CheckBox Name="WSLRunArgs${index}" VerticalAlignment="Center" Margin="0,5,13,0" Content="使用 WSL 路径"&gt;&lt;/CheckBox&gt;
+                    &lt;/DockPanel&gt;
                 &lt;/StackPanel&gt;
             &lt;/GroupBox&gt;</value>
   </data>

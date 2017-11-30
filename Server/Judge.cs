@@ -163,9 +163,9 @@ namespace Server
 
                 if (string.IsNullOrEmpty(_problem.CompileCommand))
                 {
-                    _problem.CompileCommand = t.Linux
-                        ? GetRealStringWSL(t.DefaultArgs, 0, extList[0])
-                        : GetRealString(t.DefaultArgs, 0, extList[0]);
+                    _problem.CompileCommand = t.LinuxComArgs
+                        ? GetRealStringWSL(t.CompilerArgs, 0, extList[0])
+                        : GetRealString(t.CompilerArgs, 0, extList[0]);
                 }
                 else
                 {
@@ -176,7 +176,7 @@ namespace Server
                         if (comm.Length != 2) continue;
                         if (comm[0] == type)
                         {
-                            _problem.CompileCommand = t.Linux
+                            _problem.CompileCommand = t.LinuxComArgs
                                 ? GetRealStringWSL(comm[1], 0, extList[0])
                                 : GetRealString(comm[1], 0, extList[0]);
                             break;
@@ -201,10 +201,22 @@ namespace Server
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 开始评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}",
                     textBlock);
 
-                BeginJudge(t.CompilerPath, t.StaticCheck,
-                    t.Linux
-                        ? GetRealStringWSL(t.RunCommand, 0, extList[0])
-                        : GetRealString(t.RunCommand, 0, extList[0]), textBlock);
+                BeginJudge(
+                    t.LinuxComExec
+                        ? GetRealStringWSL(t.CompilerExec, 0, extList[0])
+                        : GetRealString(t.CompilerExec, 0, extList[0]),
+                    t.LinuxStaExec
+                        ? GetRealStringWSL(t.StaticCheck, 0, extList[0])
+                        : GetRealString(t.StaticCheck, 0, extList[0]),
+                    t.LinuxStaArgs
+                        ? GetRealStringWSL(t.StaticArgs, 0, extList[0])
+                        : GetRealString(t.StaticArgs, 0, extList[0]),
+                    t.LinuxRunExec
+                        ? GetRealStringWSL(t.RunExec, 0, extList[0])
+                        : GetRealString(t.RunExec, 0, extList[0]),
+                    t.LinuxRunArgs
+                        ? GetRealStringWSL(t.RunArgs, 0, extList[0])
+                        : GetRealString(t.RunArgs, 0, extList[0]), textBlock);
 
                 Connection.UpdateJudgeInfo(JudgeResult);
 
@@ -282,7 +294,7 @@ namespace Server
             }
         }
 
-        private void BeginJudge(string compiler, string staticCheck, string runCommand, UIElement textBlock)
+        private void BeginJudge(string compiler, string staticCheck, string staticArgs, string runExec, string runArgs, UIElement textBlock)
         {
             var additionInfo = string.Empty;
             try
@@ -321,7 +333,8 @@ namespace Server
                             UseShellExecute = false,
                             CreateNoWindow = true,
                             WindowStyle = ProcessWindowStyle.Hidden,
-                            RedirectStandardOutput = true
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
                         }
                     };
                     a.Start();
@@ -347,7 +360,7 @@ namespace Server
             additionInfo += compileResult.compileLog;
             JudgeResult.AdditionInfo = additionInfo;
             if (compileResult.isSucceeded)
-                Judging(textBlock, runCommand);
+                Judging(textBlock, runExec, runArgs);
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
                 {
@@ -359,7 +372,7 @@ namespace Server
                 }
         }
 
-        private void Judging(UIElement textBlock, string runCommand)
+        private void Judging(UIElement textBlock, string runExec, string runArgs)
         {
             var cur = -1;
             var noRespondingState = false;
@@ -435,26 +448,14 @@ namespace Server
                         {
                             //ignored
                         }
-                    var runExec = string.Empty;
-                    var runArgs = string.Empty;
-                    try
-                    {
-                        var splitIndex = runCommand.IndexOf(' ');
-                        runExec = runCommand.Substring(0, splitIndex).Trim();
-                        runArgs = runCommand.Substring(splitIndex).Trim();
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
                     var execute = new Process
                     {
                         StartInfo =
                         {
-                            FileName = string.IsNullOrEmpty(runCommand)
+                            FileName = string.IsNullOrEmpty(runExec)
                                 ? _workingdir + $"\\test_hjudge_{_id}.exe"
                                 : runExec,
-                            Arguments = string.IsNullOrEmpty(runCommand) ? string.Empty : runArgs,
+                            Arguments = string.IsNullOrEmpty(runArgs) ? string.Empty : runArgs,
                             WorkingDirectory = _workingdir,
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false,
@@ -543,24 +544,23 @@ namespace Server
                     long lastDt = 0;
                     var noChangeTime = DateTime.Now;
                     var isNoResponding = false;
-                    var cnt = 0;
                     while (!_isExited)
                     {
                         try
                         {
                             long tmpTime = 0, tmpMem = 0;
-                            for (cnt = 0; cnt < processes.Length; cnt++)
+                            foreach (var t in processes)
                             {
                                 try
                                 {
-                                    tmpTime += Convert.ToInt64(processes[cnt].UserProcessorTime.TotalMilliseconds);
-                                    tmpMem += processes[cnt].PeakWorkingSet64 / 1024;
+                                    tmpTime += Convert.ToInt64(t.UserProcessorTime.TotalMilliseconds);
+                                    tmpMem += t.PeakWorkingSet64 / 1024;
                                 }
                                 catch
                                 {
                                     //ignored
                                 }
-                                processes[cnt].Refresh();
+                                t.Refresh();
                             }
                             if (tmpTime > JudgeResult.Timeused[cur])
                                 JudgeResult.Timeused[cur] = tmpTime;
