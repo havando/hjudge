@@ -218,7 +218,7 @@
             <TabItem Name="Competitions" Header="查看比赛">
                 <Grid>
                     <ListView x:Name="CompetitionList" MouseDoubleClick="CompetitionList_MouseDoubleClick"
-                              SelectionMode="Single" Margin="0,0,0,39">
+                              SelectionMode="Single" Margin="10,10,10,39">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}"
@@ -233,7 +233,7 @@
                     </ListView>
                     <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
-                    <Button Content="刷新" HorizontalAlignment="Left" Margin="642,284,0,0" VerticalAlignment="Top"
+                    <Button Content="刷新" HorizontalAlignment="Left" Margin="632,284,0,0" VerticalAlignment="Top"
                         Width="55" Height="26" Click="Button_Click_9" />
                 </Grid>
             </TabItem>

@@ -549,7 +549,11 @@ namespace Client
 
         private void Button_Submit(object sender, RoutedEventArgs e)
         {
-            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            if (!(MyProblemList.SelectedItem is Problem x))
+            {
+                MessageBox.Show("请选择题目", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var type = string.Empty;
             foreach (var i in LangBox.Items)
                 if (i is RadioButton t)
@@ -563,11 +567,22 @@ namespace Client
                     Connection.Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
             }
+            else
+            {
+                if (string.IsNullOrEmpty(type))
+                {
+                    MessageBox.Show("请选择语言", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
         }
 
         private void ProblemDescription_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            if (!(MyProblemList.SelectedItem is Problem x))
+            {
+                MessageBox.Show("请选择题目", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var d = new ProblemDescription();
             d.SetProblemDescription(
                 string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description,

@@ -1081,7 +1081,11 @@ namespace Client
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
-            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            if (!(MyProblemList.SelectedItem is Problem x))
+            {
+                MessageBox.Show("请选择题目", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var type = string.Empty;
             foreach (var i in LangBox.Items)
                 if (i is RadioButton t)
@@ -1090,9 +1094,16 @@ namespace Client
             if (!string.IsNullOrEmpty(CodeBox.Text) && !string.IsNullOrEmpty(type))
             {
                 ActiveBox.Items.Add(
-                    new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}" });
+                    new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}"});
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + type + Divpar + CodeBox.Text);
                 CodeBox.Text = string.Empty;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(type))
+                {
+                    MessageBox.Show("请选择语言", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
 
@@ -1163,7 +1174,11 @@ namespace Client
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (!(MyProblemList.SelectedItem is Problem)) return;
+            if (!(MyProblemList.SelectedItem is Problem))
+            {
+                MessageBox.Show("请选择题目", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             if (_curId == 0 || _curId == 4)
             {
                 if (_experience <= 2333)
@@ -1318,7 +1333,11 @@ namespace Client
 
         private void Label_MouseDown_4(object sender, MouseButtonEventArgs e)
         {
-            if (!(MyProblemList.SelectedItem is Problem x)) return;
+            if (!(MyProblemList.SelectedItem is Problem x))
+            {
+                MessageBox.Show("请选择题目", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             var d = new ProblemDescription();
             d.SetProblemDescription(
                 string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description,

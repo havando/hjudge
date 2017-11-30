@@ -339,7 +339,7 @@ namespace Server
                     var staticRes1 = a.StandardOutput.ReadToEndAsync();
                     var staticRes2 = a.StandardError.ReadToEndAsync();
                     a.WaitForExit();
-                    additionInfo += "¾²Ì¬¼ì²é£º\n" + staticRes1.Result.Replace(_workingdir, "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...") + "\n";
+                    additionInfo += "¾²Ì¬¼ì²é£º\n" + staticRes1.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n";
                 }
             }
             catch (Exception ex)
