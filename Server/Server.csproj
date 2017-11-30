@@ -57,8 +57,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\HPSocketCS.dll</HintPath>
     </Reference>
-    <Reference Include="Markdig, Version=0.14.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Markdig.0.14.6\lib\net40\Markdig.dll</HintPath>
+    <Reference Include="Markdig, Version=0.14.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Markdig.0.14.7\lib\net40\Markdig.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Expression.Drawing, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

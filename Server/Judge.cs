@@ -47,9 +47,7 @@ namespace Server
                 _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
                 JudgeResult.JudgeId = Connection.NewJudge(description);
-                if (defaultTime == null)
-                    JudgeResult.JudgeDate = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                else JudgeResult.JudgeDate = defaultTime;
+                JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                 JudgeResult.ProblemId = _problem.ProblemId;
                 JudgeResult.Code = code;
                 JudgeResult.UserId = userId;

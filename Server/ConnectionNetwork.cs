@@ -81,12 +81,12 @@ namespace Server
             HServer.Send(connId, final, final.Length);
         }
 
-        private static void SendFile(string fileName, IntPtr connId)
+        private static void SendFile(string fileName, IntPtr connId, string title)
         {
             if (!File.Exists(fileName))
-                SendData("File", "NotFound", connId);
+                SendData(title, "NotFound", connId);
             var fileId = Guid.NewGuid().ToString();
-            var temp = Encoding.Unicode.GetBytes("File" + Divpar
+            var temp = Encoding.Unicode.GetBytes(title + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
                                                  + fileId + Divpar
                                                  + new FileInfo(fileName).Length);
@@ -99,7 +99,7 @@ namespace Server
                 {
                     var bytes = new byte[131072];
                     long cnt = fs.Read(bytes, 0, 131072);
-                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes("File" + Divpar
+                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
                         .Concat(bytes.Take((int)cnt)).ToArray());
@@ -433,7 +433,7 @@ namespace Server
                                     if (File.Exists(filePath))
                                         UpdateMainPageState(
                                             $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 请求文件：{filePath}");
-                                    Task.Run(() => { SendFile(filePath, res.Client.ConnId); });
+                                    Task.Run(() => { SendFile(filePath, res.Client.ConnId, "File"); });
                                     break;
                                 }
                             case "RequestProblemDataSet":
@@ -517,8 +517,8 @@ namespace Server
                                             }
                                             catch
                                             {
-                                            //ignored
-                                        }
+                                                //ignored
+                                            }
                                         }));
                                     }
                                     break;
@@ -941,8 +941,8 @@ namespace Server
                                                     }
                                                     catch
                                                     {
-                                                    //ignored
-                                                }
+                                                        //ignored
+                                                    }
                                                 }
                                                 SendData("DataFile", "Succeeded", res.Client.ConnId);
                                             }));
@@ -1026,8 +1026,8 @@ namespace Server
                                                     }
                                                     catch
                                                     {
-                                                    //ignored
-                                                }
+                                                        //ignored
+                                                    }
                                                 }
                                                 SendData("PublicFile", "Succeeded", res.Client.ConnId);
                                             }));
@@ -1097,8 +1097,8 @@ namespace Server
                                                 }
                                                 catch
                                                 {
-                                                //ignored
-                                            }
+                                                    //ignored
+                                                }
                                             if (!string.IsNullOrEmpty(fout))
                                                 try
                                                 {
@@ -1106,8 +1106,8 @@ namespace Server
                                                 }
                                                 catch
                                                 {
-                                                //ignored
-                                            }
+                                                    //ignored
+                                                }
                                         }
                                     }));
                                     break;
@@ -1147,8 +1147,8 @@ namespace Server
                                                 }
                                                 catch
                                                 {
-                                                //ignored
-                                            }
+                                                    //ignored
+                                                }
                                         }
                                     }));
                                     break;
@@ -1186,8 +1186,8 @@ namespace Server
                                             }
                                             catch
                                             {
-                                            //ignored
-                                        }
+                                                //ignored
+                                            }
                                     }));
                                     break;
                                 }
@@ -1475,14 +1475,20 @@ namespace Server
                                             x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
                                         else
                                             x += Encoding.Unicode.GetString(res.Content[i]);
-                                    var users = JsonConvert.DeserializeObject<List<List<UserInfo>>>(x);
-                                    if (users.Count != 2) continue;
                                     ActionList.Enqueue(new Task(() =>
                                     {
+                                        var users = JsonConvert.DeserializeObject<List<List<UserInfo>>>(x);
+                                        if (users.Count != 2) return;
                                         DeleteUser(users[0]?.Select(i => i.UserId));
                                         UpdateUser(users[1]);
                                         SendData("UpdateUserBelongings", string.Empty, res.Client.ConnId);
                                     }));
+                                    break;
+                                }
+                            case "RequestClient":
+                                {
+                                    SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.Client.ConnId,
+                                        "RequestClient");
                                     break;
                                 }
                         }

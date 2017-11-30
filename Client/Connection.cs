@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using HPSocketCS;
+using Ionic.Zip;
 using Newtonsoft.Json;
 
 namespace Client
@@ -119,7 +120,6 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            UpdateMainPage.Invoke($"ReceivingFile{Divpar}Done");
                             Recv.Enqueue(buffer.ToList());
                             required = PkgHeaderSize;
                         }
@@ -325,10 +325,11 @@ namespace Client
                                         $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
                                     break;
                                 }
+                            case "RequestClient":
                             case "File":
                                 {
                                     var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                    if (fileName == "NotFound")
+                                    if (fileName == "NotFound" && res.Operation == "File")
                                     {
                                         UpdateMainPage($"FileReceived{Divpar}Error");
                                         continue;
@@ -357,14 +358,69 @@ namespace Client
                                             fs.Fs.Close();
                                             fs.Fs.Dispose();
                                             FrInfo.Remove(fs);
-                                            Process.Start("explorer.exe",
-                                                $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
-                                            UpdateMainPage($"FileReceived{Divpar}Done");
+                                            if (res.Operation == "File")
+                                            {
+                                                Process.Start("explorer.exe",
+                                                    $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
+                                                UpdateMainPage($"FileReceived{Divpar}Done");
+                                            }
+                                            if (res.Operation == "RequestClient")
+                                            {
+                                                using (var zFile = new ZipFile(
+                                                    $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}")
+                                                )
+                                                {
+                                                    if (!Directory.Exists(Environment.GetEnvironmentVariable("temp") +
+                                                                          "\\hjudgeClientUpdates"))
+                                                    {
+                                                        Directory.CreateDirectory(
+                                                            Environment.GetEnvironmentVariable("temp") +
+                                                            "\\hjudgeClientUpdates");
+                                                    }
+                                                    else
+                                                    {
+                                                        Directory.Delete(Environment.GetEnvironmentVariable("temp") +
+                                                                         "\\hjudgeClientUpdates", true);
+                                                        Directory.CreateDirectory(
+                                                            Environment.GetEnvironmentVariable("temp") +
+                                                            "\\hjudgeClientUpdates");
+                                                    }
+                                                    zFile.ExtractAll(
+                                                        Environment.GetEnvironmentVariable("temp") +
+                                                        "\\hjudgeClientUpdates",
+                                                        ExtractExistingFileAction.OverwriteSilently);
+                                                    var batchCode = $@"@echo off
+title hjudge Updater
+color 3F
+cls
+echo.
+echo  Updating hjudge Client, please wait...
+echo.
+echo    [DO NOT CLOSE THIS WINDOW]
+ping /n 10 0.0.0.0>nul
+xcopy /y /h /r /e /i ""{Environment.GetEnvironmentVariable("temp") + "\\hjudgeClientUpdates"}"" ""{AppDomain.CurrentDomain.BaseDirectory}"" 1>nul 2>nul
+rd /s /q ""{Environment.GetEnvironmentVariable("temp") + "\\hjudgeClientUpdates"}"" 1>nul 2>nul
+cls
+echo.
+echo  Finish.
+ping /n 2 0.0.0.0>nul
+start """" ""{AppDomain.CurrentDomain.BaseDirectory}\Client.exe""
+exit
+";
+                                                    File.WriteAllText(Environment.GetEnvironmentVariable("temp") + "\\hjudgeClientUpdater.bat", batchCode, Encoding.Default);
+                                                    Process.Start(
+                                                        Environment.GetEnvironmentVariable("temp") +
+                                                        "\\hjudgeClientUpdater.bat");
+                                                    IsExited = true;
+                                                    Environment.Exit(0);
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            UpdateMainPage(
-                                                $"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
+                                            if (res.Operation == "File")
+                                                UpdateMainPage(
+                                                    $"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
                                         }
                                     }
                                     else

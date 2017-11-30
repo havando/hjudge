@@ -246,6 +246,7 @@
                 </Grid>
             </TabItem>
         </TabControl>
+        <Label Name="UpdateLabel" Visibility="Hidden" Content="正在更新，请稍等" FontSize="20" HorizontalAlignment="Center" Margin="0,150,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

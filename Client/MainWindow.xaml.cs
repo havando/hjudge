@@ -551,12 +551,13 @@ namespace Client
                         {
                             if (content != Assembly.GetExecutingAssembly().GetName().Version.ToString())
                             {
+                                Connection.SendData("RequestClient", string.Empty);
                                 Dispatcher.Invoke(() =>
                                 {
-                                    MessageBox.Show($"此版本的 hjudge - Client 无法正常工作，请更新至 {content} 版本", "提示",
-                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                    LoginGrid.Visibility = Visibility.Hidden;
+                                    UpdateLabel.Content = $"正在更新至 {content} 版本，请稍等……";
+                                    UpdateLabel.Visibility = Visibility.Visible;
                                 });
-                                Environment.Exit(0);
                             }
                             break;
                         }
