@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Server
 {
@@ -10,7 +12,7 @@ namespace Server
     /// </summary>
     public partial class MessageList : Window
     {
-        public ObservableCollection<Message> _messages = new ObservableCollection<Message>();
+        private readonly ObservableCollection<Message> _messages = new ObservableCollection<Message>();
 
         public MessageList()
         {
@@ -24,21 +26,24 @@ namespace Server
             _messages.Clear();
             Task.Run(() =>
             {
-                foreach (var i in Connection.QueryMsg(1, false))
+                var t = Connection.QueryMsg(1, true);
+                t.Reverse();
+                foreach (var i in t)
                     Dispatcher.Invoke(() => _messages.Add(i));
             });
         }
 
         private void MessagesList_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (MessagesList.SelectedItem is Message t)
-            {
-                if (t.Content.Length == 33)
-                    t.Content = Connection.GetMsg(t.MsgId).Content;
-                var y = new Messaging();
-                y.SetMessage(t);
-                y.Show();
-            }
+            var originalSource = (DependencyObject)e.OriginalSource;
+            while (originalSource != null && !(originalSource is ListViewItem))
+                originalSource = VisualTreeHelper.GetParent(originalSource);
+            if (originalSource == null) return;
+            if (!(sender is ListView)) return;
+            if (!(MessagesList.SelectedItem is Message t)) return;
+            var y = new Messaging();
+            y.SetMessage(t);
+            y.Show();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
