@@ -168,6 +168,7 @@ namespace Client
                                     {
                                         _userName = string.Empty;
                                         _curId = 0;
+                                        Dispatcher.Invoke(() => { LoginButton.IsEnabled = Register.IsEnabled = true; });
                                         InitMainWindow();
                                         MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                                         Connection.ReConnect();
@@ -1076,7 +1077,7 @@ namespace Client
                 });
                 Connection.SendMsg(MessageContent.Text, t);
             }
-            MessageContent.Text = string.Empty;
+            MessageContent.Clear();
         }
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
@@ -1096,7 +1097,7 @@ namespace Client
                 ActiveBox.Items.Add(
                     new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}"});
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + type + Divpar + CodeBox.Text);
-                CodeBox.Text = string.Empty;
+                CodeBox.Clear();
             }
             else
             {

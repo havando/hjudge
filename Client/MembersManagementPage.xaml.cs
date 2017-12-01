@@ -70,7 +70,7 @@ namespace Client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            UserName.Text = string.Empty;
+            UserName.Clear();
             UserEdit.Visibility = Visibility.Hidden;
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = true;
@@ -115,7 +115,7 @@ namespace Client
                 _curItem.IsChanged = true;
             }
             UserEdit.Visibility = Visibility.Hidden;
-            UserName.Text = string.Empty;
+            UserName.Clear();
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = true;
         }

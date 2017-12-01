@@ -565,7 +565,7 @@ namespace Client
                 Connection.SendData("SubmitCodeForCompetition",
                     x.ProblemId + Connection.Divpar + _competition.CompetitionId + Connection.Divpar + type +
                     Connection.Divpar + CodeBox.Text);
-                CodeBox.Text = string.Empty;
+                CodeBox.Clear();
             }
             else
             {

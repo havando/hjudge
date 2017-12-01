@@ -39,7 +39,8 @@ namespace Server
                 ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
                 Connection.ClearJudgeLog();
                 _curJudgeInfo.Clear();
-                Code.Text = JudgeDetails.Text = string.Empty;
+                Code.Clear();
+                JudgeDetails.Clear();
                 CheckBox.IsChecked = false;
             }
         }

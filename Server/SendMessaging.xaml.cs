@@ -35,7 +35,7 @@ namespace Server
             foreach (var i in x)
                 Connection.SendMsg($"{Msg.Text}",
                     UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, i.UserId);
-            Msg.Text = string.Empty;
+            Msg.Clear();
         }
 
         private void ListView_Click(object sender, RoutedEventArgs e)

@@ -157,7 +157,7 @@ namespace Server
             if (res != 0) return;
             UpdateListBoxContent(
                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} {UserHelper.CurrentUser.UserName} 欢迎登录 hjudge 服务端", null, false);
-            UserName.Text = string.Empty;
+            UserName.Clear();
             Password.Password = string.Empty;
             LoginGrid.Visibility = Visibility.Hidden;
             ContentGrid.Visibility = Visibility.Visible;

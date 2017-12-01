@@ -60,7 +60,7 @@ namespace Server
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            UserName.Text = string.Empty;
+            UserName.Clear();
             UserEdit.Visibility = Visibility.Hidden;
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = true;
@@ -112,7 +112,7 @@ namespace Server
                     break;
                 }
             UserEdit.Visibility = Visibility.Hidden;
-            UserName.Text = string.Empty;
+            UserName.Clear();
             NewUser.IsEnabled = EditUser.IsEnabled =
                 DeleteUser.IsEnabled = OkButton.IsEnabled = Cancel.IsEnabled = true;
         }

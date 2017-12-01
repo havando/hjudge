@@ -43,7 +43,8 @@ namespace Client
                 ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
                 Connection.SendData("ClearJudgingLogs", string.Empty);
                 _curJudgeInfo.Clear();
-                Code.Text = JudgeDetails.Text = string.Empty;
+                Code.Clear();
+                JudgeDetails.Clear();
                 CheckBox.IsChecked = false;
             }
         }
