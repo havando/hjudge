@@ -117,7 +117,7 @@ namespace Server
             HServer.Send(connId, final, final.Length);
         }
 
-        public static void SetMsgState(int msgId, int state)
+        private static void SetMsgState(int msgId, int state)
         {
             lock (DataBaseLock)
             {
@@ -171,8 +171,7 @@ namespace Server
                 State = 0
             };
             SendData("Messaging", JsonConvert.SerializeObject(t),
-                Recv.Where(i => i.Info.UserId == toUserId)?.Select(p => p.Info.ConnId)?.FirstOrDefault() ??
-                IntPtr.Zero);
+                Recv.Where(i => i.Info.UserId == toUserId).Select(p => p.Info.ConnId).FirstOrDefault());
         }
 
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
@@ -886,7 +885,7 @@ namespace Server
                                     if (res.Client.UserId == 0) break;
                                     var t = GetUser(res.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4) break;
-                                    ActionList.Enqueue(new Task(() => ClearJudgeLog()));
+                                    ActionList.Enqueue(new Task(ClearJudgeLog));
                                     break;
                                 }
                             case "DataFile":
@@ -1254,8 +1253,11 @@ namespace Server
                                     var id = Encoding.Unicode.GetString(res.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        foreach (var i in QueryCompetition()?.Reverse())
-                                            SendData("RequestCompetitionList", id + Divpar + JsonConvert.SerializeObject(i),
+                                        var t = QueryCompetition()?.Reverse();
+                                        if (t == null) return;
+                                        foreach (var i in t)
+                                            SendData("RequestCompetitionList",
+                                                id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.Client.ConnId);
                                     }));
                                     break;
@@ -1284,9 +1286,7 @@ namespace Server
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var competition = GetCompetition(cid);
-                                        var pList = new List<Problem>();
-                                        foreach (var i in competition.ProblemSet)
-                                            pList.Add(GetProblem(i));
+                                        var pList = competition.ProblemSet.Select(GetProblem).ToList();
                                         SendData("QueryProblemsForCompetition", JsonConvert.SerializeObject(pList),
                                             res.Client.ConnId);
                                     }));
@@ -1307,16 +1307,15 @@ namespace Server
                                                 code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
                                             else
                                                 code += Encoding.Unicode.GetString(res.Content[i]);
-                                        var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                         var type = Encoding.Unicode.GetString(res.Content[2]);
                                         var userId = res.Client.UserId;
                                         UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(pid)} 的代码");
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             new Thread(() =>
                                             {
-                                                var j = new Judge(problemId, userId, code, type, true, "在线评测",
+                                                var j = new Judge(pid, userId, code, type, true, "在线评测",
                                                     DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid);
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 if ((t.Option & 8) != 0)
@@ -1495,7 +1494,7 @@ namespace Server
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"{ex.Message}\n{ex.StackTrace}");
+                        new Thread(() => MessageBox.Show($"{ex.Message}\n{ex.StackTrace}")).Start();
                         SendData(res.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace,
                             res.Client.ConnId);
                     }
