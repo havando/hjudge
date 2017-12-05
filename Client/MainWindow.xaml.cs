@@ -1011,6 +1011,7 @@ namespace Client
             Loading2.Visibility = Visibility.Visible;
             _requestProblemListId = Guid.NewGuid().ToString();
             _problems.Clear();
+            LangBox.Items.Clear();
             Connection.SendData("RequestProblemList", _requestProblemListId);
             Connection.SendData("RequestCompiler", string.Empty);
         }
@@ -1024,6 +1025,7 @@ namespace Client
                     Loading2.Visibility = Visibility.Visible;
                     _requestProblemListId = Guid.NewGuid().ToString();
                     _problems.Clear();
+                    LangBox.Items.Clear();
                     Connection.SendData("RequestProblemList", _requestProblemListId);
                     Connection.SendData("RequestCompiler", string.Empty);
                     break;
