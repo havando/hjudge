@@ -1012,6 +1012,7 @@ namespace Client
             _requestProblemListId = Guid.NewGuid().ToString();
             _problems.Clear();
             Connection.SendData("RequestProblemList", _requestProblemListId);
+            Connection.SendData("RequestCompiler", string.Empty);
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
