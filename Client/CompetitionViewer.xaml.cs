@@ -16,6 +16,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xml;
 using Microsoft.Win32;
+using System.Windows.Media.Animation;
 
 namespace Client
 {
@@ -33,7 +34,6 @@ namespace Client
 
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
-        private bool _hasFirstLoad;
         private bool _hasRefreshWhenFinished;
         private bool _isFilterActivated;
         private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
@@ -140,6 +140,17 @@ namespace Client
             ProblemFilter.ItemsSource = _problemFilter;
             UserFilter.ItemsSource = _userFilter;
             Description.Text = _competition.Description;
+            var rtf = new RotateTransform
+            {
+                CenterX = Loading.ActualWidth * 0.5,
+                CenterY = Loading.ActualHeight * 0.5
+            };
+            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Loading.RenderTransform = rtf;
+            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
             new Thread(Refresh).Start();
             _hasRefreshWhenFinished = true;
             new Thread(Load).Start();
@@ -149,6 +160,7 @@ namespace Client
         {
             lock (_loadLock)
             {
+                Dispatcher.Invoke(() => Loading.Visibility = Visibility.Visible);
                 var now = Connection.GetCurrentDateTime();
                 var problems = Connection.QueryProblemsForCompetition(_competition.CompetitionId);
                 Dispatcher.Invoke(() => _problems.Clear());
@@ -156,24 +168,25 @@ namespace Client
                 var languages = Connection.QueryLanguagesForCompetition();
                 Dispatcher.Invoke(() => LangBox.Items.Clear());
                 foreach (var m in languages)
-                    Dispatcher.Invoke(() => LangBox.Items.Add(new RadioButton {Content = m.DisplayName}));
-                if (!_hasFirstLoad)
+                    Dispatcher.Invoke(() => LangBox.Items.Add(new RadioButton { Content = m.DisplayName }));
+                Dispatcher.Invoke(() =>
                 {
-                    _hasFirstLoad = true;
-                    for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
+                    while (CompetitionStateColumn.Columns.Count > 4)
+                        CompetitionStateColumn.Columns.RemoveAt(CompetitionStateColumn.Columns.Count - 1);
+                });
+                for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
+                {
+                    var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
+                        $"{i}").Replace("${ProblemName}",
+                        problems.Where(j => j.ProblemId == _competition.ProblemSet[i]).Select(j => j.ProblemIndex)
+                            .FirstOrDefault() ?? string.Empty);
+                    var strreader = new StringReader(t);
+                    var xmlreader = new XmlTextReader(strreader);
+                    Dispatcher.Invoke(() =>
                     {
-                        var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                            $"{i}").Replace("${ProblemName}",
-                            problems.Where(j => j.ProblemId == _competition.ProblemSet[i]).Select(j => j.ProblemIndex)
-                                .FirstOrDefault() ?? string.Empty);
-                        var strreader = new StringReader(t);
-                        var xmlreader = new XmlTextReader(strreader);
-                        Dispatcher.Invoke(() =>
-                        {
-                            var obj = XamlReader.Load(xmlreader);
-                            CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
-                        });
-                    }
+                        var obj = XamlReader.Load(xmlreader);
+                        CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
+                    });
                 }
                 Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId);
@@ -296,6 +309,7 @@ namespace Client
                     });
                 if (GetNowDateTime() < _competition.EndTime)
                     _hasRefreshWhenFinished = false;
+                Dispatcher.Invoke(() => Loading.Visibility = Visibility.Hidden);
             }
         }
 
@@ -351,7 +365,7 @@ namespace Client
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -379,7 +393,7 @@ namespace Client
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -432,40 +446,40 @@ namespace Client
                 switch (tf)
                 {
                     case 0:
-                    {
-                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                        break;
-                    }
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
                     case 1:
-                    {
-                        if ((now - ti).TotalDays > 3) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
                     case 2:
-                    {
-                        if ((now - ti).TotalDays > 7) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
                     case 3:
-                    {
-                        if ((now - ti).TotalDays > 30) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
                     case 4:
-                    {
-                        if ((now - ti).TotalDays > 91) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
                     case 5:
-                    {
-                        if ((now - ti).TotalDays > 182) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
                     case 6:
-                    {
-                        if ((now - ti).TotalDays > 365) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
                 }
             }
             return true;
@@ -540,11 +554,11 @@ namespace Client
         {
             var x = MyProblemList.SelectedItem as Problem;
             ProblemInfomationList.Items.Clear();
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目 ID：{x?.ProblemId}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目名称：{x?.ProblemName}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目难度：{x?.Level}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"数据组数：{x?.DataSets.Length}"});
-            ProblemInfomationList.Items.Add(new TextBlock {Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}"});
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目 ID：{x?.ProblemId}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目名称：{x?.ProblemName}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目难度：{x?.Level}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"数据组数：{x?.DataSets.Length}" });
+            ProblemInfomationList.Items.Add(new TextBlock { Text = $"题目总分：{x?.DataSets.Sum(i => i.Score)}" });
         }
 
         private void Button_Submit(object sender, RoutedEventArgs e)

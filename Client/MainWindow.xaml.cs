@@ -115,6 +115,7 @@ namespace Client
             Loading3.RenderTransform = rtf;
             Loading4.RenderTransform = rtf;
             Loading5.RenderTransform = rtf;
+            Loading6.RenderTransform = rtf;
             ReceivingFile.RenderTransform = rtf;
             rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
         }
@@ -392,7 +393,7 @@ namespace Client
                             if (id == _requestProblemListId)
                             {
                                 var x = JsonConvert.DeserializeObject<Problem>(contentWithoutId);
-                                Dispatcher.Invoke(() => { _problems.Add(x); });
+                                Dispatcher.Invoke(() => { _problems.Add(x); Loading2.Visibility = Visibility.Hidden; });
                             }
                             break;
                         }
@@ -568,7 +569,7 @@ namespace Client
                             if (id == _requestMsgTargetUserId)
                             {
                                 var t = JsonConvert.DeserializeObject<string>(contentWithoutId);
-                                Dispatcher.Invoke(() => { SendingTarget.Items.Add(new CheckBox { Content = t }); });
+                                Dispatcher.Invoke(() => { SendingTarget.Items.Add(new CheckBox { Content = t }); Loading4.Visibility = Visibility.Hidden; });
                             }
                             break;
                         }
@@ -618,7 +619,7 @@ namespace Client
                             if (_requestCompetitionListId == id)
                             {
                                 var t = JsonConvert.DeserializeObject<Competition>(contentWithoutId);
-                                Dispatcher.Invoke(() => { _competitionsCollection.Add(t); });
+                                Dispatcher.Invoke(() => { _competitionsCollection.Add(t); Loading6.Visibility = Visibility.Hidden; });
                             }
                             break;
                         }
@@ -668,6 +669,7 @@ namespace Client
                 Loading3.Visibility = Visibility.Hidden;
                 Loading4.Visibility = Visibility.Hidden;
                 Loading5.Visibility = Visibility.Hidden;
+                Loading6.Visibility = Visibility.Hidden;
                 BonusGrid.Visibility = Visibility.Visible;
                 ChangePasswordExpander.IsExpanded = false;
                 CodeBox.IsUndoEnabled = false;
@@ -1005,6 +1007,7 @@ namespace Client
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
+            Loading2.Visibility = Visibility.Visible;
             _requestProblemListId = Guid.NewGuid().ToString();
             _problems.Clear();
             Connection.SendData("RequestProblemList", _requestProblemListId);
@@ -1016,17 +1019,20 @@ namespace Client
             switch ((sender as TabControl)?.SelectedIndex ?? 0)
             {
                 case 1:
+                    Loading2.Visibility = Visibility.Visible;
                     _requestProblemListId = Guid.NewGuid().ToString();
                     _problems.Clear();
                     Connection.SendData("RequestProblemList", _requestProblemListId);
                     Connection.SendData("RequestCompiler", string.Empty);
                     break;
                 case 2:
+                    Loading4.Visibility = Visibility.Visible;
                     _requestMsgTargetUserId = Guid.NewGuid().ToString();
                     SendingTarget.Items.Clear();
                     Connection.SendData("RequestMsgTargetUser", _requestMsgTargetUserId);
                     break;
                 case 6:
+                    Loading6.Visibility = Visibility.Visible;
                     _requestCompetitionListId = Guid.NewGuid().ToString();
                     _competitionsCollection.Clear();
                     Connection.SendData("RequestCompetitionList", _requestCompetitionListId);
@@ -1361,6 +1367,7 @@ namespace Client
 
         private void Button_Click_9(object sender, RoutedEventArgs e)
         {
+            Loading6.Visibility = Visibility.Visible;
             _requestCompetitionListId = Guid.NewGuid().ToString();
             _competitionsCollection.Clear();
             Connection.SendData("RequestCompetitionList", _requestCompetitionListId);

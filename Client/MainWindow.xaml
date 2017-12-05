@@ -235,6 +235,8 @@
                            VerticalAlignment="Top" Foreground="Red" />
                     <Button Content="刷新" HorizontalAlignment="Left" Margin="632,284,0,0" VerticalAlignment="Top"
                         Width="55" Height="26" Click="Button_Click_9" />
+                    <Image x:Name="Loading6" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
+                           Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
                 </Grid>
             </TabItem>
             <TabItem Header="管理后台" Name="AdminConsole">

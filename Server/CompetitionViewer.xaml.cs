@@ -31,7 +31,6 @@ namespace Server
 
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
-        private bool _hasFirstLoad;
         private bool _hasRefreshWhenFinished;
         private bool _isFilterActivated;
         private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
@@ -109,27 +108,28 @@ namespace Server
         {
             lock (_loadLock)
             {
-                if (!_hasFirstLoad)
+                Dispatcher.Invoke(() =>
                 {
-                    _hasFirstLoad = true;
-                    for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
+                    while (CompetitionStateColumn.Columns.Count > 4)
+                        CompetitionStateColumn.Columns.RemoveAt(CompetitionStateColumn.Columns.Count - 1);
+                });
+                for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
+                {
+                    if (_competition.ProblemSet != null)
                     {
-                        if (_competition.ProblemSet != null)
+                        var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
+                            $"{i}").Replace("${ProblemName}",
+                            Connection.GetProblemName(_competition.ProblemSet[i]));
+                        var strreader = new StringReader(t);
+                        var xmlreader = new XmlTextReader(strreader);
+                        Dispatcher.Invoke(() =>
                         {
-                            var t = Properties.Resources.CompetitionDetailsProblemInfoControl.Replace("${index}",
-                                $"{i}").Replace("${ProblemName}",
-                                Connection.GetProblemName(_competition.ProblemSet[i]));
-                            var strreader = new StringReader(t);
-                            var xmlreader = new XmlTextReader(strreader);
-                            Dispatcher.Invoke(() =>
-                            {
-                                var obj = XamlReader.Load(xmlreader);
-                                CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
-                            });
-                        }
+                            var obj = XamlReader.Load(xmlreader);
+                            CompetitionStateColumn.Columns.Add(obj as GridViewColumn);
+                        });
                     }
-                    Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 }
+                Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
                 Dispatcher.Invoke(() =>
@@ -304,7 +304,7 @@ namespace Server
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -332,7 +332,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -385,40 +385,40 @@ namespace Server
                 switch (tf)
                 {
                     case 0:
-                    {
-                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                        break;
-                    }
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
                     case 1:
-                    {
-                        if ((now - ti).TotalDays > 3) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
                     case 2:
-                    {
-                        if ((now - ti).TotalDays > 7) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
                     case 3:
-                    {
-                        if ((now - ti).TotalDays > 30) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
                     case 4:
-                    {
-                        if ((now - ti).TotalDays > 91) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
                     case 5:
-                    {
-                        if ((now - ti).TotalDays > 182) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
                     case 6:
-                    {
-                        if ((now - ti).TotalDays > 365) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
                 }
             }
             return true;

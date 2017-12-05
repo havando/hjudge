@@ -141,6 +141,8 @@
         </TabControl>
 
 
+        <Image Name="Loading" Visibility="Hidden" HorizontalAlignment="Left" Height="46"
+                               Margin="326,164,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
         <ListBox HorizontalAlignment="Left" Height="61" Margin="419,10,0,0" VerticalAlignment="Top" Width="215"
                  BorderThickness="0">
             <DockPanel>
