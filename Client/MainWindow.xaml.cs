@@ -508,6 +508,7 @@ namespace Client
                                 {
                                     Connection.SendData("RequestFileList", string.Empty);
                                     ReceivingFile.Visibility = Visibility.Visible;
+                                    ReceivingProcess.Content = "0 %";
                                     ReceivingProcess.Visibility = Visibility.Visible;
                                 });
                                 MessageBox.Show("文件不存在", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -1118,6 +1119,7 @@ namespace Client
         {
             Connection.SendData("RequestFileList", string.Empty);
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Content = "0 %";
             ReceivingProcess.Visibility = Visibility.Visible;
         }
 
@@ -1128,6 +1130,7 @@ namespace Client
                 ? filePath.Substring(0, filePath.LastIndexOf("\\", StringComparison.Ordinal))
                 : string.Empty;
             Connection.SendData("RequestFileList", CurrentLocation.Text);
+            ReceivingProcess.Content = "0 %";
             ReceivingFile.Visibility = Visibility.Visible;
             ReceivingProcess.Visibility = Visibility.Visible;
         }
@@ -1136,6 +1139,7 @@ namespace Client
         {
             Connection.SendData("RequestFileList", CurrentLocation.Text);
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Content = "0 %";
             ReceivingProcess.Visibility = Visibility.Visible;
         }
 
@@ -1298,6 +1302,7 @@ namespace Client
                 FileList.IsEnabled = false;
             }
             ReceivingFile.Visibility = Visibility.Visible;
+            ReceivingProcess.Content = "0 %";
             ReceivingProcess.Visibility = Visibility.Visible;
         }
 
