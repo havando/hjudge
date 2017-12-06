@@ -162,8 +162,8 @@
                 <TextBlock Name="ComTimeR" Text="00:00:00" />
             </DockPanel>
         </ListBox>
-        <Button Content="刷新" HorizontalAlignment="Left" Margin="639,10,0,0" VerticalAlignment="Top" Width="33"
-                Height="61" Click="Button_Click" />
+        <Button Name="RefreshButton" Content="刷新" HorizontalAlignment="Left" Margin="639,10,0,0" VerticalAlignment="Top" Width="33"
+                Height="61" Click="RefreshButton_Click" />
     </Grid>
 
 </Window>

@@ -71,7 +71,7 @@ namespace Client
                         ComState.Text = "已结束";
                         if (!_hasRefreshWhenFinished)
                         {
-                            Button_Click(null, null);
+                            RefreshButton_Click(null, null);
                             _hasRefreshWhenFinished = true;
                         }
                     }
@@ -160,7 +160,11 @@ namespace Client
         {
             lock (_loadLock)
             {
-                Dispatcher.Invoke(() => Loading.Visibility = Visibility.Visible);
+                Dispatcher.Invoke(() =>
+                {
+                    Loading.Visibility = Visibility.Visible;
+                    RefreshButton.IsEnabled = false;
+                });
                 var now = Connection.GetCurrentDateTime();
                 var problems = Connection.QueryProblemsForCompetition(_competition.CompetitionId);
                 Dispatcher.Invoke(() => _problems.Clear());
@@ -309,7 +313,11 @@ namespace Client
                     });
                 if (GetNowDateTime() < _competition.EndTime)
                     _hasRefreshWhenFinished = false;
-                Dispatcher.Invoke(() => Loading.Visibility = Visibility.Hidden);
+                Dispatcher.Invoke(() =>
+                {
+                    Loading.Visibility = Visibility.Hidden;
+                    RefreshButton.IsEnabled = true;
+                });
             }
         }
 
@@ -542,7 +550,7 @@ namespace Client
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             _isFilterActivated = false;
             _curJudgeInfoBak.Clear();
