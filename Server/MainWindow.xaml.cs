@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -24,6 +25,8 @@ namespace Server
             Text = @"hjudge - server",
             Icon = Properties.Resources.Server
         };
+
+        private ConcurrentQueue<Task> _uiUpdate = new ConcurrentQueue<Task>();
 
         private JudgeLogs _judgeLogsForm;
 
@@ -111,6 +114,8 @@ namespace Server
             });
 
             Connection.ActionExecuter(OverLoad);
+
+            new Thread(UpdateUITask).Start();
         }
 
         private UIElement UpdateListBoxContent(string content, UIElement textBlock, bool remove)
@@ -122,17 +127,37 @@ namespace Server
                     if (textBlock is TextBlock tb)
                     {
                         tb.Text = content;
-                        ListBox.Items.Refresh();
+                        _uiUpdate.Enqueue(new Task(() =>
+                            Dispatcher.Invoke(() => ListBox.Items.Refresh())));
                         return tb;
                     }
-                    var t = new TextBlock {Text = content};
-                    ListBox.Items.Add(t);
-                    ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
+                    var t = new TextBlock { Text = content };
+                    _uiUpdate.Enqueue(
+                    new Task(() => Dispatcher.Invoke(() =>
+                    {
+                        ListBox.Items.Add(t);
+                        if (ListBox.Items.Count > 500) ListBox.Items.RemoveAt(0);
+                        ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
+                    })));
                     return t;
                 }
-                ListBox.Items.Remove(textBlock);
+                _uiUpdate.Enqueue(new Task(() =>
+                Dispatcher.Invoke(() => ListBox.Items.Remove(textBlock))));
                 return null;
             });
+        }
+
+        private void UpdateUITask()
+        {
+            while (!Connection.IsExited)
+            {
+                if (_uiUpdate.TryDequeue(out var task))
+                {
+                    task.Start();
+                    task.Wait();
+                }
+                Thread.Sleep(1);
+            }
         }
 
         private async void LoginButton_ClickAsync(object sender, RoutedEventArgs e)
@@ -142,16 +167,16 @@ namespace Server
             switch (res)
             {
                 case 1:
-                {
-                    MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        MessageBox.Show("用户名或密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
                 default:
-                {
-                    if (res != 0)
-                        MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-                }
+                    {
+                        if (res != 0)
+                            MessageBox.Show("未知错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
             }
             LoginButton.IsEnabled = true;
             if (res != 0) return;

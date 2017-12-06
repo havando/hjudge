@@ -22,7 +22,7 @@ namespace Server
     public static partial class Connection
     {
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
-        private static readonly List<ClientData> Recv = new List<ClientData>();
+        private static readonly ConcurrentBag<ClientData> Recv = new ConcurrentBag<ClientData>();
         private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
         private static readonly TcpPullServer<ClientInfo> HServer = new TcpPullServer<ClientInfo>();
         private static readonly List<FileRecvInfo> FrInfo = new List<FileRecvInfo>();
@@ -298,9 +298,9 @@ namespace Server
         {
             while (!IsExited)
             {
-                foreach (var t in Recv)
+                Parallel.ForEach(Recv, (t, state) =>
                 {
-                    if (IsExited) break;
+                    if (IsExited) state.Stop();
                     try
                     {
                         while (t.Data.TryDequeue(out var temp))
@@ -322,7 +322,7 @@ namespace Server
                     {
                         //ignored
                     }
-                }
+                });
                 Thread.Sleep(1);
             }
         }

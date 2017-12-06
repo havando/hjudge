@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
@@ -209,7 +210,7 @@ namespace Server
             var t = GetReaderSchema("Message", conn);
             if (t != null)
             {
-                var tableName = new[] {"MessageId", "FromUserId", "ToUserId", "SendDate", "Content", "State"};
+                var tableName = new[] { "MessageId", "FromUserId", "ToUserId", "SendDate", "Content", "State" };
                 if (tableName.Length != t.Rows.Count) return false;
                 for (var i = 0; i < t.Rows.Count; i++)
                     if (t.Rows[i].ItemArray[0] as string != tableName[i])
@@ -385,7 +386,7 @@ namespace Server
                     }
                 };
                 HServer.SetExtra(id, clientInfo);
-                Recv.Add(new ClientData {Info = clientInfo});
+                Recv.Add(new ClientData { Info = clientInfo });
                 SendData("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), id);
                 return HandleResult.Ok;
             };
@@ -394,7 +395,19 @@ namespace Server
                 HServer.RemoveExtra(id);
                 var t = (from c in Recv where c.Info.ConnId == id select c).FirstOrDefault();
                 if (t != null)
-                    Recv.Remove(t);
+                {
+                    lock (RemoveClientLock)
+                    {
+                        var x = new List<ClientData>();
+                        while (Recv.TryTake(out var tmp))
+                            if (!tmp.Equals(t)) x.Add(tmp);
+                            else break;
+                        foreach (var i in x)
+                        {
+                            Recv.Add(i);
+                        }
+                    }
+                }
                 return HandleResult.Ok;
             };
             HServer.OnReceive += HServerOnOnReceive;
@@ -404,8 +417,8 @@ namespace Server
             if (!HServer.Start())
                 MessageBox.Show("服务端网络初始化失败，请检查系统设置", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             new Thread(DealingBytes).Start();
-            new Thread(DealingOperations).Start();
-
+            for (var i = 0; i < Environment.ProcessorCount; i++)
+                new Thread(DealingOperations).Start();
             #endregion
         }
     }

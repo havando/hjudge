@@ -20,7 +20,7 @@ namespace Client
             if (!isSucceed)
             {
                 MessageBox.Show("本程序已在运行，请勿重复运行", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(1);
+                //Environment.Exit(1);
             }
         }
     }
