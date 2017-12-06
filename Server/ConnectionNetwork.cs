@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -33,6 +34,31 @@ namespace Server
             a.AddRange(Directory.GetFiles(path).Where(i => new FileInfo(i).Length <= 512 * 1048576)
                 .Select(Path.GetFileName));
             return a;
+        }
+
+        public static byte[] CompressBytes(byte[] bytes)
+        {
+            using (MemoryStream compressStream = new MemoryStream())
+            {
+                using (var zipStream = new GZipStream(compressStream, CompressionMode.Compress))
+                    zipStream.Write(bytes, 0, bytes.Length);
+                return compressStream.ToArray();
+            }
+        }
+
+        public static byte[] Decompress(byte[] bytes)
+        {
+            using (var compressStream = new MemoryStream(bytes))
+            {
+                using (var zipStream = new GZipStream(compressStream, CompressionMode.Decompress))
+                {
+                    using (var resultStream = new MemoryStream())
+                    {
+                        zipStream.CopyTo(resultStream);
+                        return resultStream.ToArray();
+                    }
+                }
+            }
         }
 
         private static byte[] GetSendBuffer(byte[] bodyBytes)
@@ -77,7 +103,7 @@ namespace Server
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HServer.Send(connId, final, final.Length);
         }
 
@@ -90,7 +116,7 @@ namespace Server
                                                  + Path.GetFileName(fileName) + Divpar
                                                  + fileId + Divpar
                                                  + new FileInfo(fileName).Length);
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HServer.Send(connId, final, final.Length);
             using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -99,10 +125,10 @@ namespace Server
                 {
                     var bytes = new byte[131072];
                     long cnt = fs.Read(bytes, 0, 131072);
-                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes(title + Divpar
+                    var tempc = GetSendBuffer(CompressBytes((Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
-                        .Concat(bytes.Take((int)cnt)).ToArray());
+                        .Concat(bytes.Take((int)cnt)).ToArray())));
                     tot += cnt;
                     HServer.Send(connId, tempc, tempc.Length);
                 }
@@ -113,7 +139,7 @@ namespace Server
         private static void SendData(string operation, string sendString, IntPtr connId)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HServer.Send(connId, final, final.Length);
         }
 
@@ -202,7 +228,7 @@ namespace Server
                             Marshal.Copy(bufferPtr, buffer, 0, required);
                             required = PkgHeaderSize;
                             (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault()?.Data
-                                .Enqueue(buffer.ToList());
+                                .Enqueue(Decompress(buffer).ToList());
                         }
                         myPkgInfo.IsHeader = !myPkgInfo.IsHeader;
                         myPkgInfo.Length = required;
@@ -474,7 +500,7 @@ namespace Server
                                                 }
 
                                                 var ms = new MemoryStream();
-                                                using (var zip = new ZipFile())
+                                                using (var zip = new Ionic.Zip.ZipFile())
                                                 {
                                                     for (var i = 0; i < problem.DataSets.Length; i++)
                                                     {

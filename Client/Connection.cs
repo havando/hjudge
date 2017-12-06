@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -72,6 +73,31 @@ namespace Client
             });
         }
 
+        public static byte[] CompressBytes(byte[] bytes)
+        {
+            using (MemoryStream compressStream = new MemoryStream())
+            {
+                using (var zipStream = new GZipStream(compressStream, CompressionMode.Compress))
+                    zipStream.Write(bytes, 0, bytes.Length);
+                return compressStream.ToArray();
+            }
+        }
+
+        public static byte[] Decompress(byte[] bytes)
+        {
+            using (var compressStream = new MemoryStream(bytes))
+            {
+                using (var zipStream = new GZipStream(compressStream, CompressionMode.Decompress))
+                {
+                    using (var resultStream = new MemoryStream())
+                    {
+                        zipStream.CopyTo(resultStream);
+                        return resultStream.ToArray();
+                    }
+                }
+            }
+        }
+
         private static byte[] GetSendBuffer(byte[] bodyBytes)
         {
             var header = new PkgHeader
@@ -120,7 +146,7 @@ namespace Client
                         {
                             var buffer = new byte[required];
                             Marshal.Copy(bufferPtr, buffer, 0, required);
-                            Recv.Enqueue(buffer.ToList());
+                            Recv.Enqueue(Decompress(buffer).ToList());
                             required = PkgHeaderSize;
                         }
                         PkgInfo.IsHeader = !PkgInfo.IsHeader;
@@ -149,7 +175,7 @@ namespace Client
                                                  + Path.GetFileName(fileName) + Divpar
                                                  + fileId + Divpar
                                                  + new FileInfo(fileName).Length);
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HClient.Send(final, final.Length);
             using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -158,10 +184,10 @@ namespace Client
                 {
                     var bytes = new byte[131072];
                     long cnt = fs.Read(bytes, 0, 131072);
-                    var tempc = GetSendBuffer(Encoding.Unicode.GetBytes(title + Divpar
+                    var tempc = GetSendBuffer(CompressBytes(Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
-                        .Concat(bytes.Take((int)cnt)).ToArray());
+                        .Concat(bytes.Take((int)cnt)).ToArray()));
                     tot += cnt;
                     HClient.Send(tempc, tempc.Length);
                 }
@@ -174,14 +200,14 @@ namespace Client
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HClient.Send(final, final.Length);
         }
 
         public static void SendData(string operation, string sendString)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
-            var final = GetSendBuffer(temp);
+            var final = GetSendBuffer(CompressBytes(temp));
             HClient.Send(final, final.Length);
         }
 
