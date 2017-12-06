@@ -169,7 +169,7 @@ namespace Client
                                     {
                                         _userName = string.Empty;
                                         _curId = 0;
-                                        Dispatcher.Invoke(() => { LoginButton.IsEnabled = Register.IsEnabled = true; });
+                                        Dispatcher.Invoke(() => { LoginButton.IsEnabled = Register.IsEnabled = false; });
                                         InitMainWindow();
                                         MessageBox.Show("与服务端的连接已断开", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                                         Connection.ReConnect();
