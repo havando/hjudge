@@ -110,8 +110,11 @@ namespace Server
             {
                 Dispatcher.Invoke(() =>
                 {
-                    while (CompetitionStateColumn.Columns.Count > 4)
-                        CompetitionStateColumn.Columns.RemoveAt(CompetitionStateColumn.Columns.Count - 1);
+                    for (var i = CompetitionStateColumn.Columns.Count - 1; i >= 0; i--)
+                    {
+                        if (CompetitionStateColumn.Columns[i] is GridViewColumn t && t.Header is StackPanel)
+                            CompetitionStateColumn.Columns.RemoveAt(i);
+                    }
                 });
                 for (var i = 0; i < (_competition.ProblemSet?.Length ?? 0); i++)
                 {
