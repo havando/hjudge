@@ -94,8 +94,8 @@
       <DependentUpon>CompetitionsManagementPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="CompetitionUserInfo.cs" />
-    <Compile Include="CompetitionViewer.xaml.cs">
-      <DependentUpon>CompetitionViewer.xaml</DependentUpon>
+    <Compile Include="CompetitionViewerPage.xaml.cs">
+      <DependentUpon>CompetitionViewerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Compiler.cs" />
     <Compile Include="Data.cs" />
@@ -137,9 +137,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CompetitionViewer.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="CompetitionViewerPage.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="InputPassword.xaml">
       <SubType>Designer</SubType>

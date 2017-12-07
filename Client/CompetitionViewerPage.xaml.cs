@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,19 +12,22 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Xml;
-using Microsoft.Win32;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Xml;
 
 namespace Client
 {
     /// <summary>
-    ///     Interaction logic for CompetitionViewer.xaml
+    /// Interaction logic for CompetitionViewerPage.xaml
     /// </summary>
-    public partial class CompetitionViewer : Window
+    public partial class CompetitionViewerPage : Page
     {
         private readonly DateTime[] _baseTime = new DateTime[2];
         private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
@@ -39,8 +43,11 @@ namespace Client
         private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
         private readonly ObservableCollection<string> _userFilter = new ObservableCollection<string>();
         private readonly object _loadLock = new object();
+        private Frame _mainCompetitionFrame;
+        private Grid _mainCompetitionGrid;
+        private bool _verifyPasswordResult = false;
 
-        public CompetitionViewer()
+        public CompetitionViewerPage()
         {
             InitializeComponent();
         }
@@ -51,14 +58,62 @@ namespace Client
             return _baseTime[0] + diff;
         }
 
-        public void SetCompetition(Competition competition)
+        public bool SetCompetition(Competition competition, Frame frame, Grid grid)
         {
             _competition = competition;
+            _mainCompetitionFrame = frame;
+            _mainCompetitionGrid = grid;
+
+            if (_competition == null) return false;
+            _baseTime[0] = Connection.GetCurrentDateTime();
+            _baseTime[1] = DateTime.Now;
+            if (GetNowDateTime() < _competition.StartTime)
+            {
+                MessageBox.Show("比赛未开始", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            if (!string.IsNullOrEmpty(_competition.Password))
+            {
+                var pass = new InputPassword();
+                pass.SetRecallFun(VerifyPassword);
+                pass.ShowDialog();
+                if (!_verifyPasswordResult) return false;
+            }
+            ComName.Content = $"({_competition.CompetitionId}) {_competition.CompetitionName}";
+            if ((_competition.Option & 1) != 0)
+                ComMode.Text =
+                    $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
+            if ((_competition.Option & 2) != 0) ComMode.Text = "最后提交赛";
+            if ((_competition.Option & 4) != 0) ComMode.Text = "罚时计时赛";
+            ListView.ItemsSource = _curJudgeInfo;
+            MyProblemList.ItemsSource = _problems;
+            ProblemFilter.ItemsSource = _problemFilter;
+            UserFilter.ItemsSource = _userFilter;
+            Description.Text = _competition.Description;
+            var rtf = new RotateTransform
+            {
+                CenterX = Loading.Width * 0.5,
+                CenterY = Loading.Height * 0.5
+            };
+            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Loading.RenderTransform = rtf;
+            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
+            return true;
+        }
+
+        public void StartLoading()
+        {
+            new Thread(Refresh).Start();
+            _hasRefreshWhenFinished = true;
+            new Thread(Load).Start();
         }
 
         private void Refresh()
         {
-            while (true)
+            while (_mainCompetitionFrame.Visibility == Visibility.Visible)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -102,58 +157,17 @@ namespace Client
         {
             if (password == null)
             {
-                Close();
+                _verifyPasswordResult = false;
                 return;
             }
             if (password != _competition.Password)
             {
                 MessageBox.Show("密码错误", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Close();
-            }
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (_competition == null) Close();
-            _baseTime[0] = Connection.GetCurrentDateTime();
-            _baseTime[1] = DateTime.Now;
-            if (GetNowDateTime() < _competition.StartTime)
-            {
-                MessageBox.Show("比赛未开始", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Close();
+                _verifyPasswordResult = false;
                 return;
             }
-            if (!string.IsNullOrEmpty(_competition.Password))
-            {
-                var pass = new InputPassword();
-                pass.SetRecallFun(VerifyPassword);
-                pass.ShowDialog();
-            }
-            ComName.Content = $"({_competition.CompetitionId}) {_competition.CompetitionName}";
-            if ((_competition.Option & 1) != 0)
-                ComMode.Text =
-                    $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
-            if ((_competition.Option & 2) != 0) ComMode.Text = "最后提交赛";
-            if ((_competition.Option & 4) != 0) ComMode.Text = "罚时计时赛";
-            ListView.ItemsSource = _curJudgeInfo;
-            MyProblemList.ItemsSource = _problems;
-            ProblemFilter.ItemsSource = _problemFilter;
-            UserFilter.ItemsSource = _userFilter;
-            Description.Text = _competition.Description;
-            var rtf = new RotateTransform
-            {
-                CenterX = Loading.ActualWidth * 0.5,
-                CenterY = Loading.ActualHeight * 0.5
-            };
-            var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
-            {
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            Loading.RenderTransform = rtf;
-            rtf.BeginAnimation(RotateTransform.AngleProperty, daV);
-            new Thread(Refresh).Start();
-            _hasRefreshWhenFinished = true;
-            new Thread(Load).Start();
+
+            _verifyPasswordResult = true;
         }
 
         private void Load()
@@ -613,6 +627,12 @@ namespace Client
                 string.IsNullOrEmpty(x.Description) ? Connection.GetProblemDescription(x.ProblemId) : x.Description,
                 x.ProblemIndex);
             d.Show();
+        }
+
+        private void ReturnButton_Click(object sender, RoutedEventArgs e)
+        {
+            _mainCompetitionGrid.Visibility = Visibility.Visible;
+            _mainCompetitionFrame.Visibility = Visibility.Hidden;
         }
     }
 

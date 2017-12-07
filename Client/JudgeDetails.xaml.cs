@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Media;
 
 namespace Client
 {
@@ -14,16 +16,40 @@ namespace Client
 
         public void SetContent(JudgeInfo jInfo)
         {
-            MyJudgeInfo.Content =
-                $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，结果：{jInfo.ResultSummery}，得分：{jInfo.FullScore}";
+            Title = $"评测详情 - #{jInfo.JudgeId}";
+            ResultSummery.Content = jInfo.ResultSummery;
+            if (jInfo.ResultSummery == "Accepted") ResultSummery.Foreground = Brushes.Green;
+            else if (!(jInfo.ResultSummery == "Judging..."))
+            {
+                if (jInfo.ResultSummery.Contains("Exceeded"))
+                    ResultSummery.Foreground = Brushes.DarkOrange;
+                else
+                    ResultSummery.Foreground = Brushes.Red;
+            }
+            JudgeInfoSummery.Content =
+                $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，得分：{jInfo.FullScore}";
             CodeBox.Text = "代码：\n" + jInfo.Code;
-            var details = string.Empty;
+            var details = new ObservableCollection<JudgeInfoDetails>();
+            JudgeDetailsTree.ItemsSource = details;
             if (jInfo.Result != null)
                 for (var i = 0; i < jInfo.Result.Length; i++)
-                    details +=
-                        $"#{i + 1} 时间：{jInfo.Timeused[i]}ms，内存：{jInfo.Memoryused[i]}kb，退出代码：{jInfo.Exitcode[i]}，结果：{jInfo.Result[i]}，分数：{jInfo.Score[i]}\n";
-            details += "\n其他信息：\n" + jInfo.AdditionInfo;
-            DetailsBox.Text = "详情：\n" + details;
+                {
+                    var tmp = new JudgeInfoDetails { Title = $"#{i + 1}：{jInfo.Result[i]}，{jInfo.Score[i]}" };
+                    tmp.Children = new ObservableCollection<JudgeInfoDetails>
+                    {
+                        new JudgeInfoDetails { Title = $"时间：{jInfo.Timeused[i]}ms" },
+                        new JudgeInfoDetails { Title = $"内存：{jInfo.Memoryused[i]}kb" },
+                        new JudgeInfoDetails { Title = $"退出代码：{jInfo.Exitcode[i]}" }
+                    };
+                    details.Add(tmp);
+                }
+
+            DetailsBox.Text = "其他信息：\n" + jInfo.AdditionInfo;
         }
+    }
+    public class JudgeInfoDetails
+    {
+        public string Title { get; set; }
+        public ObservableCollection<JudgeInfoDetails> Children { get; set; }
     }
 }

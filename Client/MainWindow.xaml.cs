@@ -679,6 +679,9 @@ namespace Client
                 UserName.IsUndoEnabled = true;
                 MessageContent.IsUndoEnabled = false;
                 MessageContent.IsUndoEnabled = true;
+                CompetitionFrame.Visibility = Visibility.Hidden;
+                CompetitionListGrid.Visibility = Visibility.Visible;
+                CompetitionFrame.Content = null;
             });
         }
 
@@ -1105,7 +1108,7 @@ namespace Client
             if (!string.IsNullOrEmpty(CodeBox.Text) && !string.IsNullOrEmpty(type))
             {
                 ActiveBox.Items.Add(
-                    new TextBlock {Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}"});
+                    new TextBlock { Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 提交代码，题目：{x.ProblemName}" });
                 Connection.SendData("SubmitCode", x.ProblemId + Divpar + type + Divpar + CodeBox.Text);
                 CodeBox.Clear();
             }
@@ -1368,9 +1371,14 @@ namespace Client
             if (originalSource == null) return;
             if (!(sender is ListView)) return;
             if (!(CompetitionList.SelectedItem is Competition t)) return;
-            var x = new CompetitionViewer();
-            x.SetCompetition(t);
-            x.ShowDialog();
+            var x = new CompetitionViewerPage();
+            if (x.SetCompetition(t, CompetitionFrame, CompetitionListGrid))
+            {
+                CompetitionListGrid.Visibility = Visibility.Hidden;
+                CompetitionFrame.Navigate(x);
+                CompetitionFrame.Visibility = Visibility.Visible;
+                x.StartLoading();
+            }
         }
 
         private void Button_Click_9(object sender, RoutedEventArgs e)

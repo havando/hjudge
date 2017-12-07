@@ -8,9 +8,6 @@
         Title="查看比赛" Height="427.323" Width="700.417" ResizeMode="CanMinimize" Icon="Resources/edit.png"
         Loaded="Window_Loaded">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
         <Label Content="比赛名称：" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="10,10,0,0" />
         <Label Name="ComName" Content="加载中..." HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20"
                Margin="125,10,0,0" Width="289" />

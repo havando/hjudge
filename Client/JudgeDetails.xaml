@@ -7,13 +7,23 @@
         mc:Ignorable="d"
         Title="评测详情" Height="502.5" Width="793.167" Topmost="True" Icon="Resources/list.png" ResizeMode="CanMinimize">
     <Grid>
-        <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="236" Margin="10,41,0,0" TextWrapping="Wrap"
-                 VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
-        <TextBox Name="DetailsBox" HorizontalAlignment="Left" Height="183" Margin="10,282,0,0" TextWrapping="Wrap"
-                 VerticalAlignment="Top" Width="768" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
-        <Label Name="MyJudgeInfo" Content="" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" />
-
+        <Label Name="ResultSummery" FontSize="24" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label Name="JudgeInfoSummery" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,26,23,0" VerticalAlignment="Top"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" Margin="0,65,0,0" VerticalAlignment="Top" Width="787"/>
+        <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="381" Margin="10,71,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="437" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" BorderBrush="LightGray"/>
+        <TreeView Name="JudgeDetailsTree" HorizontalAlignment="Left" Height="208" Margin="452,71,0,0" VerticalAlignment="Top" Width="312" BorderBrush="LightGray">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Path=Children}">
+                    <TextBox IsReadOnly="True" BorderThickness="0" TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                         Text="{Binding Title}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <TextBox Name="DetailsBox" HorizontalAlignment="Left" Height="168" Margin="452,284,0,0" TextWrapping="Wrap"
+                 VerticalAlignment="Top" Width="312" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" BorderBrush="LightGray"/>
     </Grid>
 </Window>

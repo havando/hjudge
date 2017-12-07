@@ -217,26 +217,29 @@
             </TabItem>
             <TabItem Name="Competitions" Header="查看比赛">
                 <Grid>
-                    <ListView x:Name="CompetitionList" MouseDoubleClick="CompetitionList_MouseDoubleClick"
+                    <Grid Name="CompetitionListGrid">
+                        <ListView x:Name="CompetitionList" MouseDoubleClick="CompetitionList_MouseDoubleClick"
                               SelectionMode="Single" Margin="10,10,10,39">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}"
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="比赛 ID" DisplayMemberBinding="{Binding CompetitionId}"
                                                 Width="50" />
-                                <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"
+                                    <GridViewColumn Header="比赛名称" DisplayMemberBinding="{Binding CompetitionName}"
                                                 Width="100" />
-                                <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
-                                <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
-                                <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                    <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
+                                    <GridViewColumn Header="开始时间" DisplayMemberBinding="{Binding StartTime}" Width="100" />
+                                    <GridViewColumn Header="结束时间" DisplayMemberBinding="{Binding EndTime}" Width="100" />
+                                    <GridViewColumn Header="题目数量" DisplayMemberBinding="{Binding ProblemCount}" Width="100" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <Label Content="Tips：双击进入比赛。" HorizontalAlignment="Left" Margin="10,284,0,0"
                            VerticalAlignment="Top" Foreground="Red" />
-                    <Button Content="刷新" HorizontalAlignment="Left" Margin="632,284,0,0" VerticalAlignment="Top"
+                        <Button Content="刷新" HorizontalAlignment="Left" Margin="632,284,0,0" VerticalAlignment="Top"
                         Width="55" Height="26" Click="Button_Click_9" />
-                    <Image x:Name="Loading6" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
+                        <Image x:Name="Loading6" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
                            Margin="336,112,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+                    </Grid>
+                    <Frame Name="CompetitionFrame" Visibility="Hidden" NavigationUIVisibility="Hidden" HorizontalAlignment="Left" Height="318" VerticalAlignment="Top" Width="697"/>
                 </Grid>
             </TabItem>
             <TabItem Header="管理后台" Name="AdminConsole">

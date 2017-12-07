@@ -1,44 +1,41 @@
-﻿<Window x:Class="Client.CompetitionViewer"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Client"
-        mc:Ignorable="d"
-        Title="查看比赛" Height="427.323" Width="700.417" ResizeMode="CanMinimize" Icon="Resources/edit.png"
-        Loaded="Window_Loaded">
+﻿<Page x:Class="Client.CompetitionViewerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Client"
+      mc:Ignorable="d"
+      Title="CompetitionViewerPage" Height="318" Width="697">
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Label Content="比赛名称：" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="10,10,0,0" />
+        <Label Content="比赛名称：" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="0,2,0,0" />
         <Label Name="ComName" Content="加载中..." HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20"
-               Margin="125,10,0,0" Width="289" />
-        <TabControl HorizontalAlignment="Left" Height="327" Margin="10,52,0,0" VerticalAlignment="Top" Width="662">
+               Margin="115,2,0,0" Width="309" />
+        <TabControl HorizontalAlignment="Left" Height="274" Margin="0,44,0,0" VerticalAlignment="Top" Width="697">
             <TabItem Header="题目">
                 <Grid>
-                    <TextBox x:Name="CodeBox" HorizontalAlignment="Left" Height="239" Margin="173,31,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="483" FontFamily="Consolas"
+                    <TextBox x:Name="CodeBox" HorizontalAlignment="Left" Height="184" Margin="173,31,0,0"
+                             TextWrapping="Wrap" VerticalAlignment="Top" Width="518" FontFamily="Consolas"
                              AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" />
                     <ComboBox x:Name="MyProblemList" HorizontalAlignment="Left" Margin="50,0,0,0"
-                              VerticalAlignment="Top" Width="606" Height="25"
+                              VerticalAlignment="Top" Width="641" Height="25"
                               SelectionChanged="ProblemList_SelectionChanged" IsEditable="True" IsReadOnly="False"
                               DisplayMemberPath="ProblemIndex" />
                     <Label Content="题目：" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="45" />
-                    <Button Name="Submit" Content="提交代码" HorizontalAlignment="Left" Margin="591,274,0,0"
+                    <Button Name="Submit" Content="提交代码" HorizontalAlignment="Left" Margin="626,220,0,0"
                             VerticalAlignment="Top"
                             Width="65" Height="25" Click="Button_Submit" />
                     <Label Content="题目信息：" HorizontalAlignment="Left" Margin="0,30,0,0" VerticalAlignment="Top"
                            Height="25" Width="68" />
                     <Label Content="代码：" HorizontalAlignment="Left" Margin="123,30,0,0" VerticalAlignment="Top"
                            Height="25" Width="45" />
-                    <ListBox x:Name="ProblemInfomationList" HorizontalAlignment="Left" Height="120" Margin="0,54,0,0"
+                    <ListBox x:Name="ProblemInfomationList" HorizontalAlignment="Left" Height="83" Margin="0,54,0,0"
                              VerticalAlignment="Top" Width="168" />
-                    <Label Content="选择语言：" HorizontalAlignment="Left" Margin="0,179,0,0" VerticalAlignment="Top"
+                    <Label Content="选择语言：" HorizontalAlignment="Left" Margin="0,142,0,0" VerticalAlignment="Top"
                            Height="26" Width="68" />
-                    <ListBox x:Name="LangBox" HorizontalAlignment="Left" Height="65" Margin="0,205,0,0"
+                    <ListBox x:Name="LangBox" HorizontalAlignment="Left" Height="73" Margin="0,173,0,0"
                              VerticalAlignment="Top" Width="168" />
-                    <Label Content="点此查看题目描述" HorizontalAlignment="Right" Margin="0,274,70,-1"
+                    <Label Content="点此查看题目描述" HorizontalAlignment="Right" Margin="0,220,70,0"
                            VerticalAlignment="Top" Cursor="Hand" Foreground="#FF4D8AFF"
                            MouseDown="ProblemDescription_MouseDown" Height="26" Width="112" />
                 </Grid>
@@ -65,7 +62,7 @@
             <TabItem Header="状态">
                 <Grid>
                     <ListView Name="ListView" SelectionChanged="ListView_SelectionChanged"
-                              GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single" Margin="0,0,391,28">
+                              GridViewColumnHeader.Click="ListView_Click" SelectionMode="Single" Margin="0,0,416,32">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn>
@@ -96,26 +93,26 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="137"
-                             Margin="270,28,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="386" VerticalScrollBarVisibility="Auto"
+                    <TextBox x:Name="JudgeDetails" IsReadOnly="True" HorizontalAlignment="Left" Height="208"
+                             Margin="280,28,0,0"
+                             TextWrapping="Wrap" VerticalAlignment="Top" Width="167" VerticalScrollBarVisibility="Auto"
                              HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
-                    <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="129"
-                             Margin="270,170,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="386" VerticalScrollBarVisibility="Auto"
+                    <TextBox x:Name="Code" IsReadOnly="True" HorizontalAlignment="Left" Height="208"
+                             Margin="452,28,0,0"
+                             TextWrapping="Wrap" VerticalAlignment="Top" Width="239" VerticalScrollBarVisibility="Auto"
                              HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
-                    <DockPanel x:Name="FilterDock" HorizontalAlignment="Left" Height="28" Margin="270,0,0,0"
-                               VerticalAlignment="Top" Width="386">
+                    <DockPanel x:Name="FilterDock" HorizontalAlignment="Left" Height="28" Margin="280,0,0,0"
+                               VerticalAlignment="Top" Width="410">
                         <Label Content="筛选" HorizontalAlignment="Left" VerticalAlignment="Top" />
                         <Label Content="题目：" HorizontalAlignment="Left" VerticalAlignment="Top" />
                         <ComboBox x:Name="ProblemFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left"
-                                  Margin="0,3,0,0" VerticalAlignment="Top" Width="48" Height="21" />
+                                  Margin="0,3,0,0" VerticalAlignment="Top" Width="56" Height="21" />
                         <Label Content="用户：" HorizontalAlignment="Left" VerticalAlignment="Top" />
                         <ComboBox x:Name="UserFilter" DisplayMemberPath="{Binding}" HorizontalAlignment="Left"
-                                  Margin="0,3,0,0" VerticalAlignment="Top" Width="48" Height="21" />
+                                  Margin="0,3,0,0" VerticalAlignment="Top" Width="56" Height="21" />
                         <Label Content="时间：" HorizontalAlignment="Left" VerticalAlignment="Top" />
                         <ComboBox x:Name="TimeFilter" HorizontalAlignment="Left" Margin="0,3,0,0"
-                                  VerticalAlignment="Top" Width="48" Height="21">
+                                  VerticalAlignment="Top" Width="56" Height="21">
                             <ComboBoxItem Content="今天" />
                             <ComboBoxItem Content="近三天" />
                             <ComboBoxItem Content="近一周" />
@@ -129,7 +126,7 @@
                         <Button x:Name="ResetFilterButton" Content="重置" HorizontalAlignment="Left" Margin="0,3,0,0"
                                 VerticalAlignment="Top" Width="34" Height="22" Click="ResetFilterButton_Click" />
                     </DockPanel>
-                    <Label x:Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="0,271,0,0"
+                    <Label x:Name="ExportLabel" Content="导出" HorizontalAlignment="Left" Margin="0,214,0,0"
                            VerticalAlignment="Top"
                            Foreground="#FF1166E0" Cursor="Hand" MouseDown="Export_MouseDown" />
                 </Grid>
@@ -140,10 +137,9 @@
             </TabItem>
         </TabControl>
 
-
-        <Image Name="Loading" Visibility="Hidden" HorizontalAlignment="Left" Height="46"
-                               Margin="326,164,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
-        <ListBox HorizontalAlignment="Left" Height="61" Margin="419,10,0,0" VerticalAlignment="Top" Width="215"
+        <Image Name="Loading" Visibility="Hidden" HorizontalAlignment="Left" Height="45"
+                               Margin="325,136,0,0" VerticalAlignment="Top" Width="44" Source="Resources/loading.gif" />
+        <ListBox HorizontalAlignment="Left" Height="59" Margin="429,2,0,0" VerticalAlignment="Top" Width="230"
                  BorderThickness="0">
             <DockPanel>
                 <TextBlock Text="比赛状态：" />
@@ -162,8 +158,9 @@
                 <TextBlock Name="ComTimeR" Text="00:00:00" />
             </DockPanel>
         </ListBox>
-        <Button Name="RefreshButton" Content="刷新" HorizontalAlignment="Left" Margin="639,10,0,0" VerticalAlignment="Top" Width="33"
-                Height="61" Click="RefreshButton_Click" />
+        <Button Name="RefreshButton" Content="刷新" HorizontalAlignment="Left" Margin="664,2,0,0" VerticalAlignment="Top" Width="33"
+                Height="28" Click="RefreshButton_Click" />
+        <Button x:Name="ReturnButton" Content="返回" HorizontalAlignment="Left" Margin="664,33,0,0" VerticalAlignment="Top" Width="33"
+            Height="28" Click="ReturnButton_Click" />
     </Grid>
-
-</Window>
+</Page>
