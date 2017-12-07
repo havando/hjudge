@@ -587,15 +587,6 @@ namespace Server
                         if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                         {
                             _isFault = true;
-                            foreach (var i in processes)
-                                try
-                                {
-                                    i.Kill();
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Time Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
@@ -604,20 +595,20 @@ namespace Server
                         if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
                         {
                             _isFault = true;
-                            foreach (var i in processes)
-                                try
-                                {
-                                    i.Kill();
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
                             _isExited = true;
                             JudgeResult.Result[cur] = "Memory Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
+                        foreach (var i in processes)
+                            try
+                            {
+                                i.CloseMainWindow();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         try
                         {
                             execute?.CloseMainWindow();
@@ -637,6 +628,14 @@ namespace Server
                         {
                             //ignored
                         }
+                    try
+                    {
+                        execute?.Kill();
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     try
                     {
                         JudgeResult.Exitcode[cur] = execute?.ExitCode ?? 0;
@@ -673,6 +672,16 @@ namespace Server
                             }
                             noRespondingState = true;
                         }
+                        foreach (var i in processes)
+                            try
+                            {
+                                i.Close();
+                                i.Dispose();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         try
                         {
                             execute?.Close();
@@ -687,6 +696,16 @@ namespace Server
                     }
                     if (_isFault)
                     {
+                        foreach (var i in processes)
+                            try
+                            {
+                                i.Close();
+                                i.Dispose();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         try
                         {
                             execute?.Close();
@@ -722,6 +741,16 @@ namespace Server
                     {
                         //ignored
                     }
+                    foreach (var i in processes)
+                        try
+                        {
+                            i.Close();
+                            i.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     try
                     {
                         execute?.Close();
