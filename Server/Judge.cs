@@ -483,9 +483,14 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
+                    long lastDt = 0;
+                    var lockobj = new object();
+                    var isNoResponding = false;
+                    var inputStream = execute.StandardInput;
+                    var outputStream = execute.StandardOutput;
                     while (processes.Length == 0)
                     {
-                        if (_isExited || (DateTime.Now - startCatch).TotalMinutes > 1)
+                        if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 60)
                         {
                             failToCatchProcess = true;
                             break;
@@ -509,8 +514,7 @@ namespace Server
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
-                    var inputStream = execute.StandardInput;
-                    var outputStream = execute.StandardOutput;
+                    var noChangeTime = DateTime.Now;
                     if (_problem.InputFileName == "stdin")
                         try
                         {
@@ -539,27 +543,42 @@ namespace Server
                         {
                             //ignored
                         }
-                    long lastDt = 0;
-                    var noChangeTime = DateTime.Now;
-                    var isNoResponding = false;
                     while (!_isExited)
                     {
                         try
                         {
                             long tmpTime = 0, tmpMem = 0;
-                            foreach (var t in processes)
+                            Parallel.ForEach(processes, t =>
                             {
                                 try
                                 {
-                                    tmpTime += Convert.ToInt64(t.UserProcessorTime.TotalMilliseconds);
-                                    tmpMem += t.PeakWorkingSet64 / 1024;
+                                    long mem = 0;
+                                    double time = 0;
+                                    bool flag = false;
+                                    for (var i = 0; i < 50 && !flag; i++)
+                                    {
+                                        try
+                                        {
+                                            mem = Math.Max(mem, t.PeakWorkingSet64);
+                                            time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
+                                        }
+                                        catch
+                                        {
+                                            flag = true;
+                                        }
+                                        t.Refresh();
+                                    }
+                                    lock (lockobj)
+                                    {
+                                        tmpMem += mem / 1024;
+                                        tmpTime += Convert.ToInt64(time);
+                                    }
                                 }
                                 catch
                                 {
                                     //ignored
                                 }
-                                t.Refresh();
-                            }
+                            });
                             if (tmpTime > JudgeResult.Timeused[cur])
                                 JudgeResult.Timeused[cur] = tmpTime;
                             if (tmpMem > JudgeResult.Memoryused[cur])
@@ -600,7 +619,8 @@ namespace Server
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
-                        foreach (var i in processes)
+                        Parallel.ForEach(processes, i =>
+                        {
                             try
                             {
                                 i.CloseMainWindow();
@@ -609,6 +629,7 @@ namespace Server
                             {
                                 //ignored
                             }
+                        });
                         try
                         {
                             execute?.CloseMainWindow();
@@ -619,7 +640,8 @@ namespace Server
                         }
                         Thread.Sleep(1);
                     }
-                    foreach (var i in processes)
+                    Parallel.ForEach(processes, i =>
+                    {
                         try
                         {
                             i.Kill();
@@ -628,6 +650,7 @@ namespace Server
                         {
                             //ignored
                         }
+                    });
                     try
                     {
                         execute?.Kill();
@@ -672,7 +695,8 @@ namespace Server
                             }
                             noRespondingState = true;
                         }
-                        foreach (var i in processes)
+                        Parallel.ForEach(processes, i =>
+                        {
                             try
                             {
                                 i.Close();
@@ -682,6 +706,7 @@ namespace Server
                             {
                                 //ignored
                             }
+                        });
                         try
                         {
                             execute?.Close();
@@ -696,7 +721,8 @@ namespace Server
                     }
                     if (_isFault)
                     {
-                        foreach (var i in processes)
+                        Parallel.ForEach(processes, i =>
+                        {
                             try
                             {
                                 i.Close();
@@ -706,6 +732,7 @@ namespace Server
                             {
                                 //ignored
                             }
+                        });
                         try
                         {
                             execute?.Close();
@@ -741,7 +768,9 @@ namespace Server
                     {
                         //ignored
                     }
-                    foreach (var i in processes)
+
+                    Parallel.ForEach(processes, i =>
+                    {
                         try
                         {
                             i.Close();
@@ -751,6 +780,7 @@ namespace Server
                         {
                             //ignored
                         }
+                    });
                     try
                     {
                         execute?.Close();
