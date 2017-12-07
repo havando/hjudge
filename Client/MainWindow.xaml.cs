@@ -1039,6 +1039,9 @@ namespace Client
                     Connection.SendData("RequestMsgTargetUser", _requestMsgTargetUserId);
                     break;
                 case 6:
+                    CompetitionFrame.Visibility = Visibility.Hidden;
+                    CompetitionListGrid.Visibility = Visibility.Visible;
+                    CompetitionFrame.Content = null;
                     Loading6.Visibility = Visibility.Visible;
                     _requestCompetitionListId = Guid.NewGuid().ToString();
                     _competitionsCollection.Clear();
