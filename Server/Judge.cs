@@ -41,7 +41,7 @@ namespace Server
             }
             Connection.CanPostJudgTask = true;
             _isFinished = false;
-            try
+            //try
             {
                 _problem = Connection.GetProblem(problemId);
                 _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -222,7 +222,7 @@ namespace Server
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
                     textBlock);
             }
-            catch
+            //catch(Exception ex)
             {
                 //ignored
             }
@@ -384,7 +384,7 @@ namespace Server
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[cur - 1]}",
                         textBlock);
-                if (!File.Exists(_problem.DataSets[cur].InputFile) || !File.Exists(_problem.DataSets[cur].OutputFile))
+                if (!(!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile) && File.Exists(_problem.DataSets[cur].InputFile)) || !File.Exists(_problem.DataSets[cur].OutputFile))
                 {
                     JudgeResult.Result[cur] = "Problem Configuration Error";
                     JudgeResult.Exitcode[cur] = 0;
@@ -395,14 +395,7 @@ namespace Server
                 else
                 {
                     if (_problem.InputFileName != "stdin")
-                        try
-                        {
-                            File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
-                                true);
-                        }
-                        catch
-                        {
-                            Thread.Sleep(2000);
+                        if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
                             try
                             {
                                 File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
@@ -410,24 +403,32 @@ namespace Server
                             }
                             catch
                             {
-                                Thread.Sleep(3000);
+                                Thread.Sleep(2000);
                                 try
                                 {
-                                    File.Copy(_problem.DataSets[cur].InputFile,
-                                        _workingdir + "\\" + _problem.InputFileName,
+                                    File.Copy(_problem.DataSets[cur].InputFile, _workingdir + "\\" + _problem.InputFileName,
                                         true);
                                 }
-                                catch (Exception ex)
+                                catch
                                 {
-                                    JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
-                                    JudgeResult.Exitcode[cur] = 0;
-                                    JudgeResult.Score[cur] = 0;
-                                    JudgeResult.Timeused[cur] = 0;
-                                    JudgeResult.Memoryused[cur] = 0;
-                                    continue;
+                                    Thread.Sleep(3000);
+                                    try
+                                    {
+                                        File.Copy(_problem.DataSets[cur].InputFile,
+                                            _workingdir + "\\" + _problem.InputFileName,
+                                            true);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                                        JudgeResult.Exitcode[cur] = 0;
+                                        JudgeResult.Score[cur] = 0;
+                                        JudgeResult.Timeused[cur] = 0;
+                                        JudgeResult.Memoryused[cur] = 0;
+                                        continue;
+                                    }
                                 }
                             }
-                        }
                     if (_problem.InputFileName == "stdin")
                         try
                         {
@@ -520,13 +521,23 @@ namespace Server
                         {
                             res = outputStream.ReadToEndAsync();
                             inputStream.AutoFlush = true;
-                            inputStream.WriteAsync(
+                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                inputStream.WriteAsync(
                                     File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
                                 .GetAwaiter().OnCompleted(() =>
                                 {
                                     inputStream.Close();
                                     inputStream.Dispose();
                                 });
+                            else
+                            {
+                                inputStream.WriteAsync("\0")
+                                .GetAwaiter().OnCompleted(() =>
+                                {
+                                    inputStream.Close();
+                                    inputStream.Dispose();
+                                });
+                            }
                         }
                         catch
                         {
@@ -935,9 +946,6 @@ namespace Server
                 {
                     Connection.IntelligentAdditionWorkingThread--;
                 }
-            Connection.UpdateMainPageState(
-                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {_problem.DataSets.Length}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[_problem.DataSets.Length - 1]}",
-                textBlock);
         }
 
         private void Killwerfault()

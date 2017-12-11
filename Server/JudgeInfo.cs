@@ -30,6 +30,8 @@ namespace Server
             {
                 if (Result == null)
                     return "Unknown Error";
+                if (Result.Length == 0 || (Result.Length == 1 && string.IsNullOrEmpty(Result[0])))
+                    return "Accepted";
                 var error = new int[11];
                 var tot = 0;
                 foreach (var t in Result)
@@ -76,14 +78,14 @@ namespace Server
                             tot++;
                             break;
                         default:
-                        {
-                            if (t?.Contains("Unknown Error") ?? false)
                             {
-                                error[10]++;
-                                tot++;
+                                if (t?.Contains("Unknown Error") ?? false)
+                                {
+                                    error[10]++;
+                                    tot++;
+                                }
+                                break;
                             }
-                            break;
-                        }
                     }
                 if (tot == error[0]) return tot != 0 ? "Accepted" : "Judging...";
                 var max = error[1];
