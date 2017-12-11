@@ -41,7 +41,7 @@ namespace Server
             }
             Connection.CanPostJudgTask = true;
             _isFinished = false;
-            //try
+            try
             {
                 _problem = Connection.GetProblem(problemId);
                 _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
@@ -222,7 +222,7 @@ namespace Server
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
                     textBlock);
             }
-            //catch(Exception ex)
+            catch
             {
                 //ignored
             }
@@ -384,7 +384,7 @@ namespace Server
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测 #{JudgeResult.JudgeId} 数据点 {cur}/{_problem.DataSets.Length} 完毕，结果：{JudgeResult.Result[cur - 1]}",
                         textBlock);
-                if (!(!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile) && File.Exists(_problem.DataSets[cur].InputFile)) || !File.Exists(_problem.DataSets[cur].OutputFile))
+                if ((!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile) && !File.Exists(_problem.DataSets[cur].InputFile)) || !File.Exists(_problem.DataSets[cur].OutputFile))
                 {
                     JudgeResult.Result[cur] = "Problem Configuration Error";
                     JudgeResult.Exitcode[cur] = 0;
