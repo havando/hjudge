@@ -32,6 +32,7 @@ namespace Client
         private static string _ip;
         private static ushort _port;
         public static bool CanSwitch = true;
+        public static string CurrentUserName;
 
         public static bool Init(string ip, ushort port, Action<string> updateMainPage)
         {

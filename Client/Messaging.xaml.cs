@@ -22,7 +22,13 @@ namespace Client
             {
                 ClientMsg.Text = msg.Content;
                 SendDate.Content = $"发送时间：{msg.DisplayDateTime}";
-                SendUser.Content = $"发送用户：{msg.User}";
+                SendUser.Content = $"目标用户：{msg.User}";
+                if (msg.Direction == "发送")
+                {
+                    MyMsg.IsEnabled = false;
+                    MyMsg.Visibility = Visibility.Hidden;
+                    Width = 368;
+                }
             }));
             if (msg.State == 0)
                 Connection.SendData("SetMsgState", msg.MsgId + Connection.Divpar + "1");

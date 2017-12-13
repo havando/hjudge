@@ -1022,7 +1022,7 @@ namespace Server
             return curJudgeInfo;
         }
 
-        public static Message GetMsg(int msgId)
+        public static Message GetMsg(int msgId, int userId)
         {
             var t = new Message();
             lock (DataBaseLock)
@@ -1036,10 +1036,11 @@ namespace Server
                         try
                         {
                             t.MsgId = reader.GetInt32(0);
-                            t.User = GetUserName(reader.GetInt32(1));
+                            t.User = userId == reader.GetInt32(1) ? GetUserName(reader.GetInt32(2)) : GetUserName(reader.GetInt32(1));
                             t.MessageTime = Convert.ToDateTime(reader.GetString(3));
                             t.Content = reader.GetString(4);
                             t.State = reader.GetInt32(5);
+                            t.Direction = userId == reader.GetInt32(1) ? "发送" : "接收";
                         }
                         catch
                         {

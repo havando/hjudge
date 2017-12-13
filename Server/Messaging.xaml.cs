@@ -21,7 +21,13 @@ namespace Server
             {
                 ClientMsg.Text = msg.Content;
                 SendDate.Content = $"发送时间：{msg.DisplayDateTime}";
-                SendUser.Content = $"发送用户：{msg.User}";
+                SendUser.Content = $"相关用户：{msg.User}";
+                if (msg.Direction == "发送")
+                {
+                    MyMsg.IsEnabled = false;
+                    MyMsg.Visibility = Visibility.Hidden;
+                    Width = 368;
+                }
             }));
             _userId = Connection.GetUserId(msg.User);
         }

@@ -41,7 +41,6 @@ namespace Client
         private string _requestMsgListId;
         private string _requestMsgTargetUserId;
         private string _requestProblemListId;
-        private string _userName;
         private float _bonus;
 
         public MainWindow()
@@ -167,7 +166,7 @@ namespace Client
                                     }
                                 case "Break":
                                     {
-                                        _userName = string.Empty;
+                                        Connection.CurrentUserName = string.Empty;
                                         _curId = 0;
                                         Dispatcher.Invoke(() => { LoginButton.IsEnabled = Register.IsEnabled = false; });
                                         InitMainWindow();
@@ -208,7 +207,7 @@ namespace Client
                         }
                     case "Logout":
                         {
-                            _userName = string.Empty;
+                            Connection.CurrentUserName = string.Empty;
                             _curId = 0;
                             InitMainWindow();
                             break;
@@ -229,7 +228,7 @@ namespace Client
                         }
                     case "Messaging":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var t = JsonConvert.DeserializeObject<Message>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -249,7 +248,7 @@ namespace Client
                         }
                     case "FileList":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 2) break;
                             Dispatcher.Invoke(() =>
@@ -277,7 +276,7 @@ namespace Client
                         }
                     case "JudgeResult":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -332,7 +331,7 @@ namespace Client
                         }
                     case "JudgeResultForCompetition":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             if (p.ResultSummery == "Judging...")
                                 MessageBox.Show("提交次数超出限制", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -389,7 +388,7 @@ namespace Client
                         }
                     case "ProblemList":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             if (id == _requestProblemListId)
                             {
                                 var x = JsonConvert.DeserializeObject<Problem>(contentWithoutId);
@@ -401,7 +400,7 @@ namespace Client
                         {
                             var x = JsonConvert.DeserializeObject<UserInfo>(content);
                             _curId = x.Type;
-                            _userName = x.UserName;
+                            Connection.CurrentUserName = x.UserName;
                             Connection.SendData("RequestJudgeRecord", $"0{Divpar}20");
                             Connection.SendData("RequestFileList", string.Empty);
                             _requestMsgListId = Guid.NewGuid().ToString();
@@ -429,7 +428,7 @@ namespace Client
                         }
                     case "UpdateProfile":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
@@ -442,14 +441,14 @@ namespace Client
                                 case "Failed":
                                     MessageBox.Show("修改失败", "提示", MessageBoxButton.OK,
                                         MessageBoxImage.Error);
-                                    Connection.SendData("RequestProfile", _userName);
+                                    Connection.SendData("RequestProfile", Connection.CurrentUserName);
                                     break;
                             }
                             break;
                         }
                     case "ChangePassword":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { Loading1.Visibility = Visibility.Hidden; });
                             switch (content)
                             {
@@ -467,7 +466,7 @@ namespace Client
                         }
                     case "JudgeRecord":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var final = content.Split(new[] { Divpar }, StringSplitOptions.None);
                             if (final.Length < 3) break;
@@ -483,7 +482,7 @@ namespace Client
                         }
                     case "JudgeCode":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { Loading3.Visibility = Visibility.Hidden; });
                             var jc = JsonConvert.DeserializeObject<JudgeInfo>(content);
                             var j = (from c in _judgeInfos where c.JudgeId == jc.JudgeId select c)
@@ -495,7 +494,7 @@ namespace Client
                         }
                     case "FileReceived":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() =>
                             {
                                 FileList.IsEnabled = true;
@@ -517,13 +516,13 @@ namespace Client
                         }
                     case "FileReceiving":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { ReceivingProcess.Content = content; });
                             break;
                         }
                     case "ProblemDataSet":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() => { Loading2.Visibility = Visibility.Hidden; });
                             if (content != "Denied") break;
                             Dispatcher.Invoke(() =>
@@ -540,7 +539,7 @@ namespace Client
                         }
                     case "Compiler":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             Dispatcher.Invoke(() =>
                             {
                                 LangBox.Items.Clear();
@@ -566,7 +565,7 @@ namespace Client
                         }
                     case "RequestMsgTargetUser":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             if (id == _requestMsgTargetUserId)
                             {
                                 var t = JsonConvert.DeserializeObject<string>(contentWithoutId);
@@ -576,7 +575,7 @@ namespace Client
                         }
                     case "RequestMsgList":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             if (_requestMsgListId == id)
                             {
                                 var t = JsonConvert.DeserializeObject<Message>(contentWithoutId);
@@ -600,7 +599,7 @@ namespace Client
                         }
                     case "RequestMsg":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var t = JsonConvert.DeserializeObject<Message>(content);
                             Dispatcher.Invoke(() =>
                             {
@@ -616,7 +615,7 @@ namespace Client
                         }
                     case "RequestCompetitionList":
                         {
-                            if (string.IsNullOrEmpty(_userName)) break;
+                            if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             if (_requestCompetitionListId == id)
                             {
                                 var t = JsonConvert.DeserializeObject<Competition>(contentWithoutId);
@@ -948,7 +947,7 @@ namespace Client
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (!string.IsNullOrEmpty(_userName))
+            if (!string.IsNullOrEmpty(Connection.CurrentUserName))
                 Connection.SendData("Logout", string.Empty);
             Connection.IsExited = true;
         }
@@ -975,7 +974,7 @@ namespace Client
                         FileShare.Read);
                     var icon = ByteImageConverter.ImageToByte(fs);
                     UserIcon.Source = ByteImageConverter.ByteToImage(Convert.FromBase64String(icon));
-                    Connection.SendData("UpdateProfile", _userName + Divpar + icon);
+                    Connection.SendData("UpdateProfile", Connection.CurrentUserName + Divpar + icon);
                     Loading1.Visibility = Visibility.Visible;
                 }
         }

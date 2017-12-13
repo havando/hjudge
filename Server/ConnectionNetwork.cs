@@ -384,7 +384,10 @@ namespace Server
                             case "Logout":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     UpdateMainPageState(
                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 注销了");
                                     while (u.Data.TryDequeue(out var temp)) temp.Clear();
@@ -395,7 +398,10 @@ namespace Server
                             case "Register":
                                 {
                                     if (res.Client.UserId != 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     Task.Run(() =>
                                     {
                                         if (RemoteRegister(Encoding.Unicode.GetString(res.Content[0]),
@@ -415,7 +421,10 @@ namespace Server
                             case "RequestFileList":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     var filePath = Encoding.Unicode.GetString(res.Content[0]);
                                     if (filePath.Length > 1)
                                     {
@@ -445,7 +454,10 @@ namespace Server
                             case "RequestFile":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     var filePath = Encoding.Unicode.GetString(res.Content[0]);
                                     if (filePath.Length > 1)
                                     {
@@ -464,7 +476,10 @@ namespace Server
                             case "RequestProblemDataSet":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     if (!Configuration.Configurations.AllowRequestDataSet)
                                     {
                                         SendData("ProblemDataSet", "Denied", res.Client.ConnId);
@@ -551,7 +566,10 @@ namespace Server
                             case "SubmitCode":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
                                     {
                                         UpdateMainPageState(
@@ -579,7 +597,10 @@ namespace Server
                             case "Messaging":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     var x = string.Empty;
                                     for (var i = 0; i < res.Content.Count; i++)
                                         if (i != res.Content.Count - 1)
@@ -636,7 +657,10 @@ namespace Server
                             case "RequestProblemList":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
                                     var id = Encoding.Unicode.GetString(res.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -683,7 +707,10 @@ namespace Server
                             case "RequestProfile":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -696,7 +723,10 @@ namespace Server
                             case "RequestCompiler":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
@@ -707,7 +737,10 @@ namespace Server
                             case "QueryLanguagesForCompetition":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
@@ -718,7 +751,10 @@ namespace Server
                             case "ChangePassword":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -734,7 +770,10 @@ namespace Server
                             case "UpdateProfile":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -751,7 +790,10 @@ namespace Server
                             case "UpdateCoins":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -767,7 +809,10 @@ namespace Server
                             case "UpdateExperience":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     SendData("UpdateExperience",
                                         UpdateExperience(
@@ -780,7 +825,10 @@ namespace Server
                             case "RequestJudgeRecord":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -798,7 +846,10 @@ namespace Server
                             case "RequestJudgeCode":
                                 {
                                     if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                         break;
+                                    }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -811,9 +862,17 @@ namespace Server
                                 }
                             case "AddProblem":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("AddProblem", JsonConvert.SerializeObject(GetProblem(NewProblem())),
@@ -823,9 +882,17 @@ namespace Server
                                 }
                             case "DeleteProblem":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
@@ -835,9 +902,17 @@ namespace Server
                                 }
                             case "UpdateProblem":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var x = string.Empty;
                                     for (var i = 0; i < res.Content.Count; i++)
                                         if (i != res.Content.Count - 1)
@@ -854,9 +929,17 @@ namespace Server
                                 }
                             case "QueryProblems":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = QueryProblems(true);
@@ -868,7 +951,11 @@ namespace Server
                                 }
                             case "GetProblemDescription":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = GetProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
@@ -882,9 +969,17 @@ namespace Server
                                 }
                             case "QueryJudgeLogs":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("QueryJudgeLogs", JsonConvert.SerializeObject(QueryJudgeLog(false)),
@@ -894,9 +989,17 @@ namespace Server
                                 }
                             case "RequestCode":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = GetJudgeInfo(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
@@ -908,17 +1011,33 @@ namespace Server
                                 }
                             case "ClearJudgingLogs":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(ClearJudgeLog));
                                     break;
                                 }
                             case "DataFile":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var fileName = Encoding.Unicode.GetString(res.Content[0]);
                                     var fileId = Encoding.Unicode.GetString(res.Content[1]);
                                     var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
@@ -1001,9 +1120,17 @@ namespace Server
                                 }
                             case "PublicFile":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var fileName = Encoding.Unicode.GetString(res.Content[0]);
                                     var fileId = Encoding.Unicode.GetString(res.Content[1]);
                                     var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
@@ -1086,9 +1213,17 @@ namespace Server
                                 }
                             case "ClearData":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1139,9 +1274,17 @@ namespace Server
                                 }
                             case "DeleteExtra":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1180,9 +1323,17 @@ namespace Server
                                 }
                             case "DeleteJudge":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1218,7 +1369,11 @@ namespace Server
                                 }
                             case "RequestMsgList":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var id = Encoding.Unicode.GetString(res.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1232,15 +1387,23 @@ namespace Server
                                 }
                             case "RequestMsg":
                                 {
-                                    if (res.Client.UserId == 0) break;
-                                    var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
+                                    var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])), res.Client.UserId);
                                     ActionList.Enqueue(new Task(() =>
                                         SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId)));
                                     break;
                                 }
                             case "RequestMsgTargetUser":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var id = Encoding.Unicode.GetString(res.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1267,7 +1430,11 @@ namespace Server
                                 }
                             case "SetMsgState":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     var state = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
                                     ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
@@ -1275,7 +1442,11 @@ namespace Server
                                 }
                             case "RequestCompetitionList":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var id = Encoding.Unicode.GetString(res.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1290,7 +1461,11 @@ namespace Server
                                 }
                             case "QueryJudgeLogBelongsToCompetition":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1307,7 +1482,11 @@ namespace Server
                                 }
                             case "QueryProblemsForCompetition":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1320,7 +1499,11 @@ namespace Server
                                 }
                             case "SubmitCodeForCompetition":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
                                     if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[2])))
@@ -1353,16 +1536,28 @@ namespace Server
                                 }
                             case "GetCurrentDateTime":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     SendData("GetCurrentDateTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                                         res.Client.ConnId);
                                     break;
                                 }
                             case "QueryCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("QueryCompetitionClient",
@@ -1372,9 +1567,17 @@ namespace Server
                                 }
                             case "NewCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("NewCompetitionClient",
@@ -1385,9 +1588,17 @@ namespace Server
                                 }
                             case "DeleteCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1398,9 +1609,17 @@ namespace Server
                                 }
                             case "UpdateCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var x = string.Empty;
                                     for (var i = 0; i < res.Content.Count; i++)
                                         if (i != res.Content.Count - 1)
@@ -1416,9 +1635,17 @@ namespace Server
                                 }
                             case "GetProblem":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1429,9 +1656,17 @@ namespace Server
                                 }
                             case "GetServerConfig":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 3) break;
+                                    if (t.Type <= 0 || t.Type >= 3)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = new ServerConfig
@@ -1448,9 +1683,17 @@ namespace Server
                                 }
                             case "UpdateServerConfig":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 3) break;
+                                    if (t.Type <= 0 || t.Type >= 3)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var x = string.Empty;
                                     for (var i = 0; i < res.Content.Count; i++)
                                         if (i != res.Content.Count - 1)
@@ -1472,9 +1715,17 @@ namespace Server
                                 }
                             case "GetUserBelongings":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = GetUsersBelongs(t.Type);
@@ -1491,9 +1742,17 @@ namespace Server
                                 }
                             case "UpdateUserBelongings":
                                 {
-                                    if (res.Client.UserId == 0) break;
+                                    if (res.Client.UserId == 0)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var t = GetUser(res.Client.UserId);
-                                    if (t.Type <= 0 || t.Type >= 4) break;
+                                    if (t.Type <= 0 || t.Type >= 4)
+                                    {
+                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        break;
+                                    }
                                     var x = string.Empty;
                                     for (var i = 0; i < res.Content.Count; i++)
                                         if (i != res.Content.Count - 1)
@@ -1514,6 +1773,11 @@ namespace Server
                                 {
                                     SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.Client.ConnId,
                                         "RequestClient");
+                                    break;
+                                }
+                            default:
+                                {
+                                    SendData(res.Operation, "OperationDenied", res.Client.ConnId);
                                     break;
                                 }
                         }

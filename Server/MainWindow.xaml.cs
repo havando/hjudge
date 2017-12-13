@@ -459,13 +459,16 @@ namespace Server
                     MessageBoxImage.Error);
                 return;
             }
+            if (MessageBox.Show("退出程序后已连接的所有客户端将被断开，确定继续？", "提示",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+                return;
             _notifyIcon.Visible = false;
             Connection.IsExited = true;
-            Task.Run(() =>
+            new Thread(() =>
             {
                 Connection.LogoutAll();
                 Environment.Exit(0);
-            });
+            }).Start();
         }
     }
 }

@@ -46,7 +46,7 @@
     <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
     </Reference>
-    <Reference Include="HPSocketCS, Version=4.2.1.28491, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="HPSocketCS, Version=5.1.1.9957, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\HPSocketCS.dll</HintPath>
     </Reference>
@@ -237,10 +237,10 @@
     <Resource Include="Resources\loading.gif" />
     <Resource Include="Resources\edit.png" />
     <Content Include="x64\HPSocket4C_U.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="x86\HPSocket4C_U.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
