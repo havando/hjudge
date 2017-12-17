@@ -61,6 +61,19 @@ namespace Server
             }
         }
 
+        private static string CharArrayToString(char[] array)
+        {
+            var res = new StringBuilder();
+            for (var i = 0; i < array.Length; i++)
+            {
+                if (array[i] != '\0')
+                {
+                    res.Append(array[i]);
+                }
+            }
+            return res.ToString();
+        }
+
         private static byte[] GetSendBuffer(byte[] bodyBytes, string token)
         {
             var header = new PkgHeader
@@ -230,7 +243,7 @@ namespace Server
                         {
                             var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
-                            token = header.Token.ToString();
+                            token = CharArrayToString(header.Token);
                         }
                         else
                         {
