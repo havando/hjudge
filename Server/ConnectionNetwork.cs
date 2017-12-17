@@ -372,14 +372,14 @@ namespace Server
                                             {
                                                 var uid = GetUserId(
                                                     Encoding.Unicode.GetString(res.obj.Content[0]));
-                                                foreach (var li in Recv.Where(c => c.Info.UserId == uid))
-                                                {
-                                                    UpdateMainPageState(
-                                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {li.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
-                                                    li.Info.UserId = 0;
-                                                    while (li.Data.TryDequeue(out var temp)) temp.Content.Clear();
-                                                    SendData("Logout", "Succeed", li.Info.ConnId, res.token);
-                                                }
+                                                //foreach (var li in Recv.Where(c => c.Info.UserId == uid))
+                                                //{
+                                                //    UpdateMainPageState(
+                                                //        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {li.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
+                                                //    li.Info.UserId = 0;
+                                                //    while (li.Data.TryDequeue(out var temp)) temp.Content.Clear();
+                                                //    SendData("Logout", "Succeed", li.Info.ConnId, res.token);
+                                                //}
                                                 res.obj.Client.UserId = uid;
                                                 SendData("Login", "Succeed", res.obj.Client.ConnId, res.token);
                                                 UpdateMainPageState(
