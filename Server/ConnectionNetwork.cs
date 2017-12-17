@@ -221,6 +221,7 @@ namespace Server
                 Recv.Where(i => i.Info.UserId == toUserId).Select(p => p.Info.ConnId).FirstOrDefault(), token);
         }
 
+        private static string _token = string.Empty;
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
         {
             var clientInfo = HServer.GetExtra(connId);
@@ -229,7 +230,6 @@ namespace Server
             var myPkgInfo = clientInfo.PkgInfo;
             var required = myPkgInfo.Length;
             var remain = length;
-            var token = string.Empty;
             while (remain >= required)
             {
                 var bufferPtr = IntPtr.Zero;
@@ -243,7 +243,7 @@ namespace Server
                         {
                             var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
-                            token = CharArrayToString(header.Token);
+                            _token = CharArrayToString(header.Token);
                         }
                         else
                         {
@@ -251,7 +251,7 @@ namespace Server
                             Marshal.Copy(bufferPtr, buffer, 0, required);
                             required = PkgHeaderSize;
                             (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault()?.Data
-                                .Enqueue((Decompress(buffer).ToList(), token));
+                                .Enqueue((Decompress(buffer).ToList(), _token));
                         }
                         myPkgInfo.IsHeader = !myPkgInfo.IsHeader;
                         myPkgInfo.Length = required;
