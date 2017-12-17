@@ -1794,8 +1794,8 @@ namespace Server
                                 }
                             case "RequestClient":
                                 {
-                                    SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.obj.Client.ConnId, res.token,
-                                        "RequestClient");
+                                    SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.obj.Client.ConnId,
+                                        "RequestClient", res.token);
                                     break;
                                 }
                             default:
