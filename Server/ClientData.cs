@@ -5,7 +5,7 @@ namespace Server
 {
     public class ClientData
     {
-        public readonly ConcurrentQueue<List<byte>> Data = new ConcurrentQueue<List<byte>>();
+        public readonly ConcurrentQueue<(List<byte> Content, string Token)> Data = new ConcurrentQueue<(List<byte>, string)>();
         public ClientInfo Info;
     }
 }

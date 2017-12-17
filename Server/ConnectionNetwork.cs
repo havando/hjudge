@@ -23,7 +23,7 @@ namespace Server
     {
         private static readonly int PkgHeaderSize = Marshal.SizeOf(new PkgHeader());
         private static readonly ConcurrentBag<ClientData> Recv = new ConcurrentBag<ClientData>();
-        private static readonly ConcurrentQueue<ObjOperation> Operations = new ConcurrentQueue<ObjOperation>();
+        private static readonly ConcurrentQueue<(ObjOperation obj, string token)> Operations = new ConcurrentQueue<(ObjOperation obj, string token)>();
         private static readonly TcpPullServer<ClientInfo> HServer = new TcpPullServer<ClientInfo>();
         private static readonly List<FileRecvInfo> FrInfo = new List<FileRecvInfo>();
 
@@ -61,13 +61,21 @@ namespace Server
             }
         }
 
-        private static byte[] GetSendBuffer(byte[] bodyBytes)
+        private static byte[] GetSendBuffer(byte[] bodyBytes, string token)
         {
             var header = new PkgHeader
             {
                 Id = ++_id,
                 BodySize = bodyBytes.Length
             };
+            var p = token?.ToCharArray() ?? new char[0];
+            header.Token = new char[32];
+            var j = 0;
+            for (var i = 0; i < p.Length; i++)
+            {
+                if (p[i] != '-')
+                    header.Token[j++] = p[i];
+            }
             var headerBytes = HServer.StructureToByte(header);
             var ptr = IntPtr.Zero;
             try
@@ -93,30 +101,30 @@ namespace Server
                 if (i.Info.UserId != 0)
                 {
                     i.Info.UserId = 0;
-                    while (i.Data.TryDequeue(out var temp)) temp.Clear();
+                    while (i.Data.TryDequeue(out var temp)) temp.Content.Clear();
                     HServer.Disconnect(i.Info.ConnId);
                 }
         }
 
-        private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId)
+        private static void SendData(string operation, IEnumerable<byte> sendBytes, IntPtr connId, string token)
         {
             var temp = Encoding.Unicode.GetBytes(operation);
             temp = temp.Concat(Encoding.Unicode.GetBytes(Divpar)).ToArray();
             temp = temp.Concat(sendBytes).ToArray();
-            var final = GetSendBuffer(CompressBytes(temp));
+            var final = GetSendBuffer(CompressBytes(temp), token);
             HServer.Send(connId, final, final.Length);
         }
 
-        private static void SendFile(string fileName, IntPtr connId, string title)
+        private static void SendFile(string fileName, IntPtr connId, string title, string token)
         {
             if (!File.Exists(fileName))
-                SendData(title, "NotFound", connId);
+                SendData(title, "NotFound", connId, token);
             var fileId = Guid.NewGuid().ToString();
             var temp = Encoding.Unicode.GetBytes(title + Divpar
                                                  + Path.GetFileName(fileName) + Divpar
                                                  + fileId + Divpar
                                                  + new FileInfo(fileName).Length);
-            var final = GetSendBuffer(CompressBytes(temp));
+            var final = GetSendBuffer(CompressBytes(temp), token);
             HServer.Send(connId, final, final.Length);
             using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -128,7 +136,7 @@ namespace Server
                     var tempc = GetSendBuffer(CompressBytes((Encoding.Unicode.GetBytes(title + Divpar
                                                                         + Path.GetFileName(fileName) + Divpar
                                                                         + fileId + Divpar + tot + Divpar)
-                        .Concat(bytes.Take((int)cnt)).ToArray())));
+                        .Concat(bytes.Take((int)cnt)).ToArray())), token);
                     tot += cnt;
                     HServer.Send(connId, tempc, tempc.Length);
                 }
@@ -136,10 +144,10 @@ namespace Server
             }
         }
 
-        private static void SendData(string operation, string sendString, IntPtr connId)
+        private static void SendData(string operation, string sendString, IntPtr connId, string token)
         {
             var temp = Encoding.Unicode.GetBytes(operation + Divpar + sendString);
-            var final = GetSendBuffer(CompressBytes(temp));
+            var final = GetSendBuffer(CompressBytes(temp), token);
             HServer.Send(connId, final, final.Length);
         }
 
@@ -163,7 +171,7 @@ namespace Server
             }
         }
 
-        public static void SendMsg(string sendString, int fromUserId, int toUserId)
+        public static void SendMsg(string sendString, int fromUserId, int toUserId, string token)
         {
             lock (DataBaseLock)
             {
@@ -197,7 +205,7 @@ namespace Server
                 State = 0
             };
             SendData("Messaging", JsonConvert.SerializeObject(t),
-                Recv.Where(i => i.Info.UserId == toUserId).Select(p => p.Info.ConnId).FirstOrDefault());
+                Recv.Where(i => i.Info.UserId == toUserId).Select(p => p.Info.ConnId).FirstOrDefault(), token);
         }
 
         private static HandleResult HServerOnOnReceive(IntPtr connId, int length)
@@ -208,6 +216,7 @@ namespace Server
             var myPkgInfo = clientInfo.PkgInfo;
             var required = myPkgInfo.Length;
             var remain = length;
+            var token = string.Empty;
             while (remain >= required)
             {
                 var bufferPtr = IntPtr.Zero;
@@ -221,6 +230,7 @@ namespace Server
                         {
                             var header = (PkgHeader)Marshal.PtrToStructure(bufferPtr, typeof(PkgHeader));
                             required = header.BodySize;
+                            token = header.Token.ToString();
                         }
                         else
                         {
@@ -228,7 +238,7 @@ namespace Server
                             Marshal.Copy(bufferPtr, buffer, 0, required);
                             required = PkgHeaderSize;
                             (from c in Recv where c.Info.ConnId == connId select c).FirstOrDefault()?.Data
-                                .Enqueue(Decompress(buffer).ToList());
+                                .Enqueue((Decompress(buffer).ToList(), token));
                         }
                         myPkgInfo.IsHeader = !myPkgInfo.IsHeader;
                         myPkgInfo.Length = required;
@@ -305,17 +315,17 @@ namespace Server
                     {
                         while (t.Data.TryDequeue(out var temp))
                         {
-                            var temp2 = Bytespilt(temp, Encoding.Unicode.GetBytes(Divpar));
+                            var temp2 = Bytespilt(temp.Content, Encoding.Unicode.GetBytes(Divpar));
                             if (temp2.Count == 0)
                                 continue;
                             var operation = Encoding.Unicode.GetString(temp2[0]);
                             temp2.RemoveAt(0);
-                            Operations.Enqueue(new ObjOperation
+                            Operations.Enqueue((new ObjOperation
                             {
                                 Operation = operation,
                                 Client = t.Info,
                                 Content = temp2
-                            });
+                            }, temp.Token));
                         }
                     }
                     catch
@@ -333,49 +343,49 @@ namespace Server
             {
                 if (Operations.TryDequeue(out var res))
                 {
-                    var u = Recv.FirstOrDefault(c => c.Info.ConnId == res.Client.ConnId);
+                    var u = Recv.FirstOrDefault(c => c.Info.ConnId == res.obj.Client.ConnId);
                     if (u == null) continue;
                     try
                     {
-                        switch (res.Operation)
+                        switch (res.obj.Operation)
                         {
                             case "Login":
                                 {
-                                    var x = RemoteLogin(Encoding.Unicode.GetString(res.Content[0]),
-                                        Encoding.Unicode.GetString(res.Content[1]));
+                                    var x = RemoteLogin(Encoding.Unicode.GetString(res.obj.Content[0]),
+                                        Encoding.Unicode.GetString(res.obj.Content[1]));
                                     switch (x)
                                     {
                                         case 0:
                                             {
                                                 var uid = GetUserId(
-                                                    Encoding.Unicode.GetString(res.Content[0]));
+                                                    Encoding.Unicode.GetString(res.obj.Content[0]));
                                                 foreach (var li in Recv.Where(c => c.Info.UserId == uid))
                                                 {
                                                     UpdateMainPageState(
                                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {li.Info.UserName} 多终端登陆，已注销其中一个终端的登录状态");
                                                     li.Info.UserId = 0;
-                                                    while (li.Data.TryDequeue(out var temp)) temp.Clear();
-                                                    SendData("Logout", "Succeed", li.Info.ConnId);
+                                                    while (li.Data.TryDequeue(out var temp)) temp.Content.Clear();
+                                                    SendData("Logout", "Succeed", li.Info.ConnId, res.token);
                                                 }
-                                                res.Client.UserId = uid;
-                                                SendData("Login", "Succeed", res.Client.ConnId);
+                                                res.obj.Client.UserId = uid;
+                                                SendData("Login", "Succeed", res.obj.Client.ConnId, res.token);
                                                 UpdateMainPageState(
-                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 登录了");
+                                                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 登录了");
                                                 break;
                                             }
                                         case 1:
                                             {
-                                                SendData("Login", "Incorrect", res.Client.ConnId);
+                                                SendData("Login", "Incorrect", res.obj.Client.ConnId, res.token);
                                                 break;
                                             }
                                         case 3:
                                             {
-                                                SendData("Login", "NeedReview", res.Client.ConnId);
+                                                SendData("Login", "NeedReview", res.obj.Client.ConnId, res.token);
                                                 break;
                                             }
                                         default:
                                             {
-                                                SendData("Login", "Unknown", res.Client.ConnId);
+                                                SendData("Login", "Unknown", res.obj.Client.ConnId, res.token);
                                                 break;
                                             }
                                     }
@@ -383,49 +393,49 @@ namespace Server
                                 }
                             case "Logout":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     UpdateMainPageState(
-                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 注销了");
-                                    while (u.Data.TryDequeue(out var temp)) temp.Clear();
-                                    res.Client.UserId = 0;
-                                    SendData("Logout", "Succeed", res.Client.ConnId);
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 注销了");
+                                    while (u.Data.TryDequeue(out var temp)) temp.Content.Clear();
+                                    res.obj.Client.UserId = 0;
+                                    SendData("Logout", "Succeed", res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             case "Register":
                                 {
-                                    if (res.Client.UserId != 0)
+                                    if (res.obj.Client.UserId != 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     Task.Run(() =>
                                     {
-                                        if (RemoteRegister(Encoding.Unicode.GetString(res.Content[0]),
-                                            Encoding.Unicode.GetString(res.Content[1])))
+                                        if (RemoteRegister(Encoding.Unicode.GetString(res.obj.Content[0]),
+                                            Encoding.Unicode.GetString(res.obj.Content[1])))
                                             SendData("Register",
                                                 Configuration.Configurations.RegisterMode == 2
                                                     ? "Succeeded"
-                                                    : "NeedReview", res.Client.ConnId);
+                                                    : "NeedReview", res.obj.Client.ConnId, res.token);
                                         else
                                             SendData("Register",
                                                 Configuration.Configurations.RegisterMode == 0
                                                     ? "Failed"
-                                                    : "Duplicate", res.Client.ConnId);
+                                                    : "Duplicate", res.obj.Client.ConnId, res.token);
                                     });
                                     break;
                                 }
                             case "RequestFileList":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                    var filePath = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     if (filePath.Length > 1)
                                     {
                                         if (filePath.Substring(0, 1) == "\\")
@@ -447,18 +457,18 @@ namespace Server
                                                 y += x[i];
                                         SendData("FileList",
                                             filePath + Divpar + y,
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestFile":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var filePath = Encoding.Unicode.GetString(res.Content[0]);
+                                    var filePath = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     if (filePath.Length > 1)
                                     {
                                         if (filePath.Substring(0, 1) == "\\")
@@ -469,25 +479,25 @@ namespace Server
                                     filePath = AppDomain.CurrentDomain.BaseDirectory + "\\Files\\" + filePath;
                                     if (File.Exists(filePath))
                                         UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 请求文件：{filePath}");
-                                    Task.Run(() => { SendFile(filePath, res.Client.ConnId, "File"); });
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 请求文件：{filePath}");
+                                    Task.Run(() => { SendFile(filePath, res.obj.Client.ConnId, "File", res.token); });
                                     break;
                                 }
                             case "RequestProblemDataSet":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     if (!Configuration.Configurations.AllowRequestDataSet)
                                     {
-                                        SendData("ProblemDataSet", "Denied", res.Client.ConnId);
+                                        SendData("ProblemDataSet", "Denied", res.obj.Client.ConnId, res.token);
                                     }
                                     else
                                     {
                                         UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的数据");
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 请求题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))} 的数据");
 
                                         ActionList.Enqueue(new Task(() =>
                                         {
@@ -495,7 +505,7 @@ namespace Server
                                             {
                                                 var problem =
                                                     GetProblem(Convert.ToInt32(
-                                                        Encoding.Unicode.GetString(res.Content[0])));
+                                                        Encoding.Unicode.GetString(res.obj.Content[0])));
 
                                                 string GetEngName(string origin)
                                                 {
@@ -553,7 +563,7 @@ namespace Server
                                                     problem.ProblemId + Divpar));
                                                 x.AddRange(ms.ToArray());
                                                 SendData("ProblemDataSet", x
-                                                    , res.Client.ConnId);
+                                                    , res.obj.Client.ConnId, res.token);
                                             }
                                             catch
                                             {
@@ -565,51 +575,51 @@ namespace Server
                                 }
                             case "SubmitCode":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[1])))
+                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[1])))
                                     {
                                         UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))} 的代码");
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))} 的代码");
 
                                         var code = string.Empty;
-                                        for (var i = 2; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                        for (var i = 2; i < res.obj.Content.Count; i++)
+                                            if (i != res.obj.Content.Count - 1)
+                                                code += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                             else
-                                                code += Encoding.Unicode.GetString(res.Content[i]);
-                                        var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
-                                        var type = Encoding.Unicode.GetString(res.Content[1]);
-                                        var userId = res.Client.UserId;
+                                                code += Encoding.Unicode.GetString(res.obj.Content[i]);
+                                        var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                        var type = Encoding.Unicode.GetString(res.obj.Content[1]);
+                                        var userId = res.obj.Client.UserId;
                                         ActionList.Enqueue(new Task(() =>
                                             new Thread(() =>
                                             {
                                                 var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0);
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
-                                                SendData("JudgeResult", jr, res.Client.ConnId);
+                                                SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
                                             }).Start()));
                                     }
                                     break;
                                 }
                             case "Messaging":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                         else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
                                     var t = JsonConvert.DeserializeObject<Message>(x);
                                     UpdateMainPageState(
-                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 向 {t.User} 发送了消息");
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 向 {t.User} 发送了消息");
                                     if (t.User == GetUserName(1))
                                     {
                                         lock (DataBaseLock)
@@ -626,7 +636,7 @@ namespace Server
                                                 new SQLiteParameter("@4", DbType.String),
                                                 new SQLiteParameter("@5", DbType.Int32)
                                             };
-                                                parameters[0].Value = res.Client.UserId;
+                                                parameters[0].Value = res.obj.Client.UserId;
                                                 parameters[1].Value = GetUserId(t.User);
                                                 parameters[2].Value = DateTime.Now;
                                                 parameters[3].Value = t.Content;
@@ -641,7 +651,7 @@ namespace Server
                                             y.SetMessage(new Message
                                             {
                                                 Content = t.Content,
-                                                User = res.Client.UserName,
+                                                User = res.obj.Client.UserName,
                                                 State = 1,
                                                 MessageTime = DateTime.Now
                                             });
@@ -650,18 +660,18 @@ namespace Server
                                     }
                                     else
                                     {
-                                        SendMsg(t.Content, res.Client.UserId, GetUserId(t.User));
+                                        SendMsg(t.Content, res.obj.Client.UserId, GetUserId(t.User), res.token);
                                     }
                                     break;
                                 }
                             case "RequestProblemList":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var id = Encoding.Unicode.GetString(res.Content[0]);
+                                    var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -700,78 +710,78 @@ namespace Server
                                         }
                                         foreach (var i in pl)
                                             SendData("ProblemList", id + Divpar + JsonConvert.SerializeObject(i),
-                                                res.Client.ConnId);
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestProfile":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = JsonConvert.SerializeObject(
-                                            GetUser(res.Client.UserName, true));
-                                        SendData("Profile", x, res.Client.ConnId);
+                                            GetUser(res.obj.Client.UserName, true));
+                                        SendData("Profile", x, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestCompiler":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                     var x = JsonConvert.SerializeObject(cmp);
-                                    SendData("Compiler", x, res.Client.ConnId);
+                                    SendData("Compiler", x, res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             case "QueryLanguagesForCompetition":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                     var x = JsonConvert.SerializeObject(cmp);
-                                    SendData("QueryLanguagesForCompetition", x, res.Client.ConnId);
+                                    SendData("QueryLanguagesForCompetition", x, res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             case "ChangePassword":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("ChangePassword",
-                                            RemoteChangePassword(res.Client.UserName,
-                                                Encoding.Unicode.GetString(res.Content[0]),
-                                                Encoding.Unicode.GetString(res.Content[1]))
+                                            RemoteChangePassword(res.obj.Client.UserName,
+                                                Encoding.Unicode.GetString(res.obj.Content[0]),
+                                                Encoding.Unicode.GetString(res.obj.Content[1]))
                                                 ? "Succeed"
-                                                : "Failed", res.Client.ConnId);
+                                                : "Failed", res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateProfile":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
@@ -779,19 +789,19 @@ namespace Server
                                     {
                                         SendData("UpdateProfile",
                                             RemoteUpdateProfile(
-                                                res.Client.UserId,
-                                                Encoding.Unicode.GetString(res.Content[0]),
-                                                Encoding.Unicode.GetString(res.Content[1]))
+                                                res.obj.Client.UserId,
+                                                Encoding.Unicode.GetString(res.obj.Content[0]),
+                                                Encoding.Unicode.GetString(res.obj.Content[1]))
                                                 ? "Succeed"
-                                                : "Failed", res.Client.ConnId);
+                                                : "Failed", res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateCoins":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
@@ -799,55 +809,55 @@ namespace Server
                                     {
                                         SendData("UpdateCoins",
                                             UpdateCoins(
-                                                res.Client.UserId,
-                                                Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
+                                                res.obj.Client.UserId,
+                                                Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))
                                                 ? "Succeed"
-                                                : "Failed", res.Client.ConnId);
+                                                : "Failed", res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateExperience":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     SendData("UpdateExperience",
                                         UpdateExperience(
-                                            res.Client.UserId,
-                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])))
+                                            res.obj.Client.UserId,
+                                            Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))
                                             ? "Succeed"
-                                            : "Failed", res.Client.ConnId);
+                                            : "Failed", res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             case "RequestJudgeRecord":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var x = GetJudgeRecord(res.Client.UserId,
-                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])),
-                                            Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1])));
+                                        var x = GetJudgeRecord(res.obj.Client.UserId,
+                                            Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])),
+                                            Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1])));
                                         SendData("JudgeRecord",
-                                            Encoding.Unicode.GetString(res.Content[0]) + Divpar +
+                                            Encoding.Unicode.GetString(res.obj.Content[0]) + Divpar +
                                             x.Length + Divpar +
                                             JsonConvert.SerializeObject(x),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestJudgeCode":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
 
@@ -855,89 +865,89 @@ namespace Server
                                     {
                                         SendData("JudgeCode",
                                             JsonConvert.SerializeObject(GetJudgeInfo(Convert.ToInt32(
-                                                Encoding.Unicode.GetString(res.Content[0])))),
-                                            res.Client.ConnId);
+                                                Encoding.Unicode.GetString(res.obj.Content[0])))),
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "AddProblem":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("AddProblem", JsonConvert.SerializeObject(GetProblem(NewProblem())),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "DeleteProblem":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
-                                        SendData("DeleteProblem", string.Empty, res.Client.ConnId);
+                                        DeleteProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])));
+                                        SendData("DeleteProblem", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateProblem":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                         else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
                                     var p = JsonConvert.DeserializeObject<Problem>(x);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         UpdateProblem(p);
-                                        SendData("UpdateProblem", string.Empty, res.Client.ConnId);
+                                        SendData("UpdateProblem", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "QueryProblems":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
@@ -945,81 +955,81 @@ namespace Server
                                         var x = QueryProblems(true);
                                         foreach (var i in x)
                                             i.Description = string.Empty;
-                                        SendData("QueryProblems", JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        SendData("QueryProblems", JsonConvert.SerializeObject(x), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "GetProblemDescription":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var x = GetProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                        var x = GetProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])));
                                         SendData("GetProblemDescription",
                                             JsonConvert.SerializeObject(new Problem
                                             {
                                                 Description = x?.Description ?? string.Empty
-                                            }), res.Client.ConnId);
+                                            }), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "QueryJudgeLogs":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("QueryJudgeLogs", JsonConvert.SerializeObject(QueryJudgeLog(false)),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestCode":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var x = GetJudgeInfo(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])));
+                                        var x = GetJudgeInfo(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])));
                                         SendData("RequestCode",
                                             JsonConvert.SerializeObject(new JudgeInfo { Code = x?.Code ?? string.Empty }),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "ClearJudgingLogs":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(ClearJudgeLog));
@@ -1027,33 +1037,33 @@ namespace Server
                                 }
                             case "DataFile":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                    var fileId = Encoding.Unicode.GetString(res.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                    var fileName = Encoding.Unicode.GetString(res.obj.Content[0]);
+                                    var fileId = Encoding.Unicode.GetString(res.obj.Content[1]);
+                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.obj.Content[2]));
                                     if (FrInfo.Any(i => i.FileId == fileId))
                                     {
                                         var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
                                         var x = new List<byte>();
-                                        for (var i = 3; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
+                                        for (var i = 3; i < res.obj.Content.Count; i++)
+                                            if (i != res.obj.Content.Count - 1)
                                             {
-                                                x.AddRange(res.Content[i]);
+                                                x.AddRange(res.obj.Content[i]);
                                                 x.AddRange(Encoding.Unicode.GetBytes(Divpar));
                                             }
                                             else
                                             {
-                                                x.AddRange(res.Content[i]);
+                                                x.AddRange(res.obj.Content[i]);
                                             }
                                         fs.Fs.Position = length;
                                         fs.Fs.Write(x.ToArray(), 0, x.Count);
@@ -1074,7 +1084,7 @@ namespace Server
                                                 }
                                                 catch
                                                 {
-                                                    SendData("DataFile", "Failed", res.Client.ConnId);
+                                                    SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
                                                     return;
                                                 }
                                                 finally
@@ -1088,7 +1098,7 @@ namespace Server
                                                         //ignored
                                                     }
                                                 }
-                                                SendData("DataFile", "Succeeded", res.Client.ConnId);
+                                                SendData("DataFile", "Succeeded", res.obj.Client.ConnId, res.token);
                                             }));
                                         }
                                     }
@@ -1113,40 +1123,40 @@ namespace Server
                                         }
                                         catch
                                         {
-                                            SendData("DataFile", "Failed", res.Client.ConnId);
+                                            SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
                                         }
                                     }
                                     break;
                                 }
                             case "PublicFile":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var fileName = Encoding.Unicode.GetString(res.Content[0]);
-                                    var fileId = Encoding.Unicode.GetString(res.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.Content[2]));
+                                    var fileName = Encoding.Unicode.GetString(res.obj.Content[0]);
+                                    var fileId = Encoding.Unicode.GetString(res.obj.Content[1]);
+                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.obj.Content[2]));
                                     if (FrInfo.Any(i => i.FileId == fileId))
                                     {
                                         var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
                                         var x = new List<byte>();
-                                        for (var i = 3; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
+                                        for (var i = 3; i < res.obj.Content.Count; i++)
+                                            if (i != res.obj.Content.Count - 1)
                                             {
-                                                x.AddRange(res.Content[i]);
+                                                x.AddRange(res.obj.Content[i]);
                                                 x.AddRange(Encoding.Unicode.GetBytes(Divpar));
                                             }
                                             else
                                             {
-                                                x.AddRange(res.Content[i]);
+                                                x.AddRange(res.obj.Content[i]);
                                             }
                                         fs.Fs.Position = length;
                                         fs.Fs.Write(x.ToArray(), 0, x.Count);
@@ -1167,7 +1177,7 @@ namespace Server
                                                 }
                                                 catch
                                                 {
-                                                    SendData("PublicFile", "Failed", res.Client.ConnId);
+                                                    SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
                                                     return;
                                                 }
                                                 finally
@@ -1181,7 +1191,7 @@ namespace Server
                                                         //ignored
                                                     }
                                                 }
-                                                SendData("PublicFile", "Succeeded", res.Client.ConnId);
+                                                SendData("PublicFile", "Succeeded", res.obj.Client.ConnId, res.token);
                                             }));
                                         }
                                     }
@@ -1206,25 +1216,25 @@ namespace Server
                                         }
                                         catch
                                         {
-                                            SendData("PublicFile", "Failed", res.Client.ConnId);
+                                            SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
                                         }
                                     }
                                     break;
                                 }
                             case "ClearData":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -1274,18 +1284,18 @@ namespace Server
                                 }
                             case "DeleteExtra":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -1323,18 +1333,18 @@ namespace Server
                                 }
                             case "DeleteJudge":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var tid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -1369,45 +1379,45 @@ namespace Server
                                 }
                             case "RequestMsgList":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var id = Encoding.Unicode.GetString(res.Content[0]);
+                                    var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryMsg(res.Client.UserId, false);
+                                        var t = QueryMsg(res.obj.Client.UserId, false);
                                         t.Reverse();
                                         foreach (var i in t)
                                             SendData("RequestMsgList", id + Divpar + JsonConvert.SerializeObject(i),
-                                                res.Client.ConnId);
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestMsg":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0])), res.Client.UserId);
+                                    var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])), res.obj.Client.UserId);
                                     ActionList.Enqueue(new Task(() =>
-                                        SendData("RequestMsg", JsonConvert.SerializeObject(t), res.Client.ConnId)));
+                                        SendData("RequestMsg", JsonConvert.SerializeObject(t), res.obj.Client.ConnId, res.token)));
                                     break;
                                 }
                             case "RequestMsgTargetUser":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var id = Encoding.Unicode.GetString(res.Content[0]);
+                                    var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var x = GetUser(res.Client.UserId);
+                                        var x = GetUser(res.obj.Client.UserId);
                                         var t = GetSpecialTypeUser(1);
                                         if (x.Type >= 4)
                                         {
@@ -1421,33 +1431,33 @@ namespace Server
                                             t.AddRange(GetUsersBelongs(1));
                                         }
                                         var p = new List<string>();
-                                        p.AddRange(t.Where(i => i.UserId != res.Client.UserId).Select(i => i.UserName));
+                                        p.AddRange(t.Where(i => i.UserId != res.obj.Client.UserId).Select(i => i.UserName));
                                         foreach (var i in p)
                                             SendData("RequestMsgTargetUser", id + Divpar + JsonConvert.SerializeObject(i),
-                                                res.Client.ConnId);
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "SetMsgState":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
-                                    var state = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
+                                    var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var state = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
                                     break;
                                 }
                             case "RequestCompetitionList":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var id = Encoding.Unicode.GetString(res.Content[0]);
+                                    var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var t = QueryCompetition()?.Reverse();
@@ -1455,71 +1465,71 @@ namespace Server
                                         foreach (var i in t)
                                             SendData("RequestCompetitionList",
                                                 id + Divpar + JsonConvert.SerializeObject(i),
-                                                res.Client.ConnId);
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "QueryJudgeLogBelongsToCompetition":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var t = GetCompetition(cid);
                                         var withRank = (t?.Option ?? 0) & 16;
                                         var x = QueryJudgeLogBelongsToCompetition(cid,
-                                            withRank == 0 ? res.Client.UserId : 0);
+                                            withRank == 0 ? res.obj.Client.UserId : 0);
                                         foreach (var i in x)
-                                            if (i.UserId != res.Client.UserId) i.Code = string.Empty;
+                                            if (i.UserId != res.obj.Client.UserId) i.Code = string.Empty;
                                         SendData("QueryJudgeLogBelongsToCompetition", JsonConvert.SerializeObject(x),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "QueryProblemsForCompetition":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var competition = GetCompetition(cid);
                                         var pList = competition.ProblemSet.Select(GetProblem).ToList();
                                         SendData("QueryProblemsForCompetition", JsonConvert.SerializeObject(pList),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "SubmitCodeForCompetition":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
-                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[1]));
-                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.Content[2])))
+                                    var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
+                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[2])))
                                     {
                                         var t = GetCompetition(cid);
                                         if (DateTime.Now > t.EndTime || DateTime.Now < t.StartTime) continue;
                                         var code = string.Empty;
-                                        for (var i = 3; i < res.Content.Count; i++)
-                                            if (i != res.Content.Count - 1)
-                                                code += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                        for (var i = 3; i < res.obj.Content.Count; i++)
+                                            if (i != res.obj.Content.Count - 1)
+                                                code += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                             else
-                                                code += Encoding.Unicode.GetString(res.Content[i]);
-                                        var type = Encoding.Unicode.GetString(res.Content[2]);
-                                        var userId = res.Client.UserId;
+                                                code += Encoding.Unicode.GetString(res.obj.Content[i]);
+                                        var type = Encoding.Unicode.GetString(res.obj.Content[2]);
+                                        var userId = res.obj.Client.UserId;
                                         UpdateMainPageState(
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.Client.UserName} 提交了题目 {GetProblemName(pid)} 的代码");
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 提交了题目 {GetProblemName(pid)} 的代码");
                                         ActionList.Enqueue(new Task(() =>
                                         {
                                             new Thread(() =>
@@ -1528,7 +1538,7 @@ namespace Server
                                                     DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid);
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 if ((t.Option & 8) != 0)
-                                                    SendData("JudgeResultForCompetition", jr, res.Client.ConnId);
+                                                    SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
                                             }).Start();
                                         }));
                                     }
@@ -1536,135 +1546,135 @@ namespace Server
                                 }
                             case "GetCurrentDateTime":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     SendData("GetCurrentDateTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
-                                        res.Client.ConnId);
+                                        res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             case "QueryCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("QueryCompetitionClient",
-                                            JsonConvert.SerializeObject(QueryCompetition()), res.Client.ConnId);
+                                            JsonConvert.SerializeObject(QueryCompetition()), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "NewCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("NewCompetitionClient",
                                             JsonConvert.SerializeObject(GetCompetition(NewCompetition())),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "DeleteCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         DeleteCompetition(cid);
-                                        SendData("DeleteCompetitionClient", string.Empty, res.Client.ConnId);
+                                        SendData("DeleteCompetitionClient", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateCompetitionClient":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                         else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         UpdateCompetition(JsonConvert.DeserializeObject<Competition>(x));
-                                        SendData("UpdateCompetitionClient", string.Empty, res.Client.ConnId);
+                                        SendData("UpdateCompetitionClient", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "GetProblem":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.Content[0]));
+                                    var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         SendData("GetProblem", JsonConvert.SerializeObject(GetProblem(pid)),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "GetServerConfig":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 3)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
@@ -1677,29 +1687,29 @@ namespace Server
                                             MutiThreading = Configuration.Configurations.MutiThreading,
                                             RegisterMode = Configuration.Configurations.RegisterMode
                                         };
-                                        SendData("GetServerConfig", JsonConvert.SerializeObject(x), res.Client.ConnId);
+                                        SendData("GetServerConfig", JsonConvert.SerializeObject(x), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateServerConfig":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 3)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                         else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var config = JsonConvert.DeserializeObject<ServerConfig>(x);
@@ -1709,21 +1719,21 @@ namespace Server
                                         Configuration.Configurations.MutiThreading = config.MutiThreading;
                                         Configuration.Configurations.RegisterMode = config.RegisterMode;
                                         Configuration.Save();
-                                        SendData("UpdateServerConfig", string.Empty, res.Client.ConnId);
+                                        SendData("UpdateServerConfig", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "GetUserBelongings":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     ActionList.Enqueue(new Task(() =>
@@ -1736,48 +1746,48 @@ namespace Server
                                             i.RegisterDate = string.Empty;
                                         }
                                         SendData("GetUserBelongings", t.Type + Divpar + JsonConvert.SerializeObject(x),
-                                            res.Client.ConnId);
+                                            res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "UpdateUserBelongings":
                                 {
-                                    if (res.Client.UserId == 0)
+                                    if (res.obj.Client.UserId == 0)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    var t = GetUser(res.Client.UserId);
+                                    var t = GetUser(res.obj.Client.UserId);
                                     if (t.Type <= 0 || t.Type >= 4)
                                     {
-                                        SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
                                     var x = string.Empty;
-                                    for (var i = 0; i < res.Content.Count; i++)
-                                        if (i != res.Content.Count - 1)
-                                            x += Encoding.Unicode.GetString(res.Content[i]) + Divpar;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
                                         else
-                                            x += Encoding.Unicode.GetString(res.Content[i]);
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var users = JsonConvert.DeserializeObject<List<List<UserInfo>>>(x);
                                         if (users.Count != 2) return;
                                         DeleteUser(users[0]?.Select(i => i.UserId));
                                         UpdateUser(users[1]);
-                                        SendData("UpdateUserBelongings", string.Empty, res.Client.ConnId);
+                                        SendData("UpdateUserBelongings", string.Empty, res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
                             case "RequestClient":
                                 {
-                                    SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.Client.ConnId,
+                                    SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.obj.Client.ConnId, res.token,
                                         "RequestClient");
                                     break;
                                 }
                             default:
                                 {
-                                    SendData(res.Operation, "OperationDenied", res.Client.ConnId);
+                                    SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                         }
@@ -1785,8 +1795,8 @@ namespace Server
                     catch (Exception ex)
                     {
                         new Thread(() => MessageBox.Show($"{ex.Message}\n{ex.StackTrace}")).Start();
-                        SendData(res.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace,
-                            res.Client.ConnId);
+                        SendData(res.obj.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace,
+                            res.obj.Client.ConnId, res.token);
                     }
                 }
                 Thread.Sleep(1);

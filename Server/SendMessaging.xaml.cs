@@ -34,7 +34,7 @@ namespace Server
             var x = from c in _myClientInfo where c.IsChecked select c;
             foreach (var i in x)
                 Connection.SendMsg($"{Msg.Text}",
-                    UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, i.UserId);
+                    UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, i.UserId, null);
             Msg.Clear();
         }
 

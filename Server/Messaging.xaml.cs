@@ -45,7 +45,7 @@ namespace Server
                 return;
             }
             Connection.SendMsg($"回复消息：\n{ClientMsg.Text}\n消息内容：\n{MyMsg.Text}",
-                UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, _userId);
+                UserHelper.CurrentUser.UserId == 0 ? 1 : UserHelper.CurrentUser.UserId, _userId, null);
             Close();
         }
     }

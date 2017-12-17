@@ -106,6 +106,14 @@ namespace Client
                 Id = ++_id,
                 BodySize = bodyBytes.Length
             };
+            var p = Guid.NewGuid().ToString().ToCharArray();
+            header.Token = new char[32];
+            var j = 0;
+            for (var i = 0; i < p.Length; i++)
+            {
+                if (p[i] != '-')
+                    header.Token[j++] = p[i];
+            }
             var headerBytes = HClient.StructureToByte(header);
             var ptr = IntPtr.Zero;
             try

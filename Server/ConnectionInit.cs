@@ -387,7 +387,7 @@ namespace Server
                 };
                 HServer.SetExtra(id, clientInfo);
                 Recv.Add(new ClientData { Info = clientInfo });
-                SendData("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), id);
+                SendData("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), id, null);
                 return HandleResult.Ok;
             };
             HServer.OnClose += (id, operation, code) =>
