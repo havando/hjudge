@@ -679,11 +679,6 @@ namespace Server
                                 }
                             case "RequestProblemListGrouped":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -727,11 +722,6 @@ namespace Server
                                 }
                             case "RequestProblemList":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -793,12 +783,6 @@ namespace Server
                                 }
                             case "RequestCompiler":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
-
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                     var x = JsonConvert.SerializeObject(cmp);
@@ -807,12 +791,6 @@ namespace Server
                                 }
                             case "QueryLanguagesForCompetition":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
-
                                     var cmp = Configuration.Configurations.Compiler
                                         .Select(t => new Compiler { DisplayName = t.DisplayName }).ToList();
                                     var x = JsonConvert.SerializeObject(cmp);
@@ -1022,11 +1000,6 @@ namespace Server
                                 }
                             case "GetProblemDescription":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = GetProblem(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])));
@@ -1559,11 +1532,6 @@ namespace Server
                                 }
                             case "RequestCompetitionListGrouped":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var t = QueryCompetition()?.Reverse();
@@ -1576,11 +1544,6 @@ namespace Server
                                 }
                             case "RequestCompetitionList":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1595,11 +1558,6 @@ namespace Server
                                 }
                             case "QueryJudgeLogBelongsToCompetition":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1616,11 +1574,6 @@ namespace Server
                                 }
                             case "QueryProblemsForCompetition":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
@@ -1670,11 +1623,6 @@ namespace Server
                                 }
                             case "GetCurrentDateTime":
                                 {
-                                    if (res.obj.Client.UserId == 0)
-                                    {
-                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
-                                        break;
-                                    }
                                     SendData("GetCurrentDateTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                                         res.obj.Client.ConnId, res.token);
                                     break;
