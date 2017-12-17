@@ -1204,7 +1204,7 @@ namespace Server
             return userId;
         }
 
-        public static UserInfo GetUser(int userId)
+        public static UserInfo GetUser(int userId, bool withoutPassword = false)
         {
             lock (DataBaseLock)
             {
@@ -1225,7 +1225,7 @@ namespace Server
                                 UserId = reader.GetInt32(0),
                                 UserName = reader.GetString(1),
                                 RegisterDate = reader.GetString(2),
-                                Password = reader.GetString(3),
+                                Password = withoutPassword ? string.Empty : reader.GetString(3),
                                 Type = reader.GetInt32(4),
                                 Icon = reader.GetString(5),
                                 Achievement = reader.GetString(6),
@@ -1237,7 +1237,7 @@ namespace Server
             }
         }
 
-        private static UserInfo GetUser(string userName)
+        private static UserInfo GetUser(string userName, bool withoutPassword = false)
         {
             lock (DataBaseLock)
             {
@@ -1258,7 +1258,7 @@ namespace Server
                                 UserId = reader.GetInt32(0),
                                 UserName = reader.GetString(1),
                                 RegisterDate = reader.GetString(2),
-                                Password = reader.GetString(3),
+                                Password = withoutPassword ? string.Empty : reader.GetString(3),
                                 Type = reader.GetInt32(4),
                                 Icon = reader.GetString(5),
                                 Achievement = reader.GetString(6),

@@ -31,7 +31,7 @@ namespace Server
                 if (Result == null)
                     return "Unknown Error";
                 if (Result.Length == 0 || (Result.Length == 1 && string.IsNullOrEmpty(Result[0])))
-                    return "Accepted";
+                    return "Problem Configuration Error";
                 var error = new int[11];
                 var tot = 0;
                 foreach (var t in Result)

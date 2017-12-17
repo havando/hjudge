@@ -190,7 +190,7 @@ namespace Client
                                             GetFiles.Visibility = ContentGrid.Visibility = Visibility.Visible;
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     Loading1.Visibility = Visibility.Visible;
-                                    Connection.SendData("RequestProfile", UserName.Text);
+                                    Connection.SendData("RequestProfile", string.Empty);
                                 });
                                 _currentGetJudgeRecordIndex = 20;
                                 _coins = _experience = _currentGetJudgeRecordIndex = 0;

@@ -715,7 +715,7 @@ namespace Server
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         var x = JsonConvert.SerializeObject(
-                                            GetUser(Encoding.Unicode.GetString(res.Content[0])));
+                                            GetUser(res.Client.UserName, true));
                                         SendData("Profile", x, res.Client.ConnId);
                                     }));
                                     break;
