@@ -677,6 +677,54 @@ namespace Server
                                     }
                                     break;
                                 }
+                            case "RequestProblemListGrouped":
+                                {
+                                    if (res.obj.Client.UserId == 0)
+                                    {
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
+                                        break;
+                                    }
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        string GetEngName(string origin)
+                                        {
+                                            var re = new Regex("[A-Z]|[a-z]|[0-9]");
+                                            return re.Matches(origin).Cast<object>().Aggregate(string.Empty,
+                                                (current, t) => current + t);
+                                        }
+
+                                        string GetRealString(string origin, string problemName, int cur)
+                                        {
+                                            return origin
+                                                .Replace("${datadir}",
+                                                    AppDomain.CurrentDomain.BaseDirectory + "\\Data")
+                                                .Replace("${name}", GetEngName(problemName))
+                                                .Replace("${index0}", cur.ToString())
+                                                .Replace("${index}", (cur + 1).ToString());
+                                        }
+
+                                        var pl = QueryProblems(false);
+                                        foreach (var problem in pl)
+                                        {
+                                            problem.InputFileName = GetRealString(problem.InputFileName,
+                                                problem.ProblemName, 0);
+                                            problem.OutputFileName = GetRealString(problem.OutputFileName,
+                                                problem.ProblemName, 0);
+                                            problem.ExtraFiles = new[] { string.Empty };
+                                            problem.AddDate = string.Empty;
+                                            problem.CompileCommand = string.Empty;
+                                            foreach (var problemDataSet in problem.DataSets)
+                                                problemDataSet.InputFile =
+                                                    problemDataSet.OutputFile = string.Empty;
+                                            problem.SpecialJudge = string.Empty;
+                                            problem.Description = string.Empty;
+                                            problem.Option = 0;
+                                        }
+                                        SendData("ProblemListGrouped", JsonConvert.SerializeObject(pl),
+                                            res.obj.Client.ConnId, res.token);
+                                    }));
+                                    break;
+                                }
                             case "RequestProblemList":
                                 {
                                     if (res.obj.Client.UserId == 0)
@@ -1390,6 +1438,22 @@ namespace Server
                                     }));
                                     break;
                                 }
+                            case "RequestMsgListGrouped":
+                                {
+                                    if (res.obj.Client.UserId == 0)
+                                    {
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
+                                        break;
+                                    }
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var t = QueryMsg(res.obj.Client.UserId, false);
+                                        t.Reverse();
+                                        SendData("RequestMsgListGrouped", JsonConvert.SerializeObject(t),
+                                            res.obj.Client.ConnId, res.token);
+                                    }));
+                                    break;
+                                }
                             case "RequestMsgList":
                                 {
                                     if (res.obj.Client.UserId == 0)
@@ -1418,6 +1482,36 @@ namespace Server
                                     var t = GetMsg(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])), res.obj.Client.UserId);
                                     ActionList.Enqueue(new Task(() =>
                                         SendData("RequestMsg", JsonConvert.SerializeObject(t), res.obj.Client.ConnId, res.token)));
+                                    break;
+                                }
+                            case "RequestMsgTargetUserGrouped":
+                                {
+                                    if (res.obj.Client.UserId == 0)
+                                    {
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
+                                        break;
+                                    }
+                                    var id = Encoding.Unicode.GetString(res.obj.Content[0]);
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var x = GetUser(res.obj.Client.UserId);
+                                        var t = GetSpecialTypeUser(1);
+                                        if (x.Type >= 4)
+                                        {
+                                            t.AddRange(GetSpecialTypeUser(2));
+                                            t.AddRange(GetSpecialTypeUser(3));
+                                            if (Configuration.Configurations.AllowCompetitorMessaging)
+                                                t.AddRange(GetSpecialTypeUser(4));
+                                        }
+                                        else
+                                        {
+                                            t.AddRange(GetUsersBelongs(1));
+                                        }
+                                        var p = new List<string>();
+                                        p.AddRange(t.Where(i => i.UserId != res.obj.Client.UserId).Select(i => i.UserName));
+                                        SendData("RequestMsgTargetUserGrouped", id + Divpar + JsonConvert.SerializeObject(p),
+                                            res.obj.Client.ConnId, res.token);
+                                    }));
                                     break;
                                 }
                             case "RequestMsgTargetUser":
@@ -1461,6 +1555,23 @@ namespace Server
                                     var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     var state = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
+                                    break;
+                                }
+                            case "RequestCompetitionListGrouped":
+                                {
+                                    if (res.obj.Client.UserId == 0)
+                                    {
+                                        SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
+                                        break;
+                                    }
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var t = QueryCompetition()?.Reverse();
+                                        if (t == null) t = new List<Competition>();
+                                        SendData("RequestCompetitionListGrouped",
+                                            JsonConvert.SerializeObject(t),
+                                            res.obj.Client.ConnId, res.token);
+                                    }));
                                     break;
                                 }
                             case "RequestCompetitionList":
