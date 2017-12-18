@@ -1866,7 +1866,7 @@ namespace Server
                     }
                     catch (Exception ex)
                     {
-                        new Thread(() => MessageBox.Show($"{ex.Message}\n{ex.StackTrace}\n------\nOperation: {res.obj.Operation}\nContent: {res.obj.Content.ConvertAll(Encoding.Unicode.GetString).Aggregate((last, next) => last + "\n" + next)}")).Start();
+                        new Thread(() => MessageBox.Show($"错误摘要：\n{ex.Message}\n堆栈跟踪：{ex.StackTrace}\n------\n操作：{res.obj.Operation}\n内容：{res.obj.Content.ConvertAll(Encoding.Unicode.GetString).Aggregate((last, next) => last + "\n" + next)}\n来源：{res.obj.Client.Address}:{res.obj.Client.Port}\n用户：({res.obj.Client.UserId}) {res.obj.Client.UserName}", "错误报告", MessageBoxButton.OK, MessageBoxImage.Error)).Start();
                         SendData(res.obj.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace,
                             res.obj.Client.ConnId, res.token);
                     }
