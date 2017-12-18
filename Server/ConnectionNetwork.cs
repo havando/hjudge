@@ -593,7 +593,7 @@ namespace Server
                                         SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
-                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[1])))
+                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[2])))
                                     {
                                         UpdateMainPageState(
                                             $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 提交了题目 {GetProblemName(Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))} 的代码");
