@@ -1866,7 +1866,7 @@ namespace Server
                     }
                     catch (Exception ex)
                     {
-                        new Thread(() => MessageBox.Show($"{ex.Message}\n{ex.StackTrace}")).Start();
+                        new Thread(() => MessageBox.Show($"{ex.Message}\n{ex.StackTrace}\n------\nOperation: {res.obj.Operation}\nContent: {res.obj.Content.ConvertAll(Encoding.Unicode.GetString).Aggregate((last, next) => last + "\n" + next)}")).Start();
                         SendData(res.obj.Operation, "ActionFailed" + Divpar + ex.Message + Divpar + ex.StackTrace,
                             res.obj.Client.ConnId, res.token);
                     }
