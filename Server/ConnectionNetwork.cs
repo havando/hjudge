@@ -677,6 +677,26 @@ namespace Server
                                     }
                                     break;
                                 }
+                            case "RequestProblem":
+                                {
+                                    var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var p = GetProblem(pid);
+                                        p.CompileCommand = string.Empty;
+                                        foreach(var i in p.DataSets)
+                                        {
+                                            i.InputFile = i.OutputFile = string.Empty;
+                                        }
+                                        for(var i = 0; i < p.ExtraFiles.Length; i++)
+                                        {
+                                            p.ExtraFiles[i] = string.Empty;
+                                        }
+                                        p.SpecialJudge = string.Empty;
+                                        SendData("RequestProblem", JsonConvert.SerializeObject(p), res.obj.Client.ConnId, res.token);
+                                    }));
+                                    break;
+                                }
                             case "RequestProblemListGrouped":
                                 {
                                     ActionList.Enqueue(new Task(() =>
@@ -1528,6 +1548,17 @@ namespace Server
                                     var msgId = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     var state = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() => SetMsgState(msgId, state)));
+                                    break;
+                                }
+                            case "RequestCompetition":
+                                {
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        SendData("RequestCompetition",
+                                            JsonConvert.SerializeObject(GetCompetition(
+                                                Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])))),
+                                            res.obj.Client.ConnId, res.token);
+                                    }));
                                     break;
                                 }
                             case "RequestCompetitionListGrouped":
