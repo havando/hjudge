@@ -120,6 +120,9 @@ namespace Server
                         var reader = cmd.ExecuteReader();
                         if (reader.HasRows)
                             while (reader.Read())
+                            {
+                                if (start-- > 0) continue;
+                                if (count-- == 0) break;
                                 try
                                 {
                                     var t = new JudgeInfo
@@ -135,8 +138,6 @@ namespace Server
                                         CompetitionId = reader.GetInt32(12)
                                     };
                                     //if (t.ResultSummary == "Judging...") continue;
-                                    if (start-- > 0) continue;
-                                    if (count-- == 0) break;
                                     ji.Add(t);
                                 }
                                 catch
@@ -148,6 +149,7 @@ namespace Server
                                         Description = reader.GetString(11)
                                     });
                                 }
+                            }
                     }
                     catch
                     {
@@ -175,6 +177,9 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (reader.HasRows)
                         while (reader.Read())
+                        {
+                            if (start-- > 0) continue;
+                            if (count-- == 0) break;
                             try
                             {
                                 var t = new JudgeInfo
@@ -195,8 +200,6 @@ namespace Server
                                     AdditionInfo = reader.GetString(13)
                                 };
                                 if (t.ResultSummary == "Judging...") continue;
-                                if (start-- > 0) continue;
-                                if (count-- == 0) break;
                                 ji.Add(t);
                             }
                             catch
@@ -208,6 +211,7 @@ namespace Server
                                     Description = reader.GetString(11)
                                 });
                             }
+                        }
                 }
             }
             return ji.ToArray();
