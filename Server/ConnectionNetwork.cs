@@ -610,7 +610,7 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                             new Thread(() =>
                                             {
-                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, (jid) => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId }), res.obj.Client.ConnId, res.token); });
+                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, (jid) => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code }), res.obj.Client.ConnId, res.token); });
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
                                             }).Start()));
@@ -1644,7 +1644,7 @@ namespace Server
                                             new Thread(() =>
                                             {
                                                 var j = new Judge(pid, userId, code, type, true, "在线评测",
-                                                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, (jid) => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId }), res.obj.Client.ConnId, res.token); });
+                                                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, (jid) => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code }), res.obj.Client.ConnId, res.token); });
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 if ((t.Option & 8) != 0)
                                                     SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
