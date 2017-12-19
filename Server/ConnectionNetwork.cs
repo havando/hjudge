@@ -684,11 +684,11 @@ namespace Server
                                     {
                                         var p = GetProblem(pid);
                                         p.CompileCommand = string.Empty;
-                                        foreach(var i in p.DataSets)
+                                        foreach (var i in p.DataSets)
                                         {
                                             i.InputFile = i.OutputFile = string.Empty;
                                         }
-                                        for(var i = 0; i < p.ExtraFiles.Length; i++)
+                                        for (var i = 0; i < p.ExtraFiles.Length; i++)
                                         {
                                             p.ExtraFiles[i] = string.Empty;
                                         }
@@ -1026,7 +1026,8 @@ namespace Server
                                         SendData("GetProblemDescription",
                                             JsonConvert.SerializeObject(new Problem
                                             {
-                                                Description = x?.Description ?? string.Empty
+                                                Description = x?.Description ?? string.Empty,
+                                                Option = x?.Option ?? 0
                                             }), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
