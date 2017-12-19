@@ -1625,7 +1625,7 @@ namespace Server
                                     }
                                     var pid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                     var cid = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
-                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[2])))
+                                    if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[3])))
                                     {
                                         var t = GetCompetition(cid);
                                         if (DateTime.Now > t.EndTime || DateTime.Now < t.StartTime) continue;
