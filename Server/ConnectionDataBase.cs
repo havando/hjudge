@@ -107,6 +107,57 @@ namespace Server
             }
         }
 
+        private static JudgeInfo[] QueryCustomJudgeInfo(int start, int count, string command)
+        {
+            var ji = new List<JudgeInfo>();
+            lock (DataBaseLock)
+            {
+                using (var cmd = new SQLiteCommand(_sqLite))
+                {
+                    try
+                    {
+                        cmd.CommandText = "SELECT * From Judge " + command + " order by JudgeId desc";
+                        var reader = cmd.ExecuteReader();
+                        if (reader.HasRows)
+                            while (reader.Read())
+                                try
+                                {
+                                    var t = new JudgeInfo
+                                    {
+                                        JudgeId = reader.GetInt32(0),
+                                        UserId = reader.GetInt32(1),
+                                        JudgeDate = reader.GetString(2),
+                                        ProblemId = reader.GetInt32(3),
+                                        Timeused = CastStringArrToLongArr(reader.GetString(5)?.Split(',')),
+                                        Memoryused = CastStringArrToLongArr(reader.GetString(6)?.Split(',')),
+                                        Result = reader.GetString(8)?.Split(','),
+                                        Score = CastStringArrToFloatArr(reader.GetString(9)?.Split(',')),
+                                        CompetitionId = reader.GetInt32(12)
+                                    };
+                                    //if (t.ResultSummary == "Judging...") continue;
+                                    if (start-- > 0) continue;
+                                    if (count-- == 0) break;
+                                    ji.Add(t);
+                                }
+                                catch
+                                {
+                                    ji.Add(new JudgeInfo
+                                    {
+                                        JudgeId = reader.GetInt32(0),
+                                        JudgeDate = reader.GetString(2),
+                                        Description = reader.GetString(11)
+                                    });
+                                }
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
+                }
+            }
+            return ji.ToArray();
+        }
+
         private static JudgeInfo[] GetJudgeRecord(int userId, int start, int count)
         {
             var ji = new List<JudgeInfo>();

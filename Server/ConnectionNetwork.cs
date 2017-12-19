@@ -1883,6 +1883,30 @@ namespace Server
                                     }));
                                     break;
                                 }
+                            case "QuerySpecialJudgeLogs":
+                                {
+                                    var start = Convert.ToInt32(res.obj.Content[0]);
+                                    var count = Convert.ToInt32(res.obj.Content[1]);
+                                    var x = string.Empty;
+                                    for (var i = 2; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
+                                        else
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var commandSet = JsonConvert.DeserializeObject<List<QueryCommand>>(x);
+                                        var command = string.Empty;
+                                        foreach (var c in commandSet)
+                                        {
+                                            command += c.Command;
+                                        }
+                                        if (commandSet.Count == 0) command = string.Empty;
+                                        else command = "where " + command;
+                                        SendData("QuerySpecialJudgeLogs", JsonConvert.SerializeObject(QueryCustomJudgeInfo(start, count, command)), res.obj.Client.ConnId, res.token);
+                                    }));
+                                    break;
+                                }
                             case "RequestClient":
                                 {
                                     SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.obj.Client.ConnId,

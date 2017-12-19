@@ -162,6 +162,7 @@
       <DependentUpon>ProfileManagement.xaml</DependentUpon>
     </Compile>
     <Compile Include="JudgeInfo.cs" />
+    <Compile Include="QueryCommand.cs" />
     <Compile Include="ResultTree.cs" />
     <Compile Include="SendMessaging.xaml.cs">
       <DependentUpon>SendMessaging.xaml</DependentUpon>
