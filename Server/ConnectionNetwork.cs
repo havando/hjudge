@@ -1885,8 +1885,8 @@ namespace Server
                                 }
                             case "QuerySpecialJudgeLogs":
                                 {
-                                    var start = Convert.ToInt32(res.obj.Content[0]);
-                                    var count = Convert.ToInt32(res.obj.Content[1]);
+                                    var start = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     var x = string.Empty;
                                     for (var i = 2; i < res.obj.Content.Count; i++)
                                         if (i != res.obj.Content.Count - 1)
