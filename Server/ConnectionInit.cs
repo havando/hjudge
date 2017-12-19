@@ -401,7 +401,13 @@ namespace Server
                         var x = new List<ClientData>();
                         while (Recv.TryTake(out var tmp))
                             if (!tmp.Equals(t)) x.Add(tmp);
-                            else break;
+                            else
+                            {
+                                if (tmp.Info.UserId != 0)
+                                    UpdateMainPageState(
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {tmp.Info.UserName} 注销了");
+                                break;
+                            }
                         foreach (var i in x)
                         {
                             Recv.Add(i);
