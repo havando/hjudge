@@ -23,8 +23,10 @@ namespace Server
         private bool _isFault;
 
         public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description,
-            string defaultTime, int competitionId)
+            string defaultTime, int competitionId, Action<int> idCallBack = null)
         {
+            JudgeResult.JudgeId = Connection.NewJudge(description);
+            idCallBack?.Invoke(JudgeResult.JudgeId);
             while (true)
             {
                 if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
@@ -45,8 +47,6 @@ namespace Server
             {
                 _problem = Connection.GetProblem(problemId);
                 _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
-
-                JudgeResult.JudgeId = Connection.NewJudge(description);
                 JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                 JudgeResult.ProblemId = _problem.ProblemId;
                 JudgeResult.Code = code;
