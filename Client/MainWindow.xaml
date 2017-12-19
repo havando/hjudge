@@ -146,7 +146,7 @@
                                                 DisplayMemberBinding="{Binding Path=User}" />
                                 <GridViewColumn Width="150" Header="发送时间"
                                                 DisplayMemberBinding="{Binding Path=DisplayDateTime}" />
-                                <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Path=Summery}" />
+                                <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Path=Summary}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
@@ -171,7 +171,7 @@
                                 <GridViewColumn Width="150" Header="题目名称"
                                                 DisplayMemberBinding="{Binding Path=ProblemName}" />
                                 <GridViewColumn Width="150" Header="评测结果"
-                                                DisplayMemberBinding="{Binding Path=ResultSummery}" />
+                                                DisplayMemberBinding="{Binding Path=ResultSummary}" />
                                 <GridViewColumn Width="50" Header="得分" DisplayMemberBinding="{Binding Path=FullScore}" />
                                 <GridViewColumn Width="60" Header="代码类型" DisplayMemberBinding="{Binding Path=Type}" />
 

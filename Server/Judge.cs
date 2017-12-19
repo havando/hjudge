@@ -130,7 +130,7 @@ namespace Server
                         Connection.CurJudgingCnt--;
                     }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                         textBlock);
                     _isFinished = true;
                     return;
@@ -153,7 +153,7 @@ namespace Server
                         Connection.CurJudgingCnt--;
                     }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                         textBlock);
                     _isFinished = true;
                     return;
@@ -219,7 +219,7 @@ namespace Server
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummery}",
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                     textBlock);
             }
             catch

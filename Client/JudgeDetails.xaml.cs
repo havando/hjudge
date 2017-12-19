@@ -17,16 +17,16 @@ namespace Client
         public void SetContent(JudgeInfo jInfo)
         {
             Title = $"评测详情 - #{jInfo.JudgeId}";
-            ResultSummery.Content = jInfo.ResultSummery;
-            if (jInfo.ResultSummery == "Accepted") ResultSummery.Foreground = Brushes.Green;
-            else if (!(jInfo.ResultSummery == "Judging..."))
+            ResultSummary.Content = jInfo.ResultSummary;
+            if (jInfo.ResultSummary == "Accepted") ResultSummary.Foreground = Brushes.Green;
+            else if (!(jInfo.ResultSummary == "Judging..."))
             {
-                if (jInfo.ResultSummery.Contains("Exceeded"))
-                    ResultSummery.Foreground = Brushes.DarkOrange;
+                if (jInfo.ResultSummary.Contains("Exceeded"))
+                    ResultSummary.Foreground = Brushes.DarkOrange;
                 else
-                    ResultSummery.Foreground = Brushes.Red;
+                    ResultSummary.Foreground = Brushes.Red;
             }
-            JudgeInfoSummery.Content =
+            JudgeInfoSummary.Content =
                 $"#{jInfo.JudgeId}，评测时间：{jInfo.JudgeDate}，题目：{jInfo.ProblemName}，得分：{jInfo.FullScore}";
             CodeBox.Text = "代码：\n" + jInfo.Code;
             var details = new ObservableCollection<JudgeInfoDetails>();

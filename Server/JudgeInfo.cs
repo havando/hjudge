@@ -24,7 +24,7 @@ namespace Server
         public int CompetitionId { get; set; }
         public string AdditionInfo { get; set; }
 
-        public string ResultSummery
+        public string ResultSummary
         {
             get
             {

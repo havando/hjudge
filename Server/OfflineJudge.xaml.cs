@@ -180,7 +180,7 @@ namespace Server
                                 JudgingLog.Items.Add(new TextBlock
                                 {
                                     Text =
-                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummery}"
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕，题目：{m.ProblemName}，评测选手：{t}，结果：{j.JudgeResult.ResultSummary}"
                                 });
                                 JudgingLog.ScrollIntoView(JudgingLog.Items[JudgingLog.Items.Count - 1]);
                             });
@@ -229,7 +229,7 @@ namespace Server
             {
                 f.Add(new ResultTree
                 {
-                    Content = $"{t.Result[i].ProblemName}：{t.Result[i].ResultSummery}，{t.Result[i].FullScore}",
+                    Content = $"{t.Result[i].ProblemName}：{t.Result[i].ResultSummary}，{t.Result[i].FullScore}",
                     Children = new ObservableCollection<ResultTree>()
                 });
                 for (var j = 0; j < t.Result[i].Result.Length; j++)
@@ -328,7 +328,7 @@ namespace Server
                                 (from c in t.Result where c.ProblemName == i.ProblemName select c).FirstOrDefault();
                             dr[1] = temp?.Timeused?.Max() ?? 0;
                             dr[2] = temp?.Memoryused?.Max() ?? 0;
-                            dr[3] = temp?.ResultSummery ?? string.Empty;
+                            dr[3] = temp?.ResultSummary ?? string.Empty;
                             dr[4] = temp?.FullScore ?? 0;
                             try
                             {

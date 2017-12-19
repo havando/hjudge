@@ -29,7 +29,7 @@
                     <GridViewColumn Header="题目名称" Width="100" DisplayMemberBinding="{Binding Path=ProblemName}" />
                     <GridViewColumn Header="评测描述" Width="100" DisplayMemberBinding="{Binding Path=Description}" />
                     <GridViewColumn Header="评测时间" Width="150" DisplayMemberBinding="{Binding Path=JudgeDate}" />
-                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummery}" />
+                    <GridViewColumn Header="评测结果" Width="100" DisplayMemberBinding="{Binding Path=ResultSummary}" />
                     <GridViewColumn Header="分数" Width="50" DisplayMemberBinding="{Binding Path=FullScore}" />
                     <GridViewColumn Header="代码类型" Width="60" DisplayMemberBinding="{Binding Path=Type}" />
                 </GridView>

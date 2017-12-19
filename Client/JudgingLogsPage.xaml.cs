@@ -79,7 +79,7 @@ namespace Client
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var a = (from c in _curJudgeInfo where c.IsChecked select c).ToList();
-            if (a.Any(i => i.ResultSummery == "Judging..."))
+            if (a.Any(i => i.ResultSummary == "Judging..."))
             {
                 MessageBox.Show("你选择的项目中部分仍在评测，请等待评测完毕再导出", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -112,7 +112,7 @@ namespace Client
                     dr[3] = i?.JudgeDate ?? string.Empty;
                     dr[4] = i?.Timeused?.Max() ?? 0;
                     dr[5] = i?.Memoryused?.Max() ?? 0;
-                    dr[6] = i?.ResultSummery ?? string.Empty;
+                    dr[6] = i?.ResultSummary ?? string.Empty;
                     dr[7] = i?.FullScore ?? 0;
                     try
                     {

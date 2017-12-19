@@ -283,9 +283,9 @@ namespace Client
                                 ActiveBox.Items.Add(new TextBlock
                                 {
                                     Text =
-                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}"
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
                                 });
-                                if (p.ResultSummery == "Accepted")
+                                if (p.ResultSummary == "Accepted")
                                 {
                                     var delta = 4 + _random.Next() % 32;
                                     var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
@@ -298,7 +298,7 @@ namespace Client
                                         Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
                                     });
                                 }
-                                else if (p.ResultSummery.Contains("Exceeded"))
+                                else if (p.ResultSummary.Contains("Exceeded"))
                                 {
                                     var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
                                     var delta2 = 8 + _random.Next() % 4;
@@ -333,7 +333,7 @@ namespace Client
                         {
                             if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
                             var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                            if (p.ResultSummery == "Judging...")
+                            if (p.ResultSummary == "Judging...")
                                 MessageBox.Show("提交次数超出限制", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
                             else
                                 Dispatcher.Invoke(() =>
@@ -341,9 +341,9 @@ namespace Client
                                     ActiveBox.Items.Add(new TextBlock
                                     {
                                         Text =
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummery}"
+                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
                                     });
-                                    if (p.ResultSummery == "Accepted")
+                                    if (p.ResultSummary == "Accepted")
                                     {
                                         var delta = 4 + _random.Next() % 32;
                                         var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
@@ -356,7 +356,7 @@ namespace Client
                                             Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
                                         });
                                     }
-                                    else if (p.ResultSummery.Contains("Exceeded"))
+                                    else if (p.ResultSummary.Contains("Exceeded"))
                                     {
                                         var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
                                         var delta2 = 8 + _random.Next() % 4;

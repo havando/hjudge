@@ -143,7 +143,7 @@ namespace Server
                                     CompetitionId = reader.GetInt32(12),
                                     AdditionInfo = reader.GetString(13)
                                 };
-                                if (t.ResultSummery == "Judging...") continue;
+                                if (t.ResultSummary == "Judging...") continue;
                                 if (start-- > 0) continue;
                                 if (count-- == 0) break;
                                 ji.Add(t);
@@ -958,7 +958,7 @@ namespace Server
                                 CompetitionId = reader.GetInt32(12),
                                 AdditionInfo = reader.GetString(13)
                             };
-                            if (t.ResultSummery == "Judging...") continue;
+                            if (t.ResultSummary == "Judging...") continue;
                             a.Add(t);
                         }
                         catch

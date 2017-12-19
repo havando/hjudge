@@ -18,7 +18,7 @@
                                     DisplayMemberBinding="{Binding User}" />
                     <GridViewColumn Width="150" Header="发送时间"
                                     DisplayMemberBinding="{Binding DisplayDateTime}" />
-                    <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Summery}" />
+                    <GridViewColumn Width="300" Header="摘要" DisplayMemberBinding="{Binding Summary}" />
                 </GridView>
             </ListView.View>
         </ListView>

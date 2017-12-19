@@ -23,7 +23,7 @@ namespace Client
         public string Description { get; set; }
         public string AdditionInfo { get; set; }
 
-        public string ResultSummery { get; set; }
+        public string ResultSummary { get; set; }
 
         public bool IsChecked
         {

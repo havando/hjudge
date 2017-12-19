@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="评测详情" Height="502.5" Width="793.167" Topmost="True" Icon="Resources/list.png" ResizeMode="CanMinimize">
     <Grid>
-        <Label Name="ResultSummery" FontSize="24" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label Name="JudgeInfoSummery" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,26,23,0" VerticalAlignment="Top"/>
+        <Label Name="ResultSummary" FontSize="24" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label Name="JudgeInfoSummary" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,26,23,0" VerticalAlignment="Top"/>
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" Margin="0,65,0,0" VerticalAlignment="Top" Width="787"/>
         <TextBox Name="CodeBox" HorizontalAlignment="Left" Height="381" Margin="10,71,0,0" TextWrapping="Wrap"
                  VerticalAlignment="Top" Width="437" IsReadOnly="True" VerticalScrollBarVisibility="Auto"

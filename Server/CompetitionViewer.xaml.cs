@@ -151,7 +151,7 @@ namespace Server
                                 {
                                     var m = Convert.ToInt32(l.Name.Substring(13));
                                     l.Text =
-                                        $"{x.Count(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummery == "Accepted")}/{x.Count(p => p.ProblemId == _competition.ProblemSet[m])}";
+                                        $"{x.Count(p => p.ProblemId == _competition.ProblemSet[m] && p.ResultSummary == "Accepted")}/{x.Count(p => p.ProblemId == _competition.ProblemSet[m])}";
                                 }
                 });
                 var tmpList = new List<CompetitionUserInfo>();
@@ -171,7 +171,7 @@ namespace Server
                     for (var j = 0; j < _competition.ProblemSet.Length; j++)
                     {
                         tmp.ProblemInfo[j] = new CompetitionProblemInfo();
-                        var ac = x.Count(p => p.UserName == i && p.ResultSummery == "Accepted" &&
+                        var ac = x.Count(p => p.UserName == i && p.ResultSummary == "Accepted" &&
                                               p.ProblemId == _competition.ProblemSet[j]);
                         var all = x.Count(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
                         tmp.ProblemInfo[j].Color = ac != 0 ? Brushes.LightGreen : Brushes.LightPink;
@@ -189,7 +189,7 @@ namespace Server
                                 var tmpTime = Convert.ToDateTime(k.JudgeDate) - _competition.StartTime;
                                 time += tmpTime;
                                 totTime += tmpTime;
-                                if (k.ResultSummery == "Accepted")
+                                if (k.ResultSummary == "Accepted")
                                 {
                                     break;
                                 }
@@ -205,7 +205,7 @@ namespace Server
                         {
                             if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
                             var y = x.LastOrDefault(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
-                            if (y != null && y.ResultSummery == "Accepted")
+                            if (y != null && y.ResultSummary == "Accepted")
                             {
                                 tmp.ProblemInfo[j].State = "Solved";
                             }
@@ -258,7 +258,7 @@ namespace Server
         private void Export_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var a = (from c in _curJudgeInfo where c.IsChecked select c).ToList();
-            if (a.Any(i => i.ResultSummery == "Judging..."))
+            if (a.Any(i => i.ResultSummary == "Judging..."))
             {
                 MessageBox.Show("你选择的项目中部分仍在评测，请等待评测完毕再导出", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -291,7 +291,7 @@ namespace Server
                     dr[3] = i?.JudgeDate ?? string.Empty;
                     dr[4] = i?.Timeused?.Max() ?? 0;
                     dr[5] = i?.Memoryused?.Max() ?? 0;
-                    dr[6] = i?.ResultSummery ?? string.Empty;
+                    dr[6] = i?.ResultSummary ?? string.Empty;
                     dr[7] = i?.FullScore ?? 0;
                     try
                     {
