@@ -21,6 +21,7 @@ namespace Client
         public string ProblemName { get; set; }
         public string Type { get; set; }
         public string Description { get; set; }
+        public int CompetitionId { get; set; }
         public string AdditionInfo { get; set; }
 
         public string ResultSummary { get; set; }
