@@ -16,6 +16,7 @@ namespace Server
         private readonly bool _isFinished;
         private readonly Problem _problem;
         private readonly string _workingdir;
+        public readonly bool Cancelled;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
         private bool _isExited;
@@ -25,6 +26,19 @@ namespace Server
         public Judge(int problemId, int userId, string code, string type, bool isStdIO, string description,
             string defaultTime, int competitionId, Action<int> idCallBack = null)
         {
+            Cancelled = false;
+            if (competitionId != 0)
+            {
+                var comp = Connection.GetCompetition(competitionId);
+                var judgeLogs = Connection.QueryJudgeLogBelongsToCompetition(competitionId, userId);
+                if ((comp.Option & 1) != 0 && comp.SubmitLimit != 0)
+                    if (judgeLogs.Count(i => i.ProblemId == problemId) >= comp.SubmitLimit)
+                    {
+                        Connection.CanPostJudgTask = true;
+                        Cancelled = true;
+                        return;
+                    }
+            }
             JudgeResult.JudgeId = Connection.NewJudge(description);
             idCallBack?.Invoke(JudgeResult.JudgeId);
             while (true)
@@ -60,21 +74,6 @@ namespace Server
                 JudgeResult.Description = description;
                 JudgeResult.CompetitionId = competitionId;
                 JudgeResult.AdditionInfo = string.Empty;
-                if (competitionId != 0)
-                {
-                    var comp = Connection.GetCompetition(competitionId);
-                    var judgeLogs = Connection.QueryJudgeLogBelongsToCompetition(competitionId, userId);
-                    if ((comp.Option & 1) != 0 && comp.SubmitLimit != 0)
-                        if (judgeLogs.Count(i => i.ProblemId == problemId) >= comp.SubmitLimit)
-                        {
-                            _isFinished = true;
-                            lock (Connection.JudgeListCntLock)
-                            {
-                                Connection.CurJudgingCnt--;
-                            }
-                            return;
-                        }
-                }
 
                 var textBlock = Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");

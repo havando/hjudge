@@ -1628,7 +1628,10 @@ namespace Server
                                     if (!string.IsNullOrEmpty(Encoding.Unicode.GetString(res.obj.Content[3])))
                                     {
                                         var t = GetCompetition(cid);
-                                        if (DateTime.Now > t.EndTime || DateTime.Now < t.StartTime) continue;
+                                        if (DateTime.Now > t.EndTime || DateTime.Now < t.StartTime)
+                                        {
+                                            SendData("JudgeIdForCompetition", "Failed", res.obj.Client.ConnId, res.token);
+                                        }
                                         var code = string.Empty;
                                         for (var i = 3; i < res.obj.Content.Count; i++)
                                             if (i != res.obj.Content.Count - 1)
@@ -1645,6 +1648,11 @@ namespace Server
                                             {
                                                 var j = new Judge(pid, userId, code, type, true, "在线评测",
                                                     DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, (jid) => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code, CompetitionId = cid }), res.obj.Client.ConnId, res.token); });
+                                                if (j.Cancelled)
+                                                {
+                                                    SendData("JudgeIdForCompetition", "Failed", res.obj.Client.ConnId, res.token);
+                                                    return;
+                                                }
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 if ((t.Option & 8) != 0)
                                                     SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
