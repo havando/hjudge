@@ -332,60 +332,61 @@ namespace Client
                     case "JudgeResultForCompetition":
                         {
                             if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
-                            if (content == "Failed")
-                                MessageBox.Show("现在不允许提交此题目", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
-                            else
+                            var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
+                            Dispatcher.Invoke(() =>
                             {
-                                var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                                Dispatcher.Invoke(() =>
+                                ActiveBox.Items.Add(new TextBlock
                                 {
+                                    Text =
+                                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
+                                });
+                                if (p.ResultSummary == "Accepted")
+                                {
+                                    var delta = 4 + _random.Next() % 32;
+                                    var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    Connection.SendData("UpdateCoins", delta2.ToString());
+                                    _coins += delta2;
                                     ActiveBox.Items.Add(new TextBlock
                                     {
-                                        Text =
-                                            $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
                                     });
-                                    if (p.ResultSummary == "Accepted")
+                                }
+                                else if (p.ResultSummary.Contains("Exceeded"))
+                                {
+                                    var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
+                                    var delta2 = 8 + _random.Next() % 4;
+                                    Connection.SendData("UpdateCoins", delta.ToString());
+                                    _coins += delta;
+                                    Connection.SendData("UpdateExperience", delta2.ToString());
+                                    _experience += delta2;
+                                    ActiveBox.Items.Add(new TextBlock
                                     {
-                                        var delta = 4 + _random.Next() % 32;
-                                        var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
-                                        Connection.SendData("UpdateExperience", delta.ToString());
-                                        _experience += delta;
-                                        Connection.SendData("UpdateCoins", delta2.ToString());
-                                        _coins += delta2;
-                                        ActiveBox.Items.Add(new TextBlock
-                                        {
-                                            Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
-                                        });
-                                    }
-                                    else if (p.ResultSummary.Contains("Exceeded"))
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
+                                    });
+                                }
+                                else
+                                {
+                                    var delta = 1 + _random.Next() % 4;
+                                    Connection.SendData("UpdateExperience", delta.ToString());
+                                    _experience += delta;
+                                    ActiveBox.Items.Add(new TextBlock
                                     {
-                                        var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
-                                        var delta2 = 8 + _random.Next() % 4;
-                                        Connection.SendData("UpdateCoins", delta.ToString());
-                                        _coins += delta;
-                                        Connection.SendData("UpdateExperience", delta2.ToString());
-                                        _experience += delta2;
-                                        ActiveBox.Items.Add(new TextBlock
-                                        {
-                                            Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
-                                        });
-                                    }
-                                    else
-                                    {
-                                        var delta = 1 + _random.Next() % 4;
-                                        Connection.SendData("UpdateExperience", delta.ToString());
-                                        _experience += delta;
-                                        ActiveBox.Items.Add(new TextBlock
-                                        {
-                                            Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
-                                        });
-                                    }
-                                    Coins.Content = _coins;
-                                    Experience.Content = _experience;
-                                    SetLevel(_experience);
-                                    ShowJudgeDetails(p);
-                                });
-                            }
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
+                                    });
+                                }
+                                Coins.Content = _coins;
+                                Experience.Content = _experience;
+                                SetLevel(_experience);
+                                ShowJudgeDetails(p);
+                            });
+                            break;
+                        }
+                    case "JudgeIdForCompetition":
+                        {
+                            if (content == "Failed")
+                                MessageBox.Show("现在不允许提交此题目", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
                             break;
                         }
                     case "ProblemList":
