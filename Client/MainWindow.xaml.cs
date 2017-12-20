@@ -332,10 +332,11 @@ namespace Client
                     case "JudgeResultForCompetition":
                         {
                             if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
-                            var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
-                            if (p.ResultSummary == "Judging...")
-                                MessageBox.Show("提交次数超出限制", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
+                            if (content == "Failed")
+                                MessageBox.Show("现在不允许提交此题目", "题目", MessageBoxButton.OK, MessageBoxImage.Error);
                             else
+                            {
+                                var p = JsonConvert.DeserializeObject<JudgeInfo>(content);
                                 Dispatcher.Invoke(() =>
                                 {
                                     ActiveBox.Items.Add(new TextBlock
@@ -384,6 +385,7 @@ namespace Client
                                     SetLevel(_experience);
                                     ShowJudgeDetails(p);
                                 });
+                            }
                             break;
                         }
                     case "ProblemList":
