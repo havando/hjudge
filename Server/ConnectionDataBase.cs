@@ -1489,6 +1489,11 @@ namespace Server
                                         Option = reader.GetInt32(11),
                                         Description = reader.GetString(12)
                                     });
+                                else
+                                {
+                                    start++;
+                                    if (count != -10) count++;
+                                }
                             }
                             else
                             {
