@@ -14,13 +14,13 @@ namespace Server
     {
         #region DataBase
 
-        private static SQLiteConnection _sqLite;
-
         private static JudgeInfo GetJudgeInfo(int judgeId)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From Judge Where JudgeId=@1";
                     SQLiteParameter[] parameters =
@@ -70,9 +70,11 @@ namespace Server
         {
             var a = new List<UserInfo>();
             if (userType <= 0 || userType > 5) return a;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From User Where Type=@1";
                     SQLiteParameter[] parameters =
@@ -110,9 +112,11 @@ namespace Server
         private static JudgeInfo[] QueryCustomJudgeInfo(int start, int count, string command)
         {
             var ji = new List<JudgeInfo>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     try
                     {
@@ -163,9 +167,11 @@ namespace Server
         private static JudgeInfo[] GetJudgeRecord(int userId, int start, int count)
         {
             var ji = new List<JudgeInfo>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From Judge Where UserId=@1 and CompetitionId=0 order by JudgeId desc";
                     SQLiteParameter[] parameters =
@@ -221,11 +227,13 @@ namespace Server
         {
             if (CheckUser(userName) != 0)
                 return false;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
+                sqLite.Open();
+
                 try
                 {
-                    using (var cmd = new SQLiteCommand(_sqLite))
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
                         cmd.CommandText =
                             "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
@@ -304,9 +312,11 @@ namespace Server
             var sb2 = new StringBuilder();
             foreach (var t in retVal2)
                 sb2.Append(t.ToString("x2"));
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT Password From User Where userName=@1";
                     SQLiteParameter[] parameters =
@@ -320,7 +330,7 @@ namespace Server
                     {
                         if (!reader.Read()) return false;
                         if (sb.ToString() != reader.GetString(0)) return false;
-                        using (var cmd2 = new SQLiteCommand(_sqLite))
+                        using (var cmd2 = new SQLiteCommand(sqLite))
                         {
                             cmd2.CommandText = "Update User SET Password=@1 Where UserName=@2";
                             cmd2.Parameters.Clear();
@@ -344,9 +354,11 @@ namespace Server
         private static bool UpdateCoins(int userId, int delta)
         {
             int origin;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT Coins From User Where userId=@1";
                     SQLiteParameter[] parameters1 =
@@ -367,9 +379,11 @@ namespace Server
                     }
                 }
             }
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "UPDATE User SET Coins=@1 WHERE UserId=@2";
                     SQLiteParameter[] parameters =
@@ -389,9 +403,11 @@ namespace Server
         private static bool UpdateExperience(int userId, int delta)
         {
             int origin;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT Experience From User Where userId=@1";
                     SQLiteParameter[] parameters1 =
@@ -412,9 +428,11 @@ namespace Server
                     }
                 }
             }
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "UPDATE User SET Experience=@1 WHERE UserId=@2";
                     SQLiteParameter[] parameters =
@@ -433,9 +451,11 @@ namespace Server
 
         public static int NewCompetition()
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
@@ -468,9 +488,11 @@ namespace Server
 
         public static bool UpdateCompetition(Competition competition)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
@@ -514,9 +536,11 @@ namespace Server
             var k = CheckUser(userName);
             if (k != userId && k != 0)
                 return false;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "UPDATE User SET UserName=@1, Icon=@2 WHERE UserId=@3";
                     SQLiteParameter[] parameters =
@@ -549,9 +573,11 @@ namespace Server
             var sb = new StringBuilder();
             foreach (var t in retVal)
                 sb.Append(t.ToString("x2"));
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From User Where userName=@1";
                     SQLiteParameter[] parameters =
@@ -591,9 +617,11 @@ namespace Server
 
         public static void UpdateUserInfo(UserInfo toUpdateInfo)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
                     SQLiteParameter[] parameters =
@@ -617,9 +645,11 @@ namespace Server
         {
             return Task.Run(() =>
             {
-                lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    using (var cmd = new SQLiteCommand(_sqLite))
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
                         cmd.CommandText = "SELECT * From User Where userName=@1";
                         SQLiteParameter[] parameters =
@@ -644,9 +674,11 @@ namespace Server
         {
             var a = new ObservableCollection<UserInfo>();
             if (userType <= 0 || userType >= 4) return a;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From User Where Type>@1";
                     SQLiteParameter[] parameters =
@@ -684,9 +716,11 @@ namespace Server
         public static Problem GetProblem(int problemId)
         {
             var a = new Problem();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From Problem Where ProblemId=@1";
                     SQLiteParameter[] parameters =
@@ -729,9 +763,11 @@ namespace Server
 
         public static void DeleteUser(IEnumerable<int> toDelete)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     foreach (var t in toDelete)
                     {
@@ -751,9 +787,11 @@ namespace Server
 
         public static void UpdateUser(IEnumerable<UserInfo> toUpdate)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     foreach (var t in toUpdate)
                         if (CheckUser(t.UserName) != 0)
@@ -806,9 +844,11 @@ namespace Server
         public static List<string> SaveUser(IEnumerable<int> toDelete)
         {
             var failed = new List<string>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     foreach (var t in toDelete)
                     {
@@ -879,9 +919,11 @@ namespace Server
 
         private static int CheckUser(string userName)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                     SQLiteParameter[] parameters =
@@ -901,9 +943,11 @@ namespace Server
 
         public static void ClearJudgeLog()
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "Delete From Judge";
                     cmd.ExecuteNonQuery();
@@ -915,9 +959,11 @@ namespace Server
 
         public static void DeleteCompetition(int competitionId)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
                     cmd.ExecuteNonQuery();
@@ -928,9 +974,11 @@ namespace Server
         public static Competition GetCompetition(int competitionId)
         {
             var a = new Competition();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = $"SELECT * From Competition where CompetitionId={competitionId}";
                     var reader = cmd.ExecuteReader();
@@ -955,9 +1003,11 @@ namespace Server
         public static ObservableCollection<Competition> QueryCompetition(int start = 0, int count = -10)
         {
             var a = new ObservableCollection<Competition>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From Competition";
                     var reader = cmd.ExecuteReader();
@@ -990,9 +1040,11 @@ namespace Server
         public static List<JudgeInfo> QueryJudgeLogBelongsToCompetition(int competitionId, int userId)
         {
             var a = new List<JudgeInfo>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     if (userId != 0)
                         cmd.CommandText =
@@ -1040,9 +1092,11 @@ namespace Server
         public static ObservableCollection<JudgeInfo> QueryJudgeLog(bool withCode)
         {
             var curJudgeInfo = new ObservableCollection<JudgeInfo>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = UserHelper.CurrentUser.Type < 4
                         ? "SELECT * From Judge"
@@ -1087,9 +1141,11 @@ namespace Server
         public static Message GetMsg(int msgId, int userId)
         {
             var t = new Message();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = $"SELECT * From Message Where MessageId={msgId}";
                     var reader = cmd.ExecuteReader();
@@ -1116,9 +1172,11 @@ namespace Server
         public static List<Message> QueryMsg(int userId, bool withContent, int start = 0, int count = -10)
         {
             var t = new List<Message>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = $"SELECT * From Message Where FromUserId={userId} OR ToUserId={userId}";
                     var reader = cmd.ExecuteReader();
@@ -1224,9 +1282,11 @@ namespace Server
         public static string GetUserName(int userId)
         {
             var userName = string.Empty;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT UserName From User Where UserId=@1";
                     SQLiteParameter[] parameters =
@@ -1250,9 +1310,11 @@ namespace Server
         public static int GetUserId(string userName)
         {
             var userId = 0;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                     SQLiteParameter[] parameters =
@@ -1275,9 +1337,11 @@ namespace Server
 
         public static UserInfo GetUser(int userId, bool withoutPassword = false)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From User Where UserId=@1";
                     SQLiteParameter[] parameters =
@@ -1308,9 +1372,11 @@ namespace Server
 
         private static UserInfo GetUser(string userName, bool withoutPassword = false)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From User Where UserName=@1";
                     SQLiteParameter[] parameters =
@@ -1342,9 +1408,11 @@ namespace Server
         public static string GetProblemName(int problemId)
         {
             var problemName = string.Empty;
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT ProblemName From Problem Where ProblemId=@1";
                     SQLiteParameter[] parameters =
@@ -1364,9 +1432,11 @@ namespace Server
 
         public static int NewJudge(string description, int competitionId = 0)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "Insert into Judge (Date, Description, CompetitionId) VALUES (@1, @2, @3)";
                     SQLiteParameter[] parameters =
@@ -1388,9 +1458,11 @@ namespace Server
 
         public static void UpdateJudgeInfo(JudgeInfo pInfo)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
@@ -1454,9 +1526,11 @@ namespace Server
         public static ObservableCollection<Problem> QueryProblems(bool withPrivate, int start = 0, int count = -10)
         {
             var curJudgeInfo = new ObservableCollection<Problem>();
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "SELECT * From Problem";
                     var reader = cmd.ExecuteReader();
@@ -1531,9 +1605,11 @@ namespace Server
 
         public static int NewProblem()
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
@@ -1574,9 +1650,11 @@ namespace Server
 
         public static void DeleteProblem(int problemId)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "Delete from Problem Where ProblemId=@1";
                     SQLiteParameter[] parameters =
@@ -1592,9 +1670,11 @@ namespace Server
 
         public static void UpdateProblem(Problem toUpdateProblem)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";

@@ -116,47 +116,86 @@ namespace Server
             Connection.ActionExecuter(OverLoad);
 
             new Thread(UpdateUITask).Start();
+            new Thread(UpdateState).Start();
         }
+
+        private string _status = "当前负荷：待投递任务：0，待处理任务：0。已完成任务：0";
 
         private UIElement UpdateListBoxContent(string content, UIElement textBlock, bool remove)
         {
             return Dispatcher.Invoke(() =>
             {
-                if (!remove)
+                try
                 {
-                    if (textBlock is TextBlock tb)
+                    if (content.StartsWith("当前负荷"))
                     {
-                        tb.Text = content;
-                        _uiUpdate.Enqueue(new Task(() =>
-                            Dispatcher.Invoke(() => ListBox.Items.Refresh())));
-                        return tb;
+                        _status = content;
+                        return null;
                     }
-                    var t = new TextBlock { Text = content };
-                    _uiUpdate.Enqueue(
-                    new Task(() => Dispatcher.Invoke(() =>
+                    if (!remove)
                     {
-                        ListBox.Items.Add(t);
-                        if (ListBox.Items.Count > 500) ListBox.Items.RemoveAt(0);
-                        ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
-                    })));
-                    return t;
+                        if (textBlock is TextBlock tb)
+                        {
+                            tb.Text = content;
+                            _uiUpdate.Enqueue(new Task(() =>
+                                Dispatcher.Invoke(() => ListBox.Items.Refresh())));
+                            return tb;
+                        }
+                        var t = new TextBlock { Text = content };
+                        _uiUpdate.Enqueue(
+                        new Task(() => Dispatcher.Invoke(() =>
+                        {
+                            ListBox.Items.Add(t);
+                            if (ListBox.Items.Count > 500) ListBox.Items.RemoveAt(0);
+                            ListBox.ScrollIntoView(ListBox.Items[ListBox.Items.Count - 1]);
+                        })));
+                        return t;
+                    }
+                    _uiUpdate.Enqueue(new Task(() =>
+                    Dispatcher.Invoke(() => ListBox.Items.Remove(textBlock))));
                 }
-                _uiUpdate.Enqueue(new Task(() =>
-                Dispatcher.Invoke(() => ListBox.Items.Remove(textBlock))));
+                catch
+                {
+                    //ignored
+                }
                 return null;
+
             });
+        }
+
+        private void UpdateState()
+        {
+            while (!Connection.IsExited)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    OverLoad.Text = _status;
+                });
+                Thread.Sleep(500);
+            }
         }
 
         private void UpdateUITask()
         {
             while (!Connection.IsExited)
             {
-                if (_uiUpdate.TryDequeue(out var task))
-                {
-                    task.Start();
-                    task.Wait();
-                }
-                Thread.Sleep(1);
+                var cnt = 50;
+                if (_uiUpdate.Count != 0)
+                    while (_uiUpdate.TryDequeue(out var task))
+                    {
+                        try
+                        {
+                            task.Start();
+                            task.Wait();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                        if (cnt-- == 0) break;
+                        Thread.Sleep(1);
+                    }
+                Thread.Sleep(1000);
             }
         }
 

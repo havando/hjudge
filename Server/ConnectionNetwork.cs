@@ -166,9 +166,10 @@ namespace Server
 
         private static void SetMsgState(int msgId, int state)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText = "UPDATE Message SET State=@1 Where MessageId=@2";
                     SQLiteParameter[] parameters =
@@ -186,9 +187,10 @@ namespace Server
 
         public static void SendMsg(string sendString, int fromUserId, int toUserId, string token)
         {
-            lock (DataBaseLock)
+            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
             {
-                using (var cmd = new SQLiteCommand(_sqLite))
+                sqLite.Open();
+                using (var cmd = new SQLiteCommand(sqLite))
                 {
                     cmd.CommandText =
                         "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
@@ -635,20 +637,21 @@ namespace Server
                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 向 {t.User} 发送了消息");
                                     if (t.User == GetUserName(1))
                                     {
-                                        lock (DataBaseLock)
+                                        using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                                         {
-                                            using (var cmd = new SQLiteCommand(_sqLite))
+                                            sqLite.Open();
+                                            using (var cmd = new SQLiteCommand(sqLite))
                                             {
                                                 cmd.CommandText =
                                                     "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
                                                 SQLiteParameter[] parameters =
                                                 {
-                                                new SQLiteParameter("@1", DbType.Int32),
-                                                new SQLiteParameter("@2", DbType.Int32),
-                                                new SQLiteParameter("@3", DbType.String),
-                                                new SQLiteParameter("@4", DbType.String),
-                                                new SQLiteParameter("@5", DbType.Int32)
-                                            };
+                                                    new SQLiteParameter("@1", DbType.Int32),
+                                                    new SQLiteParameter("@2", DbType.Int32),
+                                                    new SQLiteParameter("@3", DbType.String),
+                                                    new SQLiteParameter("@4", DbType.String),
+                                                    new SQLiteParameter("@5", DbType.Int32)
+                                                };
                                                 parameters[0].Value = res.obj.Client.UserId;
                                                 parameters[1].Value = GetUserId(t.User);
                                                 parameters[2].Value = DateTime.Now;
@@ -1959,7 +1962,7 @@ namespace Server
 
         public static void ActionExecuter(UIElement textBlock)
         {
-            Task.Run(() =>
+            new Thread(() =>
             {
                 var cnt = 0;
                 long tot = 0;
@@ -2033,7 +2036,7 @@ namespace Server
                     }
                     Thread.Sleep(1);
                 }
-            });
+            }).Start();
         }
     }
 }

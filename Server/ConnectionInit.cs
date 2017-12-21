@@ -302,7 +302,7 @@ namespace Server
             if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"))
                 SQLiteConnection.CreateFile(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db");
             var sqLite = new SQLiteConnection("Data Source=" +
-                                              $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Max Pool Size=10");
+                                              $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;");
             sqLite.Open();
 
             if (!CreateJudgeTable(sqLite))
@@ -360,10 +360,7 @@ namespace Server
                 {
                     Environment.Exit(0);
                 }
-            _sqLite = new SQLiteConnection("Data Source=" +
-                                           $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Max Pool Size=10");
-            _sqLite.Open();
-
+            sqLite.Close();
             #endregion
 
             #region Network
