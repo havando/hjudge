@@ -952,7 +952,7 @@ namespace Server
             }
         }
 
-        public static ObservableCollection<Competition> QueryCompetition()
+        public static ObservableCollection<Competition> QueryCompetition(int start = 0, int count = -10)
         {
             var a = new ObservableCollection<Competition>();
             lock (DataBaseLock)
@@ -963,6 +963,12 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (reader.HasRows)
                         while (reader.Read())
+                        {
+                            if (count != -10)
+                            {
+                                if (start-- > 0) continue;
+                                if (count-- == 0) break;
+                            }
                             a.Add(new Competition
                             {
                                 CompetitionId = reader.GetInt32(0),
@@ -975,6 +981,7 @@ namespace Server
                                 Description = reader.GetString(7),
                                 SubmitLimit = reader.GetInt32(8)
                             });
+                        }
                     return a;
                 }
             }
@@ -1106,7 +1113,7 @@ namespace Server
             return t;
         }
 
-        public static List<Message> QueryMsg(int userId, bool withContent)
+        public static List<Message> QueryMsg(int userId, bool withContent, int start = 0, int count = -10)
         {
             var t = new List<Message>();
             lock (DataBaseLock)
@@ -1117,6 +1124,12 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (!reader.HasRows) return t;
                     while (reader.Read())
+                    {
+                        if (count != -10)
+                        {
+                            if (start-- > 0) continue;
+                            if (count-- == 0) break;
+                        }
                         try
                         {
                             if (withContent)
@@ -1153,6 +1166,7 @@ namespace Server
                         {
                             //ignored
                         }
+                    }
                 }
             }
             return t;
@@ -1437,7 +1451,7 @@ namespace Server
             }
         }
 
-        public static ObservableCollection<Problem> QueryProblems(bool withPrivate)
+        public static ObservableCollection<Problem> QueryProblems(bool withPrivate, int start = 0, int count = -10)
         {
             var curJudgeInfo = new ObservableCollection<Problem>();
             lock (DataBaseLock)
@@ -1448,6 +1462,12 @@ namespace Server
                     var reader = cmd.ExecuteReader();
                     if (!reader.HasRows) return curJudgeInfo;
                     while (reader.Read())
+                    {
+                        if (count != -10)
+                        {
+                            if (start-- > 0) continue;
+                            if (count-- == 0) break;
+                        }
                         try
                         {
                             if (!withPrivate)
@@ -1498,6 +1518,7 @@ namespace Server
                                 ProblemId = reader.GetInt32(0)
                             });
                         }
+                    }
                 }
             }
             return curJudgeInfo;

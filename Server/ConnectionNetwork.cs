@@ -699,6 +699,8 @@ namespace Server
                                 }
                             case "RequestProblemListGrouped":
                                 {
+                                    var start = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
                                         string GetEngName(string origin)
@@ -718,7 +720,7 @@ namespace Server
                                                 .Replace("${index}", (cur + 1).ToString());
                                         }
 
-                                        var pl = QueryProblems(false);
+                                        var pl = QueryProblems(false, start, count);
                                         foreach (var problem in pl)
                                         {
                                             problem.InputFileName = GetRealString(problem.InputFileName,
@@ -1439,9 +1441,11 @@ namespace Server
                                         SendData(res.obj.Operation, "OperationDenied", res.obj.Client.ConnId, res.token);
                                         break;
                                     }
+                                    var start = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryMsg(res.obj.Client.UserId, false);
+                                        var t = QueryMsg(res.obj.Client.UserId, false, start, count);
                                         t.Reverse();
                                         SendData("RequestMsgListGrouped", JsonConvert.SerializeObject(t),
                                             res.obj.Client.ConnId, res.token);
@@ -1564,9 +1568,11 @@ namespace Server
                                 }
                             case "RequestCompetitionListGrouped":
                                 {
+                                    var start = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
+                                    var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryCompetition()?.Reverse();
+                                        var t = QueryCompetition(start, count)?.Reverse();
                                         if (t == null) t = new List<Competition>();
                                         SendData("RequestCompetitionListGrouped",
                                             JsonConvert.SerializeObject(t),
