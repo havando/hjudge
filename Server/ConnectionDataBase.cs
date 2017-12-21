@@ -227,18 +227,19 @@ namespace Server
         {
             if (CheckUser(userName) != 0)
                 return false;
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                try
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    sqLite.Open();
+
+                    try
                     {
-                        cmd.CommandText =
-                            "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
-                        SQLiteParameter[] parameters =
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
+                            cmd.CommandText =
+                                "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                            SQLiteParameter[] parameters =
+                            {
                             new SQLiteParameter("@1", DbType.String),
                             new SQLiteParameter("@2", DbType.String),
                             new SQLiteParameter("@3", DbType.String),
@@ -248,23 +249,23 @@ namespace Server
                             new SQLiteParameter("@7", DbType.Int32),
                             new SQLiteParameter("@8", DbType.Int32)
                         };
-                        parameters[0].Value = userName;
-                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                        parameters[2].Value = password;
-                        parameters[3].Value = requestReview ? 5 : 4;
-                        parameters[4].Value = string.Empty;
-                        parameters[5].Value = string.Empty;
-                        parameters[6].Value = 0;
-                        parameters[7].Value = 0;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
+                            parameters[0].Value = userName;
+                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                            parameters[2].Value = password;
+                            parameters[3].Value = requestReview ? 5 : 4;
+                            parameters[4].Value = string.Empty;
+                            parameters[5].Value = string.Empty;
+                            parameters[6].Value = 0;
+                            parameters[7].Value = 0;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch
+                    {
+                        return false;
                     }
                 }
-                catch
-                {
-                    return false;
-                }
-            }
             return true;
         }
 
@@ -312,43 +313,44 @@ namespace Server
             var sb2 = new StringBuilder();
             foreach (var t in retVal2)
                 sb2.Append(t.ToString("x2"));
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "SELECT Password From User Where userName=@1";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "SELECT Password From User Where userName=@1";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String)
                     };
-                    parameters[0].Value = userName;
-                    cmd.Parameters.AddRange(parameters);
-                    var reader = cmd.ExecuteReader();
-                    if (reader.HasRows)
-                    {
-                        if (!reader.Read()) return false;
-                        if (sb.ToString() != reader.GetString(0)) return false;
-                        using (var cmd2 = new SQLiteCommand(sqLite))
+                        parameters[0].Value = userName;
+                        cmd.Parameters.AddRange(parameters);
+                        var reader = cmd.ExecuteReader();
+                        if (reader.HasRows)
                         {
-                            cmd2.CommandText = "Update User SET Password=@1 Where UserName=@2";
-                            cmd2.Parameters.Clear();
-                            SQLiteParameter[] parameters2 =
+                            if (!reader.Read()) return false;
+                            if (sb.ToString() != reader.GetString(0)) return false;
+                            using (var cmd2 = new SQLiteCommand(sqLite))
                             {
+                                cmd2.CommandText = "Update User SET Password=@1 Where UserName=@2";
+                                cmd2.Parameters.Clear();
+                                SQLiteParameter[] parameters2 =
+                                {
                                 new SQLiteParameter("@1", DbType.String),
                                 new SQLiteParameter("@2", DbType.String)
                             };
-                            parameters2[0].Value = sb2.ToString();
-                            parameters2[1].Value = userName;
-                            cmd2.Parameters.AddRange(parameters2);
-                            cmd2.ExecuteNonQuery();
+                                parameters2[0].Value = sb2.ToString();
+                                parameters2[1].Value = userName;
+                                cmd2.Parameters.AddRange(parameters2);
+                                cmd2.ExecuteNonQuery();
+                            }
+                            return true;
                         }
-                        return true;
+                        return false;
                     }
-                    return false;
                 }
-            }
         }
 
         private static bool UpdateCoins(int userId, int delta)
@@ -379,25 +381,26 @@ namespace Server
                     }
                 }
             }
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "UPDATE User SET Coins=@1 WHERE UserId=@2";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "UPDATE User SET Coins=@1 WHERE UserId=@2";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.Int32),
                         new SQLiteParameter("@2", DbType.Int32)
                     };
-                    parameters[0].Value = delta + origin;
-                    parameters[1].Value = userId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                    return true;
+                        parameters[0].Value = delta + origin;
+                        parameters[1].Value = userId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
                 }
-            }
         }
 
         private static bool UpdateExperience(int userId, int delta)
@@ -428,39 +431,41 @@ namespace Server
                     }
                 }
             }
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "UPDATE User SET Experience=@1 WHERE UserId=@2";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "UPDATE User SET Experience=@1 WHERE UserId=@2";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.Int32),
                         new SQLiteParameter("@2", DbType.Int32)
                     };
-                    parameters[0].Value = delta + origin;
-                    parameters[1].Value = userId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                    return true;
+                        parameters[0].Value = delta + origin;
+                        parameters[1].Value = userId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
                 }
-            }
         }
 
         public static int NewCompetition()
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText =
-                        "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText =
+                            "Insert into Competition (CompetitionName, StartTime, EndTime, ProblemSet, Option, Password, Description, SubmitLimit) VALUES (@1, @2, @3, @4, @5, @6, @7, @8)";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.String),
@@ -470,34 +475,35 @@ namespace Server
                         new SQLiteParameter("@7", DbType.String),
                         new SQLiteParameter("@8", DbType.Int32)
                     };
-                    parameters[0].Value = string.Empty;
-                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[3].Value = JsonConvert.SerializeObject(new int[0]);
-                    parameters[4].Value = 25;
-                    parameters[5].Value = string.Empty;
-                    parameters[6].Value = string.Empty;
-                    parameters[7].Value = 0;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                    cmd.CommandText = "select last_insert_rowid() from Competition";
-                    return Convert.ToInt32(cmd.ExecuteScalar());
+                        parameters[0].Value = string.Empty;
+                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[3].Value = JsonConvert.SerializeObject(new int[0]);
+                        parameters[4].Value = 25;
+                        parameters[5].Value = string.Empty;
+                        parameters[6].Value = string.Empty;
+                        parameters[7].Value = 0;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = "select last_insert_rowid() from Competition";
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
                 }
-            }
         }
 
         public static bool UpdateCompetition(Competition competition)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText =
-                        "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText =
+                            "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.String),
@@ -508,27 +514,27 @@ namespace Server
                         new SQLiteParameter("@8", DbType.String),
                         new SQLiteParameter("@9", DbType.Int32)
                     };
-                    parameters[0].Value = competition.CompetitionName;
-                    parameters[1].Value = competition.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[2].Value = competition.EndTime.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[3].Value = JsonConvert.SerializeObject(competition.ProblemSet);
-                    parameters[4].Value = competition.Option;
-                    parameters[5].Value = competition.Description;
-                    parameters[6].Value = competition.SubmitLimit;
-                    parameters[7].Value = competition.Password;
-                    parameters[8].Value = competition.CompetitionId;
-                    cmd.Parameters.AddRange(parameters);
-                    try
-                    {
-                        cmd.ExecuteNonQuery();
-                        return true;
-                    }
-                    catch
-                    {
-                        return false;
+                        parameters[0].Value = competition.CompetitionName;
+                        parameters[1].Value = competition.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[2].Value = competition.EndTime.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[3].Value = JsonConvert.SerializeObject(competition.ProblemSet);
+                        parameters[4].Value = competition.Option;
+                        parameters[5].Value = competition.Description;
+                        parameters[6].Value = competition.SubmitLimit;
+                        parameters[7].Value = competition.Password;
+                        parameters[8].Value = competition.CompetitionId;
+                        cmd.Parameters.AddRange(parameters);
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
                     }
                 }
-            }
         }
 
         private static bool RemoteUpdateProfile(int userId, string userName, string icon)
@@ -536,34 +542,35 @@ namespace Server
             var k = CheckUser(userName);
             if (k != userId && k != 0)
                 return false;
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "UPDATE User SET UserName=@1, Icon=@2 WHERE UserId=@3";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "UPDATE User SET UserName=@1, Icon=@2 WHERE UserId=@3";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.Int32)
                     };
-                    parameters[0].Value = userName;
-                    parameters[1].Value = icon;
-                    parameters[2].Value = userId;
-                    cmd.Parameters.AddRange(parameters);
-                    try
-                    {
-                        cmd.ExecuteNonQuery();
-                        return true;
-                    }
-                    catch
-                    {
-                        return false;
+                        parameters[0].Value = userName;
+                        parameters[1].Value = icon;
+                        parameters[2].Value = userId;
+                        cmd.Parameters.AddRange(parameters);
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
                     }
                 }
-            }
         }
 
         private static int RemoteLogin(string userName, string password)
@@ -617,28 +624,29 @@ namespace Server
 
         public static void UpdateUserInfo(UserInfo toUpdateInfo)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.String),
                         new SQLiteParameter("@4", DbType.Int32)
                     };
-                    parameters[0].Value = toUpdateInfo.UserName;
-                    parameters[1].Value = toUpdateInfo.Password;
-                    parameters[2].Value = toUpdateInfo.Icon;
-                    parameters[3].Value = toUpdateInfo.UserId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
+                        parameters[0].Value = toUpdateInfo.UserName;
+                        parameters[1].Value = toUpdateInfo.Password;
+                        parameters[2].Value = toUpdateInfo.Icon;
+                        parameters[3].Value = toUpdateInfo.UserId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         private static Task<int> TryLogin(string userName, string passwordHash)
@@ -763,59 +771,61 @@ namespace Server
 
         public static void DeleteUser(IEnumerable<int> toDelete)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    foreach (var t in toDelete)
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
-                        cmd.CommandText = "DELETE From User Where UserId=@1";
-                        SQLiteParameter[] parameters =
+                        foreach (var t in toDelete)
                         {
-                            new SQLiteParameter("@1", DbType.Int32)
-                        };
-                        parameters[0].Value = t;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
-                        cmd.Parameters.Clear();
-                    }
-                }
-            }
-        }
-
-        public static void UpdateUser(IEnumerable<UserInfo> toUpdate)
-        {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
-                {
-                    foreach (var t in toUpdate)
-                        if (CheckUser(t.UserName) != 0)
-                        {
-                            cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
+                            cmd.CommandText = "DELETE From User Where UserId=@1";
                             SQLiteParameter[] parameters =
                             {
-                                new SQLiteParameter("@1", DbType.String),
-                                new SQLiteParameter("@2", DbType.Int32),
-                                new SQLiteParameter("@3", DbType.Int32)
-                            };
-                            parameters[0].Value = t.Password;
-                            parameters[1].Value = t.Type;
-                            parameters[2].Value = t.UserId;
+                            new SQLiteParameter("@1", DbType.Int32)
+                        };
+                            parameters[0].Value = t;
                             cmd.Parameters.AddRange(parameters);
                             cmd.ExecuteNonQuery();
                             cmd.Parameters.Clear();
                         }
-                        else
-                        {
-                            cmd.CommandText =
-                                "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
-                            SQLiteParameter[] parameters =
+                    }
+                }
+        }
+
+        public static void UpdateUser(IEnumerable<UserInfo> toUpdate)
+        {
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
+                {
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
+                    {
+                        foreach (var t in toUpdate)
+                            if (CheckUser(t.UserName) != 0)
                             {
+                                cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
+                                SQLiteParameter[] parameters =
+                                {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.Int32)
+                            };
+                                parameters[0].Value = t.Password;
+                                parameters[1].Value = t.Type;
+                                parameters[2].Value = t.UserId;
+                                cmd.Parameters.AddRange(parameters);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+                            }
+                            else
+                            {
+                                cmd.CommandText =
+                                    "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                                SQLiteParameter[] parameters =
+                                {
                                 new SQLiteParameter("@1", DbType.String),
                                 new SQLiteParameter("@2", DbType.String),
                                 new SQLiteParameter("@3", DbType.String),
@@ -825,72 +835,73 @@ namespace Server
                                 new SQLiteParameter("@7", DbType.Int32),
                                 new SQLiteParameter("@8", DbType.Int32)
                             };
-                            parameters[0].Value = t.UserName;
-                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                            parameters[2].Value = t.Password;
-                            parameters[3].Value = t.Type;
-                            parameters[4].Value = string.Empty;
-                            parameters[5].Value = string.Empty;
-                            parameters[6].Value = 0;
-                            parameters[7].Value = 0;
-                            cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
-                            cmd.Parameters.Clear();
-                        }
+                                parameters[0].Value = t.UserName;
+                                parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                parameters[2].Value = t.Password;
+                                parameters[3].Value = t.Type;
+                                parameters[4].Value = string.Empty;
+                                parameters[5].Value = string.Empty;
+                                parameters[6].Value = 0;
+                                parameters[7].Value = 0;
+                                cmd.Parameters.AddRange(parameters);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+                            }
+                    }
                 }
-            }
         }
 
         public static List<string> SaveUser(IEnumerable<int> toDelete)
         {
             var failed = new List<string>();
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    foreach (var t in toDelete)
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
-                        cmd.CommandText = "DELETE From User Where UserId=@1";
-                        SQLiteParameter[] parameters =
+                        foreach (var t in toDelete)
                         {
-                            new SQLiteParameter("@1", DbType.Int32)
-                        };
-                        parameters[0].Value = t;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
-                        cmd.Parameters.Clear();
-                    }
-                    foreach (var t in UserHelper.UsersBelongs)
-                        if (t.UserId != 0)
-                        {
-                            if (!(t.IsChanged ?? false)) continue;
-                            cmd.CommandText = "UPDATE User SET Password=@1, Type=@2 WHERE UserId=@3";
+                            cmd.CommandText = "DELETE From User Where UserId=@1";
                             SQLiteParameter[] parameters =
                             {
-                                new SQLiteParameter("@1", DbType.String),
-                                new SQLiteParameter("@2", DbType.Int32),
-                                new SQLiteParameter("@3", DbType.Int32)
-                            };
-                            parameters[0].Value = t.Password;
-                            parameters[1].Value = t.Type;
-                            parameters[2].Value = t.UserId;
+                            new SQLiteParameter("@1", DbType.Int32)
+                        };
+                            parameters[0].Value = t;
                             cmd.Parameters.AddRange(parameters);
                             cmd.ExecuteNonQuery();
                             cmd.Parameters.Clear();
                         }
-                        else
-                        {
-                            if (CheckUser(t.UserName) != 0)
+                        foreach (var t in UserHelper.UsersBelongs)
+                            if (t.UserId != 0)
                             {
-                                failed.Add(t.UserName);
-                                continue;
+                                if (!(t.IsChanged ?? false)) continue;
+                                cmd.CommandText = "UPDATE User SET Password=@1, Type=@2 WHERE UserId=@3";
+                                SQLiteParameter[] parameters =
+                                {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.Int32)
+                            };
+                                parameters[0].Value = t.Password;
+                                parameters[1].Value = t.Type;
+                                parameters[2].Value = t.UserId;
+                                cmd.Parameters.AddRange(parameters);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
                             }
-                            cmd.CommandText =
-                                "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
-                            SQLiteParameter[] parameters =
+                            else
                             {
+                                if (CheckUser(t.UserName) != 0)
+                                {
+                                    failed.Add(t.UserName);
+                                    continue;
+                                }
+                                cmd.CommandText =
+                                    "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                                SQLiteParameter[] parameters =
+                                {
                                 new SQLiteParameter("@1", DbType.String),
                                 new SQLiteParameter("@2", DbType.String),
                                 new SQLiteParameter("@3", DbType.String),
@@ -900,20 +911,20 @@ namespace Server
                                 new SQLiteParameter("@7", DbType.Int32),
                                 new SQLiteParameter("@8", DbType.Int32)
                             };
-                            parameters[0].Value = t.UserName;
-                            parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                            parameters[2].Value = t.Password;
-                            parameters[3].Value = t.Type;
-                            parameters[4].Value = string.Empty;
-                            parameters[5].Value = string.Empty;
-                            parameters[6].Value = 0;
-                            parameters[7].Value = 0;
-                            cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
-                            cmd.Parameters.Clear();
-                        }
+                                parameters[0].Value = t.UserName;
+                                parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                parameters[2].Value = t.Password;
+                                parameters[3].Value = t.Type;
+                                parameters[4].Value = string.Empty;
+                                parameters[5].Value = string.Empty;
+                                parameters[6].Value = 0;
+                                parameters[7].Value = 0;
+                                cmd.Parameters.AddRange(parameters);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+                            }
+                    }
                 }
-            }
             return failed;
         }
 
@@ -943,32 +954,34 @@ namespace Server
 
         public static void ClearJudgeLog()
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "Delete From Judge";
-                    cmd.ExecuteNonQuery();
-                    cmd.CommandText = "DELETE FROM sqlite_sequence WHERE name = 'Judge'";
-                    cmd.ExecuteNonQuery();
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
+                    {
+                        cmd.CommandText = "Delete From Judge";
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = "DELETE FROM sqlite_sequence WHERE name = 'Judge'";
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         public static void DeleteCompetition(int competitionId)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
-                    cmd.ExecuteNonQuery();
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
+                    {
+                        cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         public static Competition GetCompetition(int competitionId)
@@ -1429,45 +1442,46 @@ namespace Server
             }
             return problemName;
         }
-
         public static int NewJudge(string description, int competitionId = 0)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "Insert into Judge (Date, Description, CompetitionId) VALUES (@1, @2, @3)";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "Insert into Judge (Date, Description, CompetitionId) VALUES (@1, @2, @3)";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.Int32)
                     };
-                    parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[1].Value = description;
-                    parameters[2].Value = competitionId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                    cmd.CommandText = "select last_insert_rowid() from Judge";
-                    return Convert.ToInt32(cmd.ExecuteScalar());
+                        parameters[0].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[1].Value = description;
+                        parameters[2].Value = competitionId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = "select last_insert_rowid() from Judge";
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
                 }
-            }
         }
 
         public static void UpdateJudgeInfo(JudgeInfo pInfo)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText =
-                        "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText =
+                            "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.Int32),
                         new SQLiteParameter("@2", DbType.Int32),
                         new SQLiteParameter("@3", DbType.String),
@@ -1482,45 +1496,45 @@ namespace Server
                         new SQLiteParameter("@12", DbType.Int32),
                         new SQLiteParameter("@13", DbType.String)
                     };
-                    parameters[0].Value = pInfo.UserId;
-                    parameters[1].Value = pInfo.ProblemId;
-                    parameters[2].Value = pInfo.Code;
-                    string timeused = string.Empty,
-                        memoryused = string.Empty,
-                        exitcode = string.Empty,
-                        result = string.Empty,
-                        score = string.Empty;
-                    for (var i = 0; i < pInfo.Result.Length; i++)
-                        if (i != pInfo.Timeused.Length - 1)
-                        {
-                            timeused += pInfo.Timeused[i] + ",";
-                            memoryused += pInfo.Memoryused[i] + ",";
-                            exitcode += pInfo.Exitcode[i] + ",";
-                            result += pInfo.Result[i] + ",";
-                            score += pInfo.Score[i] + ",";
-                        }
-                        else
-                        {
-                            timeused += pInfo.Timeused[i];
-                            memoryused += pInfo.Memoryused[i];
-                            exitcode += pInfo.Exitcode[i];
-                            result += pInfo.Result[i];
-                            score += pInfo.Score[i];
-                        }
-                    parameters[3].Value = timeused;
-                    parameters[4].Value = memoryused;
-                    parameters[5].Value = exitcode;
-                    parameters[6].Value = result;
-                    parameters[7].Value = score;
-                    parameters[8].Value = pInfo.JudgeId;
-                    parameters[9].Value = pInfo.Type;
-                    parameters[10].Value = pInfo.Description;
-                    parameters[11].Value = pInfo.CompetitionId;
-                    parameters[12].Value = pInfo.AdditionInfo;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
+                        parameters[0].Value = pInfo.UserId;
+                        parameters[1].Value = pInfo.ProblemId;
+                        parameters[2].Value = pInfo.Code;
+                        string timeused = string.Empty,
+                            memoryused = string.Empty,
+                            exitcode = string.Empty,
+                            result = string.Empty,
+                            score = string.Empty;
+                        for (var i = 0; i < pInfo.Result.Length; i++)
+                            if (i != pInfo.Timeused.Length - 1)
+                            {
+                                timeused += pInfo.Timeused[i] + ",";
+                                memoryused += pInfo.Memoryused[i] + ",";
+                                exitcode += pInfo.Exitcode[i] + ",";
+                                result += pInfo.Result[i] + ",";
+                                score += pInfo.Score[i] + ",";
+                            }
+                            else
+                            {
+                                timeused += pInfo.Timeused[i];
+                                memoryused += pInfo.Memoryused[i];
+                                exitcode += pInfo.Exitcode[i];
+                                result += pInfo.Result[i];
+                                score += pInfo.Score[i];
+                            }
+                        parameters[3].Value = timeused;
+                        parameters[4].Value = memoryused;
+                        parameters[5].Value = exitcode;
+                        parameters[6].Value = result;
+                        parameters[7].Value = score;
+                        parameters[8].Value = pInfo.JudgeId;
+                        parameters[9].Value = pInfo.Type;
+                        parameters[10].Value = pInfo.Description;
+                        parameters[11].Value = pInfo.CompetitionId;
+                        parameters[12].Value = pInfo.AdditionInfo;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         public static ObservableCollection<Problem> QueryProblems(bool withPrivate, int start = 0, int count = -10)
@@ -1605,16 +1619,17 @@ namespace Server
 
         public static int NewProblem()
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText =
-                        "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText =
+                            "Insert into Problem (ProblemName, AddDate, Level, DataSets, Type, SpecialJudge, ExtraFiles, InputFileName, OutputFileName, CompileCommand, Option, Description) VALUES (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12)";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.String),
                         new SQLiteParameter("@3", DbType.Int32),
@@ -1628,58 +1643,60 @@ namespace Server
                         new SQLiteParameter("@11", DbType.String),
                         new SQLiteParameter("@12", DbType.String)
                     };
-                    parameters[0].Value = string.Empty;
-                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                    parameters[2].Value = 1;
-                    parameters[3].Value = JsonConvert.SerializeObject(new Data[0]);
-                    parameters[4].Value = 0;
-                    parameters[5].Value = string.Empty;
-                    parameters[6].Value = JsonConvert.SerializeObject(new string[0]);
-                    parameters[7].Value = "${name}.in";
-                    parameters[8].Value = "${name}.out";
-                    parameters[9].Value = string.Empty;
-                    parameters[10].Value = 0;
-                    parameters[11].Value = string.Empty;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
-                    cmd.CommandText = "select last_insert_rowid() from Problem";
-                    return Convert.ToInt32(cmd.ExecuteScalar());
+                        parameters[0].Value = string.Empty;
+                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                        parameters[2].Value = 1;
+                        parameters[3].Value = JsonConvert.SerializeObject(new Data[0]);
+                        parameters[4].Value = 0;
+                        parameters[5].Value = string.Empty;
+                        parameters[6].Value = JsonConvert.SerializeObject(new string[0]);
+                        parameters[7].Value = "${name}.in";
+                        parameters[8].Value = "${name}.out";
+                        parameters[9].Value = string.Empty;
+                        parameters[10].Value = 0;
+                        parameters[11].Value = string.Empty;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = "select last_insert_rowid() from Problem";
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
                 }
-            }
         }
 
         public static void DeleteProblem(int problemId)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText = "Delete from Problem Where ProblemId=@1";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText = "Delete from Problem Where ProblemId=@1";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.Int32)
                     };
-                    parameters[0].Value = problemId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
+                        parameters[0].Value = problemId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         public static void UpdateProblem(Problem toUpdateProblem)
         {
-            using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
-            {
-                sqLite.Open();
-
-                using (var cmd = new SQLiteCommand(sqLite))
+            lock (DataBaseLock)
+                using (var sqLite = new SQLiteConnection("Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;"))
                 {
-                    cmd.CommandText =
-                        "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";
-                    SQLiteParameter[] parameters =
+                    sqLite.Open();
+
+                    using (var cmd = new SQLiteCommand(sqLite))
                     {
+                        cmd.CommandText =
+                            "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";
+                        SQLiteParameter[] parameters =
+                        {
                         new SQLiteParameter("@1", DbType.String),
                         new SQLiteParameter("@2", DbType.Int32),
                         new SQLiteParameter("@3", DbType.String),
@@ -1693,22 +1710,22 @@ namespace Server
                         new SQLiteParameter("@11", DbType.String),
                         new SQLiteParameter("@12", DbType.Int32)
                     };
-                    parameters[0].Value = toUpdateProblem.ProblemName;
-                    parameters[1].Value = toUpdateProblem.Level;
-                    parameters[2].Value = JsonConvert.SerializeObject(toUpdateProblem.DataSets);
-                    parameters[3].Value = toUpdateProblem.Type;
-                    parameters[4].Value = toUpdateProblem.SpecialJudge;
-                    parameters[5].Value = JsonConvert.SerializeObject(toUpdateProblem.ExtraFiles);
-                    parameters[6].Value = toUpdateProblem.InputFileName;
-                    parameters[7].Value = toUpdateProblem.OutputFileName;
-                    parameters[8].Value = toUpdateProblem.CompileCommand;
-                    parameters[9].Value = toUpdateProblem.Option;
-                    parameters[10].Value = toUpdateProblem.Description;
-                    parameters[11].Value = toUpdateProblem.ProblemId;
-                    cmd.Parameters.AddRange(parameters);
-                    cmd.ExecuteNonQuery();
+                        parameters[0].Value = toUpdateProblem.ProblemName;
+                        parameters[1].Value = toUpdateProblem.Level;
+                        parameters[2].Value = JsonConvert.SerializeObject(toUpdateProblem.DataSets);
+                        parameters[3].Value = toUpdateProblem.Type;
+                        parameters[4].Value = toUpdateProblem.SpecialJudge;
+                        parameters[5].Value = JsonConvert.SerializeObject(toUpdateProblem.ExtraFiles);
+                        parameters[6].Value = toUpdateProblem.InputFileName;
+                        parameters[7].Value = toUpdateProblem.OutputFileName;
+                        parameters[8].Value = toUpdateProblem.CompileCommand;
+                        parameters[9].Value = toUpdateProblem.Option;
+                        parameters[10].Value = toUpdateProblem.Description;
+                        parameters[11].Value = toUpdateProblem.ProblemId;
+                        cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
         }
 
         #endregion
