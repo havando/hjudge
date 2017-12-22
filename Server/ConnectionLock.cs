@@ -1,9 +1,12 @@
-﻿namespace Server
+﻿using System;
+using System.Threading;
+
+namespace Server
 {
     public static partial class Connection
     {
         public static readonly object ComparingLock = new object();
-        private static readonly object DataBaseLock = new object();
+        private static UsingLock DataBaseLock = new UsingLock();
         public static readonly object ResourceLoadingLock = new object();
         public static readonly object JudgeListCntLock = new object();
         private static readonly object ActionCounterLock = new object();

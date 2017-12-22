@@ -26,7 +26,7 @@ namespace Server
             Icon = Properties.Resources.Server
         };
 
-        private ConcurrentQueue<Task> _uiUpdate = new ConcurrentQueue<Task>();
+        private ConcurrentQueue<Thread> _uiUpdate = new ConcurrentQueue<Thread>();
 
         private JudgeLogs _judgeLogsForm;
 
@@ -132,18 +132,19 @@ namespace Server
                         _status = content;
                         return null;
                     }
+                    if (Dispatcher.Invoke(() => StopRefresh.IsChecked ?? false)) return null;
                     if (!remove)
                     {
                         if (textBlock is TextBlock tb)
                         {
                             tb.Text = content;
-                            _uiUpdate.Enqueue(new Task(() =>
+                            _uiUpdate.Enqueue(new Thread(() =>
                                 Dispatcher.Invoke(() => ListBox.Items.Refresh())));
                             return tb;
                         }
                         var t = new TextBlock { Text = content };
                         _uiUpdate.Enqueue(
-                        new Task(() => Dispatcher.Invoke(() =>
+                        new Thread(() => Dispatcher.Invoke(() =>
                         {
                             ListBox.Items.Add(t);
                             if (ListBox.Items.Count > 500) ListBox.Items.RemoveAt(0);
@@ -151,7 +152,7 @@ namespace Server
                         })));
                         return t;
                     }
-                    _uiUpdate.Enqueue(new Task(() =>
+                    _uiUpdate.Enqueue(new Thread(() =>
                     Dispatcher.Invoke(() => ListBox.Items.Remove(textBlock))));
                 }
                 catch
@@ -179,19 +180,20 @@ namespace Server
         {
             while (!Connection.IsExited)
             {
-                var cnt = 50;
+                var cnt = 100;
                 if (_uiUpdate.Count != 0)
                     while (_uiUpdate.TryDequeue(out var task))
                     {
-                        try
-                        {
-                            task.Start();
-                            task.Wait();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                        if (!Dispatcher.Invoke(() => StopRefresh.IsChecked ?? false))
+                            try
+                            {
+                                task.Start();
+                                task.Join();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
                         if (cnt-- == 0) break;
                         Thread.Sleep(1);
                     }

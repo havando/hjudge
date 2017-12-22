@@ -173,6 +173,7 @@
     </Compile>
     <Compile Include="UserHelper.cs" />
     <Compile Include="UserInfo.cs" />
+    <Compile Include="UsingLock.cs" />
     <Page Include="CompetitionManagement.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

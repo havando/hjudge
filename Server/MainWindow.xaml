@@ -35,6 +35,7 @@
                       Width="482">
                 <Grid>
                     <ListBox Name="ListBox" SelectionMode="Single" Margin="0,0,0,21" />
+                    <CheckBox Name="StopRefresh" Content="停止刷新" HorizontalAlignment="Left" Height="16" Margin="0,198,0,0" VerticalAlignment="Top"/>
                     <TextBlock Name="OverLoad" HorizontalAlignment="Right" Margin="0,197,0,0" TextWrapping="Wrap"
                                Text="当前负荷：待投递任务：0，待处理任务：0。已完成任务：0" VerticalAlignment="Top" />
                 </Grid>
