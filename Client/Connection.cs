@@ -401,7 +401,7 @@ namespace Client
                                             }
                                             if (res.Operation == "RequestClient")
                                             {
-                                                using (var zFile = new ZipFile(
+                                                using (var zFile = new Ionic.Zip.ZipFile(
                                                     $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}")
                                                 )
                                                 {
