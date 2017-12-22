@@ -870,6 +870,7 @@ namespace Client
             }
             else if (experience >= 256)
             {
+                _bonus = 1.12F;
                 Level.Content = "不屈白银 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));

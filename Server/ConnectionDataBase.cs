@@ -808,10 +808,10 @@ namespace Server
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    
+                    using (var trans = sqLite.BeginTransaction())
                     {
-                        using (var trans = sqLite.BeginTransaction())
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
                             foreach (var t in toDelete)
                             {
@@ -825,14 +825,14 @@ namespace Server
                                 cmd.ExecuteNonQuery();
                                 cmd.Parameters.Clear();
                             }
-                            try
-                            {
-                                trans.Commit();
-                            }
-                            catch
-                            {
-                                trans.Rollback();
-                            }
+                        }
+                        try
+                        {
+                            trans.Commit();
+                        }
+                        catch
+                        {
+                            trans.Rollback();
                         }
                     }
                 }
@@ -895,14 +895,14 @@ namespace Server
                                     cmd.ExecuteNonQuery();
                                     cmd.Parameters.Clear();
                                 }
-                            try
-                            {
-                                trans.Commit();
-                            }
-                            catch
-                            {
-                                trans.Rollback();
-                            }
+                        }
+                        try
+                        {
+                            trans.Commit();
+                        }
+                        catch
+                        {
+                            trans.Rollback();
                         }
                     }
                 }
