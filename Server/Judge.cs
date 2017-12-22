@@ -617,17 +617,14 @@ namespace Server
                             JudgeResult.Exitcode[cur] = 0;
                         }
                     }
-                    Parallel.ForEach(processes, i =>
+                    try
                     {
-                        try
-                        {
-                            i.Kill();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                    });
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     try
                     {
                         execute?.Kill();
@@ -672,18 +669,15 @@ namespace Server
                             }
                             noRespondingState = true;
                         }
-                        Parallel.ForEach(processes, i =>
+                        try
                         {
-                            try
-                            {
-                                i.Close();
-                                i.Dispose();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        });
+                            process.Close();
+                            process.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                         try
                         {
                             execute?.Close();
@@ -698,18 +692,15 @@ namespace Server
                     }
                     if (_isFault)
                     {
-                        Parallel.ForEach(processes, i =>
+                        try
                         {
-                            try
-                            {
-                                i.Close();
-                                i.Dispose();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        });
+                            process.Close();
+                            process.Dispose();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                         try
                         {
                             execute?.Close();
@@ -746,18 +737,15 @@ namespace Server
                         //ignored
                     }
 
-                    Parallel.ForEach(processes, i =>
+                    try
                     {
-                        try
-                        {
-                            i.Close();
-                            i.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                    });
+                        process.Close();
+                        process.Dispose();
+                    }
+                    catch
+                    {
+                        //ignored
+                    }
                     try
                     {
                         execute?.Close();
