@@ -574,8 +574,15 @@ namespace Server
                                     {
                                         flag = true;
                                     }
-                                    if (t.HasExited) break;
-                                    t.Refresh();
+                                    try
+                                    {
+                                        if (t.HasExited) break;
+                                        t.Refresh();
+                                    }
+                                    catch
+                                    {
+                                        //ignored
+                                    }
                                 }
                                 lock (lockobj)
                                 {
