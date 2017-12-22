@@ -515,44 +515,47 @@ namespace Server
                         continue;
                     }
                     var noChangeTime = DateTime.Now;
-                    if (_problem.InputFileName == "stdin")
-                        try
-                        {
-                            res = outputStream.ReadToEndAsync();
-                            inputStream.AutoFlush = true;
-                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                inputStream.WriteAsync(
-                                    File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                .GetAwaiter().OnCompleted(() =>
-                                {
-                                    inputStream.Close();
-                                    inputStream.Dispose();
-                                });
-                            else
+                    new Thread(() =>
+                    {
+                        if (_problem.InputFileName == "stdin")
+                            try
                             {
-                                inputStream.WriteAsync("\0")
-                                .GetAwaiter().OnCompleted(() =>
+                                res = outputStream.ReadToEndAsync();
+                                inputStream.AutoFlush = true;
+                                if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                    inputStream.WriteAsync(
+                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                    .GetAwaiter().OnCompleted(() =>
+                                    {
+                                        inputStream.Close();
+                                        inputStream.Dispose();
+                                    });
+                                else
                                 {
-                                    inputStream.Close();
-                                    inputStream.Dispose();
-                                });
+                                    inputStream.WriteAsync("\0")
+                                    .GetAwaiter().OnCompleted(() =>
+                                    {
+                                        inputStream.Close();
+                                        inputStream.Dispose();
+                                    });
+                                }
                             }
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                    else
-                        try
-                        {
-                            inputStream.Write("\0");
-                            inputStream.Close();
-                            inputStream.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                            catch
+                            {
+                                //ignored
+                            }
+                        else
+                            try
+                            {
+                                inputStream.Write("\0");
+                                inputStream.Close();
+                                inputStream.Dispose();
+                            }
+                            catch
+                            {
+                                //ignored
+                            }
+                    }).Start();
                     while (!_isExited)
                     {
                         try
