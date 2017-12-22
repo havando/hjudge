@@ -560,33 +560,27 @@ namespace Server
                             long tmpTime = 0, tmpMem = 0;
                             Parallel.ForEach(processes, t =>
                             {
-                                try
+                                long mem = 0;
+                                double time = 0;
+                                bool flag = false;
+                                for (var i = 0; i < 100 && !flag; i++)
                                 {
-                                    long mem = 0;
-                                    double time = 0;
-                                    bool flag = false;
-                                    for (var i = 0; i < 50 && !flag; i++)
+                                    try
                                     {
-                                        try
-                                        {
-                                            mem = Math.Max(mem, t.PeakWorkingSet64);
-                                            time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
-                                        }
-                                        catch
-                                        {
-                                            flag = true;
-                                        }
-                                        t.Refresh();
+                                        time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
+                                        mem = Math.Max(mem, t.PeakWorkingSet64);
                                     }
-                                    lock (lockobj)
+                                    catch
                                     {
-                                        tmpMem += mem / 1024;
-                                        tmpTime += Convert.ToInt64(time);
+                                        flag = true;
                                     }
+                                    if (t.HasExited) break;
+                                    t.Refresh();
                                 }
-                                catch
+                                lock (lockobj)
                                 {
-                                    //ignored
+                                    tmpMem += mem / 1024;
+                                    tmpTime += Convert.ToInt64(time);
                                 }
                             });
                             if (tmpTime > JudgeResult.Timeused[cur])
@@ -596,11 +590,30 @@ namespace Server
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
-                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 60)
+                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 30)
                                 {
                                     _isExited = true;
                                     isNoResponding = true;
                                     break;
+                                }
+                                Parallel.ForEach(processes, i =>
+                                {
+                                    try
+                                    {
+                                        i.CloseMainWindow();
+                                    }
+                                    catch
+                                    {
+                                        //ignored
+                                    }
+                                });
+                                try
+                                {
+                                    execute?.CloseMainWindow();
+                                }
+                                catch
+                                {
+                                    //ignored
                                 }
                             }
                             else
@@ -628,25 +641,6 @@ namespace Server
                             JudgeResult.Result[cur] = "Memory Limit Exceeded";
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
-                        }
-                        Parallel.ForEach(processes, i =>
-                        {
-                            try
-                            {
-                                i.CloseMainWindow();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        });
-                        try
-                        {
-                            execute?.CloseMainWindow();
-                        }
-                        catch
-                        {
-                            //ignored
                         }
                         Thread.Sleep(1);
                     }
