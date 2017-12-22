@@ -470,6 +470,8 @@ namespace Server
                     _isExited = false;
                     var startCatch = DateTime.Now;
                     var processes = new Process[0];
+                    long lastDt = 0;
+                    var isNoResponding = false;
                     try
                     {
                         execute.Start();
@@ -483,14 +485,11 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
-                    long lastDt = 0;
-                    var lockobj = new object();
-                    var isNoResponding = false;
                     var inputStream = execute.StandardInput;
                     var outputStream = execute.StandardOutput;
                     while (processes.Length == 0)
                     {
-                        if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 60)
+                        if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 10)
                         {
                             failToCatchProcess = true;
                             break;
@@ -502,6 +501,14 @@ namespace Server
                         JudgeResult.Result[cur] = "Unknown Error";
                         JudgeResult.Score[cur] = 0;
                         failToCatchProcessTime[cur]++;
+                        try
+                        {
+                            execute?.Kill();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                         try
                         {
                             execute?.Close();
@@ -517,81 +524,53 @@ namespace Server
                     var noChangeTime = DateTime.Now;
                     new Thread(() =>
                     {
-                        if (_problem.InputFileName == "stdin")
-                            try
-                            {
-                                res = outputStream.ReadToEndAsync();
-                                inputStream.AutoFlush = true;
-                                if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                    inputStream.WriteAsync(
-                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                    .GetAwaiter().OnCompleted(() =>
-                                    {
-                                        inputStream.Close();
-                                        inputStream.Dispose();
-                                    });
-                                else
+                        lock (Connection.StdinWriterLock)
+                            if (_problem.InputFileName == "stdin")
+                                try
                                 {
-                                    inputStream.WriteAsync("\0")
-                                    .GetAwaiter().OnCompleted(() =>
+                                    res = outputStream.ReadToEndAsync();
+                                    inputStream.AutoFlush = true;
+                                    if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                        inputStream.WriteAsync(
+                                            File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                        .GetAwaiter().OnCompleted(() =>
+                                        {
+                                            inputStream.Close();
+                                            inputStream.Dispose();
+                                        });
+                                    else
                                     {
-                                        inputStream.Close();
-                                        inputStream.Dispose();
-                                    });
+                                        inputStream.WriteAsync("\0")
+                                        .GetAwaiter().OnCompleted(() =>
+                                        {
+                                            inputStream.Close();
+                                            inputStream.Dispose();
+                                        });
+                                    }
                                 }
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                        else
-                            try
-                            {
-                                inputStream.Write("\0");
-                                inputStream.Close();
-                                inputStream.Dispose();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
+                                catch
+                                {
+                                    //ignored
+                                }
+                            else
+                                try
+                                {
+                                    inputStream.Write("\0");
+                                    inputStream.Close();
+                                    inputStream.Dispose();
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
                     }).Start();
+                    var process = processes[0];
                     while (!_isExited)
                     {
                         try
                         {
-                            long tmpTime = 0, tmpMem = 0;
-                            Parallel.ForEach(processes, t =>
-                            {
-                                long mem = 0;
-                                double time = 0;
-                                try
-                                {
-                                    time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
-                                    mem = Math.Max(mem, t.PeakWorkingSet64);
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                                try
-                                {
-                                    t.Refresh();
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                                lock (lockobj)
-                                {
-                                    tmpMem += mem / 1024;
-                                    tmpTime += Convert.ToInt64(time);
-                                }
-                            });
-                            if (tmpTime > JudgeResult.Timeused[cur])
-                                JudgeResult.Timeused[cur] = tmpTime;
-                            if (tmpMem > JudgeResult.Memoryused[cur])
-                                JudgeResult.Memoryused[cur] = tmpMem;
+                            JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
+                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
@@ -601,20 +580,9 @@ namespace Server
                                     isNoResponding = true;
                                     break;
                                 }
-                                Parallel.ForEach(processes, i =>
-                                {
-                                    try
-                                    {
-                                        i.CloseMainWindow();
-                                    }
-                                    catch
-                                    {
-                                        //ignored
-                                    }
-                                });
                                 try
                                 {
-                                    execute?.CloseMainWindow();
+                                    process.CloseMainWindow();
                                 }
                                 catch
                                 {
@@ -626,6 +594,7 @@ namespace Server
                                 noChangeTime = DateTime.Now;
                                 lastDt = JudgeResult.Timeused[cur];
                             }
+                            process.Refresh();
                         }
                         catch
                         {
@@ -647,7 +616,6 @@ namespace Server
                             JudgeResult.Score[cur] = 0;
                             JudgeResult.Exitcode[cur] = 0;
                         }
-                        Thread.Sleep(1);
                     }
                     Parallel.ForEach(processes, i =>
                     {

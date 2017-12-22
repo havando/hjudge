@@ -12,5 +12,6 @@ namespace Server
         private static readonly object ActionCounterLock = new object();
         public static readonly object AdditionWorkingThreadLock = new object();
         public static readonly object RemoveClientLock = new object();
+        public static readonly object StdinWriterLock = new object();
     }
 }
