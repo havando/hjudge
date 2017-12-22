@@ -521,6 +521,7 @@ namespace Server
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
+                    var process = processes[0];
                     var noChangeTime = DateTime.Now;
                     new Thread(() =>
                     {
@@ -564,7 +565,6 @@ namespace Server
                                     //ignored
                                 }
                     }).Start();
-                    var process = processes[0];
                     while (!_isExited)
                     {
                         try
