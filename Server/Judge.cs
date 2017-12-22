@@ -563,7 +563,7 @@ namespace Server
                                 long mem = 0;
                                 double time = 0;
                                 bool flag = false;
-                                for (var i = 0; i < 100 && !flag; i++)
+                                for (var i = 0; i < 100 && !flag && !_isExited; i++)
                                 {
                                     try
                                     {
