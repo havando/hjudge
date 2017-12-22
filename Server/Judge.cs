@@ -562,26 +562,22 @@ namespace Server
                             {
                                 long mem = 0;
                                 double time = 0;
-                                bool flag = false;
-                                for (var i = 0; i < 100 && !flag && !_isExited; i++)
+                                try
                                 {
-                                    try
-                                    {
-                                        time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
-                                        mem = Math.Max(mem, t.PeakWorkingSet64);
-                                    }
-                                    catch
-                                    {
-                                        flag = true;
-                                    }
-                                    try
-                                    {
-                                        t.Refresh();
-                                    }
-                                    catch
-                                    {
-                                        //ignored
-                                    }
+                                    time = Math.Max(time, t.UserProcessorTime.TotalMilliseconds);
+                                    mem = Math.Max(mem, t.PeakWorkingSet64);
+                                }
+                                catch
+                                {
+                                    //ignored
+                                }
+                                try
+                                {
+                                    t.Refresh();
+                                }
+                                catch
+                                {
+                                    //ignored
                                 }
                                 lock (lockobj)
                                 {
