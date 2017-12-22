@@ -801,7 +801,7 @@ namespace Server
                                             p = Regex.Replace(p, @"\s", string.Empty);
                                             var gs = Convert.ToSingle(p);
                                             JudgeResult.Score[cur] = _problem.DataSets[cur].Score * gs;
-                                            if (Math.Abs(gs - 1) > 0.000001F)
+                                            if (Math.Abs(gs - 1) > 0.00001F)
                                                 JudgeResult.Result[cur] = "Wrong Answer";
                                             else
                                                 JudgeResult.Result[cur] = "Correct";
