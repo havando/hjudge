@@ -576,7 +576,6 @@ namespace Server
                                     }
                                     try
                                     {
-                                        if (t.HasExited) break;
                                         t.Refresh();
                                     }
                                     catch
