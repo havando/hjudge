@@ -1674,57 +1674,30 @@ namespace Server
                         if (!reader.HasRows) return curJudgeInfo;
                         while (reader.Read())
                         {
-                            if (count != -10)
-                            {
-                                if (start-- > 0) continue;
-                                if (count-- == 0) break;
-                            }
                             try
                             {
-                                if (!withPrivate)
+                                if (!withPrivate && (reader.GetInt32(11) & 1) == 0) continue;
+                                if (count != -10)
                                 {
-                                    if ((reader.GetInt32(11) & 1) != 0)
-                                        curJudgeInfo.Add(new Problem
-                                        {
-                                            ProblemId = reader.GetInt32(0),
-                                            ProblemName = reader.GetString(1),
-                                            AddDate = reader.GetString(2),
-                                            Level = reader.GetInt32(3),
-                                            DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
-                                            Type = reader.GetInt32(5),
-                                            SpecialJudge = reader.GetString(6),
-                                            ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
-                                            InputFileName = reader.GetString(8),
-                                            OutputFileName = reader.GetString(9),
-                                            CompileCommand = reader.GetString(10),
-                                            Option = reader.GetInt32(11),
-                                            Description = reader.GetString(12)
-                                        });
-                                    else
-                                    {
-                                        start++;
-                                        if (count != -10) count++;
-                                    }
+                                    if (start-- > 0) continue;
+                                    if (count-- == 0) break;
                                 }
-                                else
+                                curJudgeInfo.Add(new Problem
                                 {
-                                    curJudgeInfo.Add(new Problem
-                                    {
-                                        ProblemId = reader.GetInt32(0),
-                                        ProblemName = reader.GetString(1),
-                                        AddDate = reader.GetString(2),
-                                        Level = reader.GetInt32(3),
-                                        DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
-                                        Type = reader.GetInt32(5),
-                                        SpecialJudge = reader.GetString(6),
-                                        ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
-                                        InputFileName = reader.GetString(8),
-                                        OutputFileName = reader.GetString(9),
-                                        CompileCommand = reader.GetString(10),
-                                        Option = reader.GetInt32(11),
-                                        Description = reader.GetString(12)
-                                    });
-                                }
+                                    ProblemId = reader.GetInt32(0),
+                                    ProblemName = reader.GetString(1),
+                                    AddDate = reader.GetString(2),
+                                    Level = reader.GetInt32(3),
+                                    DataSets = JsonConvert.DeserializeObject<Data[]>(reader.GetString(4)),
+                                    Type = reader.GetInt32(5),
+                                    SpecialJudge = reader.GetString(6),
+                                    ExtraFiles = JsonConvert.DeserializeObject<string[]>(reader.GetString(7)),
+                                    InputFileName = reader.GetString(8),
+                                    OutputFileName = reader.GetString(9),
+                                    CompileCommand = reader.GetString(10),
+                                    Option = reader.GetInt32(11),
+                                    Description = reader.GetString(12)
+                                });
                             }
                             catch
                             {
