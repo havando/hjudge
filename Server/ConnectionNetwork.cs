@@ -1968,7 +1968,7 @@ namespace Server
                             res.obj.Client.ConnId, res.token);
                     }
                 }
-                Thread.Sleep(1);
+                else Thread.Sleep(1);
             }
         }
 
@@ -2058,7 +2058,7 @@ namespace Server
                             last = ActionList.Count;
                         }
                     }
-                    Thread.Sleep(1);
+                    else Thread.Sleep(1);
                 }
             }).Start();
         }
