@@ -488,7 +488,7 @@ namespace Server
                             parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                             parameters[2].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                             parameters[3].Value = JsonConvert.SerializeObject(new int[0]);
-                            parameters[4].Value = 25;
+                            parameters[4].Value = 121;
                             parameters[5].Value = string.Empty;
                             parameters[6].Value = string.Empty;
                             parameters[7].Value = 0;
@@ -808,7 +808,7 @@ namespace Server
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-                    
+
                     using (var trans = sqLite.BeginTransaction())
                     {
                         using (var cmd = new SQLiteCommand(sqLite))
@@ -1093,7 +1093,7 @@ namespace Server
             }
         }
 
-        public static ObservableCollection<Competition> QueryCompetition(int start = 0, int count = -10)
+        public static ObservableCollection<Competition> QueryCompetition(int start = 0, int count = -10, bool withPrivate = true)
         {
             var a = new ObservableCollection<Competition>();
             using (DataBaseLock.Read())
@@ -1109,6 +1109,7 @@ namespace Server
                         if (reader.HasRows)
                             while (reader.Read())
                             {
+                                if (!withPrivate && (reader.GetInt32(5) & 256) != 0) continue;
                                 if (count != -10)
                                 {
                                     if (start-- > 0) continue;

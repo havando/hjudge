@@ -76,6 +76,14 @@ namespace Client
                 else DelayNotify.IsChecked = true;
                 if ((t.Option & 16) != 0) ShowRank.IsChecked = true;
                 else HideRank.IsChecked = true;
+                if ((t.Option & 32) != 0) ShowScore.IsChecked = true;
+                else HideScore.IsChecked = true;
+                if ((t.Option & 64) != 0) AllRank.IsChecked = true;
+                else StopRank.IsChecked = true;
+                if ((t.Option & 128) != 0) FullResult.IsChecked = true;
+                else SummaryReulst.IsChecked = true;
+                if ((t.Option & 256) != 0) ToPublic.IsChecked = true;
+                else ToPrivate.IsChecked = true;
                 LimitedSubmitTime.Text = t.SubmitLimit.ToString();
                 ComPassword.Text = t.Password;
                 ComNote.Text = t.Description;
@@ -145,6 +153,10 @@ namespace Client
             if (TimeCount.IsChecked ?? false) t.Option |= 4;
             if (IntimeNotify.IsChecked ?? false) t.Option |= 8;
             if (ShowRank.IsChecked ?? false) t.Option |= 16;
+            if (ShowScore.IsChecked ?? false) t.Option |= 32;
+            if (AllRank.IsChecked ?? false) t.Option |= 64;
+            if (FullResult.IsChecked ?? false) t.Option |= 128;
+            if (ToPublic.IsChecked ?? false) t.Option |= 256;
             t.Password = ComPassword.Text;
             t.SubmitLimit = Convert.ToInt32(LimitedSubmitTime.Text);
             var tmpProId = new List<int>();

@@ -1583,7 +1583,7 @@ namespace Server
                                     var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryCompetition(start, count)?.Reverse();
+                                        var t = QueryCompetition(start, count, false)?.Reverse();
                                         if (t == null) t = new List<Competition>();
                                         SendData("RequestCompetitionListGrouped",
                                             JsonConvert.SerializeObject(t),
@@ -1596,7 +1596,7 @@ namespace Server
                                     var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryCompetition()?.Reverse();
+                                        var t = QueryCompetition(0, -10, false)?.Reverse();
                                         if (t == null) return;
                                         foreach (var i in t)
                                             SendData("RequestCompetitionList",

@@ -211,6 +211,43 @@ namespace Client
                 }
                 Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId);
+                foreach(var j in problems)
+                {
+                    if (x.Any(k => k.ProblemId == j.ProblemId && k.UserName == Connection.CurrentUserName && k.ResultSummary == "Accepted"))
+                    {
+                        j.ProblemName = "√ " + j.ProblemName;
+                    }
+                    else if (x.Any(k => k.ProblemId == j.ProblemId && k.UserName == Connection.CurrentUserName))
+                    {
+                        j.ProblemName = "- " + j.ProblemName;
+                    }
+                }
+                for (var i = x.Count; i >= 0; i--)
+                {
+                    if ((_competition.Option & 128) != 0)
+                    {
+                        x[i].AdditionInfo = string.Empty;
+                        x[i].Score = new float[0];
+                        x[i].Result = new string[0];
+                        x[i].Timeused = new long[0];
+                        x[i].Memoryused = new long[0];
+                    }
+                    if ((_competition.Option & 32) != 0)
+                    {
+                        if (x[i].ResultSummary != "Accepted")
+                            for (var j = 0; j < x[i].Score.Length; j++)
+                            {
+                                x[i].Score[j] = 0;
+                            }
+                    }
+                    if ((_competition.Option & 64) != 0)
+                    {
+                        if ((_competition.EndTime - Convert.ToDateTime(x[i].JudgeDate)).TotalHours <= 1)
+                        {
+                            x.RemoveAt(i);
+                        }
+                    }
+                }
                 Dispatcher.Invoke(() =>
                 {
                     _curJudgeInfo.Clear();
@@ -257,9 +294,12 @@ namespace Client
                         var cnt = 0;
                         var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
                             .ToList();
+                        var noAccepted = x.Where(p =>
+                                  p.UserName == i && p.ProblemId == _competition.ProblemSet[j] && p.ResultSummary == "Accepted").Count() == 0 ? true : false;
                         if ((_competition.Option & 2) == 0)
                         {
-                            if (tmpScoreBase.Any()) score += tmpScoreBase.Max(p => p.FullScore);
+                            if ((_competition.Option & 32) == 0)
+                                if (tmpScoreBase.Any()) score += tmpScoreBase.Max(p => p.FullScore);
                             tmp.ProblemInfo[j].State = $"{ac}/{all}";
                             foreach (var k in x.Where(p =>
                                 p.UserName == i && p.ProblemId == _competition.ProblemSet[j]))
@@ -269,22 +309,34 @@ namespace Client
                                 totTime += tmpTime;
                                 if (k.ResultSummary == "Accepted")
                                 {
+                                    if ((_competition.Option & 32) != 0)
+                                    {
+                                        score += k.FullScore;
+                                    }
                                     break;
                                 }
                                 if ((_competition.Option & 4) != 0)
                                 {
-                                    time += new TimeSpan(0, 20, 0);
-                                    totTime += new TimeSpan(0, 20, 0);
+                                    if (!noAccepted)
+                                    {
+                                        time += new TimeSpan(0, 20, 0);
+                                        totTime += new TimeSpan(0, 20, 0);
+                                    }
                                     cnt++;
                                 }
                             }
                         }
                         else
                         {
-                            if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
+                            if ((_competition.Option & 32) == 0)
+                                if (tmpScoreBase.Any()) score += tmpScoreBase.LastOrDefault()?.FullScore ?? 0;
                             var y = x.LastOrDefault(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j]);
                             if (y != null && y.ResultSummary == "Accepted")
                             {
+                                if ((_competition.Option & 32) != 0)
+                                {
+                                    score += y.FullScore;
+                                }
                                 tmp.ProblemInfo[j].State = "Solved";
                             }
                             else
@@ -295,8 +347,11 @@ namespace Client
                             if (y != null)
                             {
                                 var tmpTime = Convert.ToDateTime(y.JudgeDate) - _competition.StartTime;
-                                time += tmpTime;
-                                totTime += tmpTime;
+                                if (!noAccepted)
+                                {
+                                    time += tmpTime;
+                                    totTime += tmpTime;
+                                }
                             }
                         }
                         if ((_competition.Option & 4) != 0 && cnt != 0) tmp.ProblemInfo[j].State += $" (-{cnt})";

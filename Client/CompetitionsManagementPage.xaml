@@ -75,14 +75,34 @@
                 <RadioButton Name="TimeCount" Content="罚时计时赛" />
             </DockPanel>
             <DockPanel>
-                <TextBlock Text="评测结果：" />
+                <TextBlock Text="结果评测通知：" />
                 <RadioButton Name="IntimeNotify" IsChecked="True" Content="即时通知" />
                 <RadioButton Name="DelayNotify" Content="赛后通知" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="结果评测信息：" />
+                <RadioButton Name="FullResult" IsChecked="True" Content="完整信息" />
+                <RadioButton Name="SummaryReulst" Content="摘要信息" />
             </DockPanel>
             <DockPanel>
                 <TextBlock Text="排名：" />
                 <RadioButton Name="ShowRank" IsChecked="True" Content="显示" />
                 <RadioButton Name="HideRank" Content="不显示" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="分数：" />
+                <RadioButton Name="ShowScore" IsChecked="True" Content="全计算" />
+                <RadioButton Name="HideScore" Content="仅计算通过项" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="封榜：" />
+                <RadioButton Name="AllRank" IsChecked="True" Content="禁用" />
+                <RadioButton Name="StopRank" Content="启用" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="公开类型：" />
+                <RadioButton Name="ToPublic" IsChecked="True" Content="公开" />
+                <RadioButton Name="ToPrivate" Content="隐藏" />
             </DockPanel>
         </ListBox>
         <Button Content="添加" HorizontalAlignment="Left" Margin="532,0,0,0" VerticalAlignment="Top" Width="43"
