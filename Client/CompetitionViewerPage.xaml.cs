@@ -61,6 +61,14 @@ namespace Client
         public bool SetCompetition(Competition competition, Frame frame, Grid grid)
         {
             _competition = competition;
+            if (string.IsNullOrEmpty(_competition.Description))
+            {
+                _competition.Description = "此比赛暂无描述";
+            }
+            if ((_competition.Option & 64) != 0)
+            {
+                _competition.Description += "\n注意：比赛结束前 1 小时封榜";
+            }
             _mainCompetitionFrame = frame;
             _mainCompetitionGrid = grid;
 
