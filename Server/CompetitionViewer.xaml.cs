@@ -136,7 +136,7 @@ namespace Server
                 Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId, 0);
 
-                for (var i = x.Count; i >= 0; i--)
+                for (var i = x.Count - 1; i >= 0; i--)
                 {
                     if ((_competition.Option & 32) != 0)
                     {

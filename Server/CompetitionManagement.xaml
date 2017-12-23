@@ -76,7 +76,7 @@
             <DockPanel>
                 <TextBlock Text="结果评测信息：" />
                 <RadioButton Name="FullResult" IsChecked="True" Content="完整信息" />
-                <RadioButton Name="SummaryReulst" Content="摘要信息" />
+                <RadioButton Name="SummaryResult" Content="摘要信息" />
             </DockPanel>
             <DockPanel>
                 <TextBlock Text="排名：" />

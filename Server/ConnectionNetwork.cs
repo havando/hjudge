@@ -795,6 +795,10 @@ namespace Server
                                         foreach (var i in pl)
                                             SendData("ProblemList", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
+                                        if (pl.Count() == 0)
+                                            SendData("ProblemList",
+                                                id + Divpar + JsonConvert.SerializeObject(null),
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
@@ -1478,6 +1482,10 @@ namespace Server
                                         foreach (var i in t)
                                             SendData("RequestMsgList", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
+                                        if (t.Count() == 0)
+                                            SendData("RequestMsgList",
+                                                id + Divpar + JsonConvert.SerializeObject(null),
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
@@ -1551,6 +1559,10 @@ namespace Server
                                         foreach (var i in p)
                                             SendData("RequestMsgTargetUser", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
+                                        if (p.Count() == 0)
+                                            SendData("RequestMsgTargetUser",
+                                                id + Divpar + JsonConvert.SerializeObject(null),
+                                                res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
                                 }
@@ -1601,6 +1613,10 @@ namespace Server
                                         foreach (var i in t)
                                             SendData("RequestCompetitionList",
                                                 id + Divpar + JsonConvert.SerializeObject(i),
+                                                res.obj.Client.ConnId, res.token);
+                                        if (t.Count() == 0)
+                                            SendData("RequestCompetitionList",
+                                                id + Divpar + JsonConvert.SerializeObject(null),
                                                 res.obj.Client.ConnId, res.token);
                                     }));
                                     break;

@@ -211,7 +211,7 @@ namespace Client
                 }
                 Dispatcher.Invoke(() => CompetitionState.ItemsSource = _competitionInfo);
                 var x = Connection.QueryJudgeLogBelongsToCompetition(_competition.CompetitionId);
-                foreach(var j in problems)
+                foreach (var j in problems)
                 {
                     if (x.Any(k => k.ProblemId == j.ProblemId && k.UserName == Connection.CurrentUserName && k.ResultSummary == "Accepted"))
                     {
@@ -222,7 +222,7 @@ namespace Client
                         j.ProblemName = "- " + j.ProblemName;
                     }
                 }
-                for (var i = x.Count; i >= 0; i--)
+                for (var i = x.Count - 1; i >= 0; i--)
                 {
                     if ((_competition.Option & 128) != 0)
                     {
@@ -369,7 +369,8 @@ namespace Client
                 for (var i = 0; i < tmpList.Count; i++)
                 {
                     tmpList[i].Rank = i + 1;
-                    Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
+                    if ((_competition.Option & 16) == 0)
+                        Dispatcher.Invoke(() => _competitionInfo.Add(tmpList[i]));
                 }
                 Dispatcher.Invoke(() =>
                 {

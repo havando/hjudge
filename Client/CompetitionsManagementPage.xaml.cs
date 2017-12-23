@@ -81,7 +81,7 @@ namespace Client
                 if ((t.Option & 64) != 0) AllRank.IsChecked = true;
                 else StopRank.IsChecked = true;
                 if ((t.Option & 128) != 0) FullResult.IsChecked = true;
-                else SummaryReulst.IsChecked = true;
+                else SummaryResult.IsChecked = true;
                 if ((t.Option & 256) != 0) ToPublic.IsChecked = true;
                 else ToPrivate.IsChecked = true;
                 LimitedSubmitTime.Text = t.SubmitLimit.ToString();
