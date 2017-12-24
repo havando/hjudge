@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -81,15 +82,27 @@ namespace Server
             UserFilter.ItemsSource = _userFilter;
             Task.Run(() =>
             {
-                var t = Connection.QueryJudgeLog(true);
+                var t = Connection.QueryJudgeLog(true).Reverse();
+                var problemList = t.Select(i => i.ProblemName).Distinct();
+                var userList = t.Select(i => i.UserName).Distinct();
                 foreach (var judgeInfo in t)
+                {
                     Dispatcher.Invoke(() =>
                     {
                         _curJudgeInfo.Add(judgeInfo);
-                        if (_problemFilter.All(i => i != judgeInfo.ProblemName))
-                            _problemFilter.Add(judgeInfo.ProblemName);
-                        if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
                     });
+                    Thread.Sleep(1);
+                }
+                foreach(var problemName in problemList)
+                {
+                    Dispatcher.Invoke(() => _problemFilter.Add(problemName));
+                    Thread.Sleep(1);
+                }
+                foreach(var userName in userList)
+                {
+                    Dispatcher.Invoke(() => _userFilter.Add(userName));
+                    Thread.Sleep(1);
+                }
             });
         }
 
