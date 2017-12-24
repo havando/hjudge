@@ -1629,7 +1629,7 @@ namespace Server
                                         var t = GetCompetition(cid);
                                         var withRank = (t?.Option ?? 0) & 16;
                                         var x = QueryJudgeLogBelongsToCompetition(cid,
-                                            withRank == 0 ? res.obj.Client.UserId : 0);
+                                            withRank != 0 ? res.obj.Client.UserId : 0);
                                         foreach (var i in x)
                                             if (i.UserId != res.obj.Client.UserId) i.Code = string.Empty;
                                         SendData("QueryJudgeLogBelongsToCompetition", JsonConvert.SerializeObject(x),
