@@ -31,6 +31,7 @@ namespace Client
         public JudgingLogsPage()
         {
             InitializeComponent();
+            Load();
         }
 
         private void Label_MouseDown(object sender, MouseButtonEventArgs e)
@@ -130,7 +131,7 @@ namespace Client
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -156,7 +157,7 @@ namespace Client
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -190,12 +191,12 @@ namespace Client
             CheckBox.IsChecked = p == _curJudgeInfo.Count;
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Load()
         {
             var rtf = new RotateTransform
             {
-                CenterX = Dealing.ActualWidth * 0.5,
-                CenterY = Dealing.ActualHeight * 0.5
+                CenterX = Dealing.Width * 0.5,
+                CenterY = Dealing.Height * 0.5
             };
             var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
             {
@@ -213,8 +214,8 @@ namespace Client
             Task.Run(() =>
             {
                 var t = Connection.QueryJudgeLog().Reverse();
-                var problemList = t.Select(i => i.ProblemName).Distinct();
-                var userList = t.Select(i => i.UserName).Distinct();
+                var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
+                var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
                 foreach (var judgeInfo in t)
                 {
                     Dispatcher.Invoke(() =>
@@ -256,40 +257,40 @@ namespace Client
                 switch (tf)
                 {
                     case 0:
-                    {
-                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                        break;
-                    }
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
                     case 1:
-                    {
-                        if ((now - ti).TotalDays > 3) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
                     case 2:
-                    {
-                        if ((now - ti).TotalDays > 7) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
                     case 3:
-                    {
-                        if ((now - ti).TotalDays > 30) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
                     case 4:
-                    {
-                        if ((now - ti).TotalDays > 91) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
                     case 5:
-                    {
-                        if ((now - ti).TotalDays > 182) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
                     case 6:
-                    {
-                        if ((now - ti).TotalDays > 365) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
                 }
             }
             return true;

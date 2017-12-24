@@ -23,16 +23,17 @@ namespace Client
         public MembersManagementPage()
         {
             InitializeComponent();
+            Load();
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Load()
         {
-            var t = Connection.GetUserBelongings();
+            var (type, list) = Connection.GetUserBelongings();
             _curItem = new UserInfo();
             _toDelete?.Clear();
             UserIdentity.Items.Clear();
             UserEdit.Visibility = Visibility.Hidden;
-            switch (t.type)
+            switch (type)
             {
                 case 1:
                     Identity.Content = "BOSS";
@@ -52,10 +53,9 @@ namespace Client
             }
             UserIdentity.SelectedIndex = 0;
             _curUserList.Clear();
-            foreach (var i in t.list)
+            foreach (var i in list)
                 _curUserList.Add(i);
             ListView.ItemsSource = _curUserList;
-            ListView.Items.Refresh();
         }
 
         private void NewUser_Click(object sender, RoutedEventArgs e)
@@ -131,7 +131,7 @@ namespace Client
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Connection.UpdateUserBelongings(_toDelete, _curUserList.ToList());
-            Page_Loaded(null, null);
+            Load();
         }
 
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)

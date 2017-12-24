@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d"
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="MembersManagementPage" Loaded="Page_Loaded">
+      Title="MembersManagementPage">
 
     <Grid>
         <Label Content="您的当前身份：" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalAlignment="Top" />

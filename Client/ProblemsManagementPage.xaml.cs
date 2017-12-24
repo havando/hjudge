@@ -31,6 +31,7 @@ namespace Client
         public ProblemsManagementPage()
         {
             InitializeComponent();
+            Load();
         }
 
         private static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
@@ -47,7 +48,7 @@ namespace Client
                     return;
 
                 objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser,
-                    new object[] {hide});
+                    new object[] { hide });
             };
         }
 
@@ -75,7 +76,7 @@ namespace Client
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement) obj);
+                    ListBox.Items.Add((UIElement)obj);
                 }
             }
         }
@@ -158,7 +159,7 @@ namespace Client
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement) obj);
+                ListBox.Items.Add((UIElement)obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -272,7 +273,7 @@ namespace Client
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -291,22 +292,25 @@ namespace Client
                 }
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Load()
         {
             SuppressScriptErrors(DescriptionViewer, true);
-            ListView.ItemsSource = _problems;
             _problems.Clear();
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Visible);
                 foreach (var queryProblem in Connection.QueryProblems())
                     Dispatcher.Invoke(() => _problems.Add(queryProblem));
-                Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
+                Dispatcher.Invoke(() =>
+                {
+                    Dealing.Visibility = Visibility.Hidden;
+                    ListView.ItemsSource = _problems;
+                });
             });
             var rtf = new RotateTransform
             {
-                CenterX = Dealing.ActualWidth * 0.5,
-                CenterY = Dealing.ActualHeight * 0.5
+                CenterX = Dealing.Width * 0.5,
+                CenterY = Dealing.Height * 0.5
             };
             var daV = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(1)))
             {

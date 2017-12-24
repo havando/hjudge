@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d"
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="JudgingLogsPage" Loaded="Page_Loaded">
+      Title="JudgingLogsPage">
 
     <Grid>
         <ListView x:Name="ListView" HorizontalAlignment="Left" Height="246" VerticalAlignment="Top" Width="214"

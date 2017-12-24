@@ -259,7 +259,10 @@ namespace Client
                 });
                 if ((_competition.Option & 8) != 0 || now > _competition.EndTime)
                     for (var i = x.Count - 1; i >= 0; i--)
+                    {
                         Dispatcher.Invoke(() => _curJudgeInfo.Add(x[i]));
+                        Thread.Sleep(1);
+                    }
                 if (!((_competition.Option & 8) == 0 && GetNowDateTime() < _competition.EndTime))
                     Dispatcher.Invoke(() =>
                     {
@@ -381,13 +384,18 @@ namespace Client
                     _problemFilter.Clear();
                     _userFilter.Clear();
                 });
-                foreach (var judgeInfo in x)
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (_problemFilter.All(i => i != judgeInfo.ProblemName))
-                            _problemFilter.Add(judgeInfo.ProblemName);
-                        if (_userFilter.All(i => i != judgeInfo.UserName)) _userFilter.Add(judgeInfo.UserName);
-                    });
+                var problemList = x.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
+                var userList = x.Select(i => i.UserName).Distinct().OrderBy(j => j);
+                foreach (var j in problemList)
+                {
+                    Dispatcher.Invoke(() => _problemFilter.Add(j));
+                    Thread.Sleep(1);
+                }
+                foreach (var j in userList)
+                {
+                    Dispatcher.Invoke(() => _userFilter.Add(j));
+                    Thread.Sleep(1);
+                }
                 if (GetNowDateTime() < _competition.EndTime)
                     _hasRefreshWhenFinished = false;
                 Dispatcher.Invoke(() =>

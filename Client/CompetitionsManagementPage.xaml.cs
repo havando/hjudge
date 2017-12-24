@@ -21,6 +21,7 @@ namespace Client
         public CompetitionsManagementPage()
         {
             InitializeComponent();
+            Load();
         }
 
         private void Hour_TextChanged(object sender, TextChangedEventArgs e)
@@ -180,12 +181,12 @@ namespace Client
             Connection.UpdateCompetition(t);
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Load()
         {
             Competitions.Clear();
-            ListView.ItemsSource = Competitions;
             foreach (var i in Connection.QueryCompetition())
                 Competitions.Add(i);
+            ListView.ItemsSource = Competitions;
         }
     }
 

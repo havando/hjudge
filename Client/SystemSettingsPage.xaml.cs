@@ -14,9 +14,10 @@ namespace Client
         public SystemSettingsPage()
         {
             InitializeComponent();
+            Load();
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Load()
         {
             var config = Connection.GetServerConfig();
             AllowCheckBox.IsChecked = config.AllowRequestDataSet;

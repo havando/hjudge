@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d"
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="ProblemsManagementPage" Loaded="Page_Loaded">
+      Title="ProblemsManagementPage">
 
     <Grid>
         <ListView Name="ListView" HorizontalAlignment="Left" Height="298" SelectionChanged="ListView_SelectionChanged"

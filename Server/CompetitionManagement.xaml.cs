@@ -109,9 +109,9 @@ namespace Server
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Competitions.Clear();
-            ListView.ItemsSource = Competitions;
             foreach (var i in Connection.QueryCompetition())
                 Competitions.Add(i);
+            ListView.ItemsSource = Competitions;
         }
 
         private void LimitedSubmitTime_TextChanged(object sender, TextChangedEventArgs e)

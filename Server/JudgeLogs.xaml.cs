@@ -83,8 +83,8 @@ namespace Server
             Task.Run(() =>
             {
                 var t = Connection.QueryJudgeLog(true).Reverse();
-                var problemList = t.Select(i => i.ProblemName).Distinct();
-                var userList = t.Select(i => i.UserName).Distinct();
+                var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
+                var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
                 foreach (var judgeInfo in t)
                 {
                     Dispatcher.Invoke(() =>

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -55,12 +56,11 @@ namespace Server
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             SuppressScriptErrors(DescriptionViewer, true);
-            ListView.ItemsSource = _problems;
-            Task.Run(() =>
+            foreach (var queryProblem in Connection.QueryProblems(true))
             {
-                foreach (var queryProblem in Connection.QueryProblems(true))
-                    Dispatcher.Invoke(() => _problems.Add(queryProblem));
-            });
+                _problems.Add(queryProblem);
+            }
+            ListView.ItemsSource = _problems;
         }
 
         private void TextBox_KeyDown(object sender, KeyEventArgs e)

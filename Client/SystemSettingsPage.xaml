@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Client"
       mc:Ignorable="d"
       d:DesignHeight="298" d:DesignWidth="585"
-      Title="SystemSettingsPage" Loaded="Page_Loaded">
+      Title="SystemSettingsPage">
 
     <Grid>
         <CheckBox x:Name="AllowCheckBox" Content="允许用户兑换题目数据" HorizontalAlignment="Left" Margin="0,31,0,0"
