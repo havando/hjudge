@@ -841,7 +841,7 @@ namespace Server
 
         public static void UpdateUser(IEnumerable<UserInfo> toUpdate)
         {
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
@@ -852,48 +852,54 @@ namespace Server
                         using (var cmd = new SQLiteCommand(sqLite))
                         {
                             foreach (var t in toUpdate)
-                                if (CheckUser(t.UserName) != 0)
+                                if (CheckUser(t.UserName, sqLite) != 0)
                                 {
-                                    cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
-                                    SQLiteParameter[] parameters =
+                                    using (DataBaseLock.Write())
                                     {
-                                        new SQLiteParameter("@1", DbType.String),
-                                        new SQLiteParameter("@2", DbType.Int32),
-                                        new SQLiteParameter("@3", DbType.Int32)
-                                    };
-                                    parameters[0].Value = t.Password;
-                                    parameters[1].Value = t.Type;
-                                    parameters[2].Value = t.UserId;
-                                    cmd.Parameters.AddRange(parameters);
-                                    cmd.ExecuteNonQuery();
-                                    cmd.Parameters.Clear();
+                                        cmd.CommandText = "Update User Set Password=@1, Type=@2 Where UserId=@3";
+                                        SQLiteParameter[] parameters =
+                                        {
+                                            new SQLiteParameter("@1", DbType.String),
+                                            new SQLiteParameter("@2", DbType.Int32),
+                                            new SQLiteParameter("@3", DbType.Int32)
+                                        };
+                                        parameters[0].Value = t.Password;
+                                        parameters[1].Value = t.Type;
+                                        parameters[2].Value = t.UserId;
+                                        cmd.Parameters.AddRange(parameters);
+                                        cmd.ExecuteNonQuery();
+                                        cmd.Parameters.Clear();
+                                    }
                                 }
                                 else
                                 {
-                                    cmd.CommandText =
-                                        "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
-                                    SQLiteParameter[] parameters =
+                                    using (DataBaseLock.Write())
                                     {
-                                        new SQLiteParameter("@1", DbType.String),
-                                        new SQLiteParameter("@2", DbType.String),
-                                        new SQLiteParameter("@3", DbType.String),
-                                        new SQLiteParameter("@4", DbType.Int32),
-                                        new SQLiteParameter("@5", DbType.String),
-                                        new SQLiteParameter("@6", DbType.String),
-                                        new SQLiteParameter("@7", DbType.Int32),
-                                        new SQLiteParameter("@8", DbType.Int32)
-                                    };
-                                    parameters[0].Value = t.UserName;
-                                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                                    parameters[2].Value = t.Password;
-                                    parameters[3].Value = t.Type;
-                                    parameters[4].Value = string.Empty;
-                                    parameters[5].Value = string.Empty;
-                                    parameters[6].Value = 0;
-                                    parameters[7].Value = 0;
-                                    cmd.Parameters.AddRange(parameters);
-                                    cmd.ExecuteNonQuery();
-                                    cmd.Parameters.Clear();
+                                        cmd.CommandText =
+                                        "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                                        SQLiteParameter[] parameters =
+                                        {
+                                            new SQLiteParameter("@1", DbType.String),
+                                            new SQLiteParameter("@2", DbType.String),
+                                            new SQLiteParameter("@3", DbType.String),
+                                            new SQLiteParameter("@4", DbType.Int32),
+                                            new SQLiteParameter("@5", DbType.String),
+                                            new SQLiteParameter("@6", DbType.String),
+                                            new SQLiteParameter("@7", DbType.Int32),
+                                            new SQLiteParameter("@8", DbType.Int32)
+                                        };
+                                        parameters[0].Value = t.UserName;
+                                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                        parameters[2].Value = t.Password;
+                                        parameters[3].Value = t.Type;
+                                        parameters[4].Value = string.Empty;
+                                        parameters[5].Value = string.Empty;
+                                        parameters[6].Value = 0;
+                                        parameters[7].Value = 0;
+                                        cmd.Parameters.AddRange(parameters);
+                                        cmd.ExecuteNonQuery();
+                                        cmd.Parameters.Clear();
+                                    }
                                 }
                         }
                         try
@@ -912,7 +918,7 @@ namespace Server
         public static List<string> SaveUser(IEnumerable<int> toDelete)
         {
             var failed = new List<string>();
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
@@ -921,67 +927,76 @@ namespace Server
                     {
                         using (var cmd = new SQLiteCommand(sqLite))
                         {
-                            foreach (var t in toDelete)
+                            using (DataBaseLock.Write())
                             {
-                                cmd.CommandText = "DELETE From User Where UserId=@1";
-                                SQLiteParameter[] parameters =
+                                foreach (var t in toDelete)
                                 {
-                                    new SQLiteParameter("@1", DbType.Int32)
-                                };
-                                parameters[0].Value = t;
-                                cmd.Parameters.AddRange(parameters);
-                                cmd.ExecuteNonQuery();
-                                cmd.Parameters.Clear();
+                                    cmd.CommandText = "DELETE From User Where UserId=@1";
+                                    SQLiteParameter[] parameters =
+                                    {
+                                        new SQLiteParameter("@1", DbType.Int32)
+                                    };
+                                    parameters[0].Value = t;
+                                    cmd.Parameters.AddRange(parameters);
+                                    cmd.ExecuteNonQuery();
+                                    cmd.Parameters.Clear();
+                                }
                             }
                             foreach (var t in UserHelper.UsersBelongs)
                                 if (t.UserId != 0)
                                 {
                                     if (!(t.IsChanged ?? false)) continue;
-                                    cmd.CommandText = "UPDATE User SET Password=@1, Type=@2 WHERE UserId=@3";
-                                    SQLiteParameter[] parameters =
+                                    using (DataBaseLock.Write())
                                     {
-                                        new SQLiteParameter("@1", DbType.String),
-                                        new SQLiteParameter("@2", DbType.Int32),
-                                        new SQLiteParameter("@3", DbType.Int32)
-                                    };
-                                    parameters[0].Value = t.Password;
-                                    parameters[1].Value = t.Type;
-                                    parameters[2].Value = t.UserId;
-                                    cmd.Parameters.AddRange(parameters);
-                                    cmd.ExecuteNonQuery();
-                                    cmd.Parameters.Clear();
+                                        cmd.CommandText = "UPDATE User SET Password=@1, Type=@2 WHERE UserId=@3";
+                                        SQLiteParameter[] parameters =
+                                        {
+                                            new SQLiteParameter("@1", DbType.String),
+                                            new SQLiteParameter("@2", DbType.Int32),
+                                            new SQLiteParameter("@3", DbType.Int32)
+                                        };
+                                        parameters[0].Value = t.Password;
+                                        parameters[1].Value = t.Type;
+                                        parameters[2].Value = t.UserId;
+                                        cmd.Parameters.AddRange(parameters);
+                                        cmd.ExecuteNonQuery();
+                                        cmd.Parameters.Clear();
+                                    }
                                 }
                                 else
                                 {
-                                    if (CheckUser(t.UserName) != 0)
+                                    if (CheckUser(t.UserName, sqLite) != 0)
                                     {
                                         failed.Add(t.UserName);
                                         continue;
                                     }
-                                    cmd.CommandText =
-                                        "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
-                                    SQLiteParameter[] parameters =
+                                    using (DataBaseLock.Write())
                                     {
-                                        new SQLiteParameter("@1", DbType.String),
-                                        new SQLiteParameter("@2", DbType.String),
-                                        new SQLiteParameter("@3", DbType.String),
-                                        new SQLiteParameter("@4", DbType.Int32),
-                                        new SQLiteParameter("@5", DbType.String),
-                                        new SQLiteParameter("@6", DbType.String),
-                                        new SQLiteParameter("@7", DbType.Int32),
-                                        new SQLiteParameter("@8", DbType.Int32)
-                                    };
-                                    parameters[0].Value = t.UserName;
-                                    parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                                    parameters[2].Value = t.Password;
-                                    parameters[3].Value = t.Type;
-                                    parameters[4].Value = string.Empty;
-                                    parameters[5].Value = string.Empty;
-                                    parameters[6].Value = 0;
-                                    parameters[7].Value = 0;
-                                    cmd.Parameters.AddRange(parameters);
-                                    cmd.ExecuteNonQuery();
-                                    cmd.Parameters.Clear();
+                                        cmd.CommandText =
+                                        "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
+                                        SQLiteParameter[] parameters =
+                                        {
+                                            new SQLiteParameter("@1", DbType.String),
+                                            new SQLiteParameter("@2", DbType.String),
+                                            new SQLiteParameter("@3", DbType.String),
+                                            new SQLiteParameter("@4", DbType.Int32),
+                                            new SQLiteParameter("@5", DbType.String),
+                                            new SQLiteParameter("@6", DbType.String),
+                                            new SQLiteParameter("@7", DbType.Int32),
+                                            new SQLiteParameter("@8", DbType.Int32)
+                                        };
+                                        parameters[0].Value = t.UserName;
+                                        parameters[1].Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                        parameters[2].Value = t.Password;
+                                        parameters[3].Value = t.Type;
+                                        parameters[4].Value = string.Empty;
+                                        parameters[5].Value = string.Empty;
+                                        parameters[6].Value = 0;
+                                        parameters[7].Value = 0;
+                                        cmd.Parameters.AddRange(parameters);
+                                        cmd.ExecuteNonQuery();
+                                        cmd.Parameters.Clear();
+                                    }
                                 }
                         }
                         try
@@ -998,15 +1013,35 @@ namespace Server
             return failed;
         }
 
-        private static int CheckUser(string userName)
+        private static int CheckUser(string userName, SQLiteConnection conn = null)
         {
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                if (conn == null)
                 {
-                    sqLite.Open();
+                    using (var sqLite = new SQLiteConnection(ConnectionString))
+                    {
+                        sqLite.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(sqLite))
+                        {
+                            cmd.CommandText = "SELECT UserId From User Where UserName=@1";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String)
+                            };
+                            parameters[0].Value = userName;
+                            cmd.Parameters.AddRange(parameters);
+                            var reader = cmd.ExecuteReader();
+                            if (!reader.HasRows) return 0;
+                            if (reader.Read())
+                                return reader.GetInt32(0);
+                        }
+                    }
+                }
+                else
+                {
+                    using (var cmd = new SQLiteCommand(conn))
                     {
                         cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                         SQLiteParameter[] parameters =
