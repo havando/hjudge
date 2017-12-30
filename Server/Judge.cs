@@ -763,59 +763,51 @@ namespace Server
                             {
                                 try
                                 {
-                                    try
+                                    File.Delete(_workingdir + "\\hjudge_spj_result.dat");
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+                                try
+                                {
+                                    var xx = new ProcessStartInfo
                                     {
-                                        File.Delete(_workingdir + "\\hjudge_spj_result.dat");
-                                    }
-                                    catch
-                                    {
-                                        // ignored
-                                    }
-                                    try
-                                    {
-                                        var xx = new ProcessStartInfo
-                                        {
-                                            ErrorDialog = false,
-                                            UseShellExecute = true,
-                                            CreateNoWindow = true,
-                                            FileName = _problem.SpecialJudge,
-                                            Arguments = Dn(_problem.DataSets[cur].InputFile) + " " +
-                                                        Dn(_problem.DataSets[cur].OutputFile) + " " +
-                                                        (_problem.InputFileName != "stdin"
-                                                            ? Dn(_workingdir + "\\" + _problem.OutputFileName)
-                                                            : Dn(_workingdir + "\\" + _problem.OutputFileName + ".htmp")
-                                                        ) + " " +
-                                                        Dn(_workingdir + "\\hjudge_spj_result.dat"),
-                                            WindowStyle = ProcessWindowStyle.Hidden
-                                        };
-                                        Process.Start(xx)?.WaitForExit();
-                                        Thread.Sleep(1);
-                                        if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
-                                        {
-                                            JudgeResult.Result[cur] = "Special Judge Error";
-                                            JudgeResult.Score[cur] = 0;
-                                        }
-                                        else
-                                        {
-                                            var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
-                                            p = Regex.Replace(p, @"\s", string.Empty);
-                                            var gs = Convert.ToSingle(p);
-                                            JudgeResult.Score[cur] = _problem.DataSets[cur].Score * gs;
-                                            if (Math.Abs(gs - 1) > 0.00001F)
-                                                JudgeResult.Result[cur] = "Wrong Answer";
-                                            else
-                                                JudgeResult.Result[cur] = "Correct";
-                                        }
-                                    }
-                                    catch
+                                        ErrorDialog = false,
+                                        UseShellExecute = true,
+                                        CreateNoWindow = true,
+                                        FileName = _problem.SpecialJudge,
+                                        Arguments = Dn(_problem.DataSets[cur].InputFile) + " " +
+                                                    Dn(_problem.DataSets[cur].OutputFile) + " " +
+                                                    (_problem.InputFileName != "stdin"
+                                                        ? Dn(_workingdir + "\\" + _problem.OutputFileName)
+                                                        : Dn(_workingdir + "\\" + _problem.OutputFileName + ".htmp")
+                                                    ) + " " +
+                                                    Dn(_workingdir + "\\hjudge_spj_result.dat"),
+                                        WindowStyle = ProcessWindowStyle.Hidden
+                                    };
+                                    Process.Start(xx)?.WaitForExit();
+                                    Thread.Sleep(1);
+                                    if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                     {
                                         JudgeResult.Result[cur] = "Special Judge Error";
                                         JudgeResult.Score[cur] = 0;
                                     }
+                                    else
+                                    {
+                                        var p = File.ReadAllText(_workingdir + "\\hjudge_spj_result.dat");
+                                        p = Regex.Replace(p, @"\s", string.Empty);
+                                        var gs = Convert.ToSingle(p);
+                                        JudgeResult.Score[cur] = _problem.DataSets[cur].Score * gs;
+                                        if (Math.Abs(gs - 1) > 0.00001F)
+                                            JudgeResult.Result[cur] = "Wrong Answer";
+                                        else
+                                            JudgeResult.Result[cur] = "Correct";
+                                    }
                                 }
-                                catch (Exception ex)
+                                catch
                                 {
-                                    JudgeResult.Result[cur] = $"Unknown Error: {ex.Message}";
+                                    JudgeResult.Result[cur] = "Special Judge Error";
                                     JudgeResult.Score[cur] = 0;
                                 }
                             }
