@@ -164,8 +164,30 @@
   <data name="nolevel" xml:space="preserve">
     <value>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H+voaqkcfIBoAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA5LTE3VDE1OjIzOjI1KzA4OjAwSkb7NgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxMS0wNS0xOFQyMzowNTowMCswODowMKkKEc0AAABNdEVYdHNvZnR3YXJlAEltYWdlTWFnaWNrIDcuMC4xLTYgUTE2IHg4Nl82NCAyMDE2LTA5LTE3IGh0dHA6Ly93d3cuaW1hZ2VtYWdpY2sub3Jn3dmlTgAAABh0RVh0VGh1bWI6OkRvY3VtZW50OjpQYWdlcwAxp/+7LwAAABh0RVh0VGh1bWI6OkltYWdlOjpIZWlnaHQAMTI4Q3xBgAAAABd0RVh0VGh1bWI6OkltYWdlOjpXaWR0aAAxMjjQjRHdAAAAGXRFWHRUaHVtYjo6TWltZXR5cGUAaW1hZ2UvcG5nP7JWTgAAABd0RVh0VGh1bWI6Ok1UaW1lADEzMDU3MzExMDD5e1KxAAAAEnRFWHRUaHVtYjo6U2l6ZQAxMi4xS0LLLGv/AAAAXXRFWHRUaHVtYjo6VVJJAGZpbGU6Ly8vaG9tZS93d3dyb290L3NpdGUvd3d3LmVhc3lpY29uLm5ldC9jZG4taW1nLmVhc3lpY29uLmNuL3NyYy81MDE2LzUwMTY0NS5wbmdA3JBfAAAAAElFTkSuQmCC</value>
   </data>
+  <data name="CompetitionDetailsProblemInfoControl" xml:space="preserve">
+    <value>&lt;GridViewColumn Width="100" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:local="clr-namespace:Server" mc:Ignorable="d"&gt;
+     &lt;GridViewColumn.Header&gt;
+         &lt;StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"&gt;
+             &lt;TextBlock HorizontalAlignment="Center" Text="${ProblemName}"&gt;&lt;/TextBlock&gt;
+             &lt;TextBlock Name="ProblemColumn${index}" HorizontalAlignment="Center" Text="${ProblemState}"&gt;&lt;/TextBlock&gt;
+         &lt;/StackPanel&gt;
+     &lt;/GridViewColumn.Header&gt;
+     &lt;GridViewColumn.CellTemplate&gt;
+         &lt;DataTemplate&gt;
+             &lt;StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{Binding ProblemInfo[${index}].Color}"&gt;
+                 &lt;TextBlock HorizontalAlignment="Center" FontSize="18" Text="{Binding ProblemInfo[${index}].Time}"&gt;&lt;/TextBlock&gt;
+                 &lt;TextBlock HorizontalAlignment="Center" FontSize="18" Text="{Binding ProblemInfo[${index}].State}"&gt;&lt;/TextBlock&gt;
+             &lt;/StackPanel&gt;
+         &lt;/DataTemplate&gt;
+     &lt;/GridViewColumn.CellTemplate&gt;
+ &lt;/GridViewColumn&gt;</value>
+  </data>
   <data name="MarkdownStyleHead" xml:space="preserve">
     <value>&lt;!DOCTYPE html&gt;
+&lt;!-- saved from url=(0014)about:internet --&gt;
 &lt;html&gt;
 &lt;head&gt;
     &lt;meta http-equiv="X-UA-Compatible" content="IE=edge" /&gt;
@@ -494,37 +516,19 @@
 &lt;body class="markdown-body"&gt;</value>
   </data>
   <data name="MarkdownStyleTail" xml:space="preserve">
-    <value>&lt;script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"&gt;&lt;/script&gt;
+    <value>&lt;script src="${ExtensionsDir}/highlight/highlight.pack.js"&gt;&lt;/script&gt;
     &lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
     &lt;script type="text/x-mathjax-config"&gt;
         MathJax.Hub.Config({
-        extensions: ["jsMath2jax.js"]
+            extensions: ["jsMath2jax.js"],
+            "HTML-CSS": {
+                imageFont: null
+            }
         });
     &lt;/script&gt;
-    &lt;script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"&gt;&lt;/script&gt;
+    &lt;script src="${ExtensionsDir}/MathJax-2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"&gt;&lt;/script&gt;
 &lt;/body&gt;
 
 &lt;/html&gt;</value>
-  </data>
-  <data name="CompetitionDetailsProblemInfoControl" xml:space="preserve">
-    <value>&lt;GridViewColumn Width="100" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
- xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
- xmlns:local="clr-namespace:Server" mc:Ignorable="d"&gt;
-     &lt;GridViewColumn.Header&gt;
-         &lt;StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"&gt;
-             &lt;TextBlock HorizontalAlignment="Center" Text="${ProblemName}"&gt;&lt;/TextBlock&gt;
-             &lt;TextBlock Name="ProblemColumn${index}" HorizontalAlignment="Center" Text="${ProblemState}"&gt;&lt;/TextBlock&gt;
-         &lt;/StackPanel&gt;
-     &lt;/GridViewColumn.Header&gt;
-     &lt;GridViewColumn.CellTemplate&gt;
-         &lt;DataTemplate&gt;
-             &lt;StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{Binding ProblemInfo[${index}].Color}"&gt;
-                 &lt;TextBlock HorizontalAlignment="Center" FontSize="18" Text="{Binding ProblemInfo[${index}].Time}"&gt;&lt;/TextBlock&gt;
-                 &lt;TextBlock HorizontalAlignment="Center" FontSize="18" Text="{Binding ProblemInfo[${index}].State}"&gt;&lt;/TextBlock&gt;
-             &lt;/StackPanel&gt;
-         &lt;/DataTemplate&gt;
-     &lt;/GridViewColumn.CellTemplate&gt;
- &lt;/GridViewColumn&gt;</value>
   </data>
 </root>
