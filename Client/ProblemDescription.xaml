@@ -5,6 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="题目描述" Height="425.425" Width="673.079" Icon="Resources/list.png">
+        Title="题目描述" Height="425.425" Width="673.079" Icon="Resources/list.png" Closed="Window_Closed">
     <WebBrowser Name="Description" />
 </Window>

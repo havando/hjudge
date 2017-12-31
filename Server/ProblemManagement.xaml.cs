@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,6 +30,8 @@ namespace Server
             InitializeComponent();
         }
 
+        private string _curAddress = null;
+
         private static void SuppressScriptErrors(WebBrowser webBrowser, bool hide)
         {
             webBrowser.Navigating += (s, e) =>
@@ -43,7 +46,7 @@ namespace Server
                     return;
 
                 objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser,
-                    new object[] {hide});
+                    new object[] { hide });
             };
         }
 
@@ -81,7 +84,7 @@ namespace Server
                                 (ListBox.Items.Count + 1).ToString()));
                     var xmlreader = new XmlTextReader(strreader);
                     var obj = XamlReader.Load(xmlreader);
-                    ListBox.Items.Add((UIElement) obj);
+                    ListBox.Items.Add((UIElement)obj);
                 }
             }
         }
@@ -145,7 +148,23 @@ namespace Server
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) +
                          "\n" + Properties.Resources.MarkdownStyleTail;
-            DescriptionViewer.NavigateToString(result);
+            var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
+            if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
+            result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
+            curDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
+            if (!string.IsNullOrEmpty(_curAddress))
+                try
+                {
+                    File.Delete(_curAddress);
+                }
+                catch
+                { 
+                    //ignored
+                }
+            _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+            File.WriteAllText(_curAddress, result, Encoding.Unicode);
+            DescriptionViewer.Navigate(new Uri(_curAddress));
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
             while (ListBox.Items.Count > a)
@@ -162,7 +181,7 @@ namespace Server
                         Properties.Resources.DataSetControl.Replace("${index}", (ListBox.Items.Count + 1).ToString()));
                 var xmlreader = new XmlTextReader(strreader);
                 var obj = XamlReader.Load(xmlreader);
-                ListBox.Items.Add((UIElement) obj);
+                ListBox.Items.Add((UIElement)obj);
             }
             for (var i = 0; i < ListBox.Items.Count; i++)
                 foreach (var t in ListBox.Items)
@@ -277,7 +296,7 @@ namespace Server
             if (sdc.Count > 0)
             {
                 var sd = sdc[0];
-                sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                 sdc.Clear();
             }
             if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -292,7 +311,23 @@ namespace Server
                     var result = Properties.Resources.MarkdownStyleHead + "\n" +
                                  Markdown.ToHtml(Description.Text, pipeline) + "\n" +
                                  Properties.Resources.MarkdownStyleTail;
-                    DescriptionViewer.NavigateToString(result);
+                    var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
+                    if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
+                    result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
+                    curDir = AppDomain.CurrentDomain.BaseDirectory;
+                    if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
+                    if (!string.IsNullOrEmpty(_curAddress))
+                        try
+                        {
+                            File.Delete(_curAddress);
+                        }
+                        catch
+                        { 
+                            //ignored
+                        }
+                    _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+                    File.WriteAllText(_curAddress, result, Encoding.Unicode);
+                    DescriptionViewer.Navigate(new Uri(_curAddress));
                 }
         }
     }

@@ -106,6 +106,7 @@ namespace Server.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
+        ///&lt;!-- saved from url=(0014)about:internet --&gt;
         ///&lt;html&gt;
         ///&lt;head&gt;
         ///    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; /&gt;
@@ -123,10 +124,7 @@ namespace Server.Properties {
         ///        }
         ///
         ///        .hljs-comment {
-        ///            color: #888888
-        ///        }
-        ///
-        ///        .hljs-keyword, .hl [rest of string was truncated]&quot;;.
+        ///            color: #8 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string MarkdownStyleHead {
             get {
@@ -135,14 +133,17 @@ namespace Server.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;script src=&quot;http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js&quot;&gt;&lt;/script&gt;
+        ///   Looks up a localized string similar to &lt;script src=&quot;${ExtensionsDir}/highlight/highlight.pack.js&quot;&gt;&lt;/script&gt;
         ///    &lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
         ///    &lt;script type=&quot;text/x-mathjax-config&quot;&gt;
         ///        MathJax.Hub.Config({
-        ///        extensions: [&quot;jsMath2jax.js&quot;]
+        ///            extensions: [&quot;jsMath2jax.js&quot;],
+        ///            &quot;HTML-CSS&quot;: {
+        ///                imageFont: null
+        ///            }
         ///        });
         ///    &lt;/script&gt;
-        ///    &lt;script src=&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default&quot;&gt;&lt;/script&gt;
+        ///    &lt;script src=&quot;${ExtensionsDir}/MathJax-2.7.2/MathJax.js?config=TeX-MML-AM_CHTML&quot;&gt;&lt;/script&gt;
         ///&lt;/body&gt;
         ///
         ///&lt;/html&gt;.

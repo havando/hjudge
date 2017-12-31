@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +29,7 @@ namespace Client
     {
         private readonly ObservableCollection<Problem> _problems = new ObservableCollection<Problem>();
 
+        private string _curAddress = null;
         public ProblemsManagementPage()
         {
             InitializeComponent();
@@ -141,8 +143,23 @@ namespace Client
                 : problem.Description;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(Description.Text, pipeline) +
-                         "\n" + Properties.Resources.MarkdownStyleTail;
-            DescriptionViewer.NavigateToString(result);
+                         "\n" + Properties.Resources.MarkdownStyleTail; var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
+            if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
+            result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
+            curDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
+            if (!string.IsNullOrEmpty(_curAddress))
+                try
+                {
+                    File.Delete(_curAddress);
+                }
+                catch
+                {
+                    //ignored
+                }
+            _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+            File.WriteAllText(_curAddress, result, Encoding.Unicode);
+            DescriptionViewer.Navigate(new Uri(_curAddress));
             var a = problem.DataSets?.Length ?? 0;
             DataSetsNumber.Text = a.ToString();
             while (ListBox.Items.Count > a)
@@ -287,8 +304,23 @@ namespace Client
                     var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
                     var result = Properties.Resources.MarkdownStyleHead + "\n" +
                                  Markdown.ToHtml(Description.Text, pipeline) + "\n" +
-                                 Properties.Resources.MarkdownStyleTail;
-                    DescriptionViewer.NavigateToString(result);
+                                 Properties.Resources.MarkdownStyleTail; var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
+                    if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
+                    result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
+                    curDir = AppDomain.CurrentDomain.BaseDirectory;
+                    if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
+                    if (!string.IsNullOrEmpty(_curAddress))
+                        try
+                        {
+                            File.Delete(_curAddress);
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                    _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+                    File.WriteAllText(_curAddress, result, Encoding.Unicode);
+                    DescriptionViewer.Navigate(new Uri(_curAddress));
                 }
         }
 

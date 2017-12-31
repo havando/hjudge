@@ -206,6 +206,7 @@
   </data>
   <data name="MarkdownStyleHead" xml:space="preserve">
     <value>&lt;!DOCTYPE html&gt;
+&lt;!-- saved from url=(0014)about:internet --&gt;
 &lt;html&gt;
 &lt;head&gt;
     &lt;meta http-equiv="X-UA-Compatible" content="IE=edge" /&gt;
@@ -534,14 +535,17 @@
 &lt;body class="markdown-body"&gt;</value>
   </data>
   <data name="MarkdownStyleTail" xml:space="preserve">
-    <value>&lt;script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"&gt;&lt;/script&gt;
+    <value>&lt;script src="${ExtensionsDir}/highlight/highlight.pack.js"&gt;&lt;/script&gt;
     &lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
     &lt;script type="text/x-mathjax-config"&gt;
         MathJax.Hub.Config({
-        extensions: ["jsMath2jax.js"]
+            extensions: ["jsMath2jax.js"],
+            "HTML-CSS": {
+                imageFont: null
+            }
         });
     &lt;/script&gt;
-    &lt;script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"&gt;&lt;/script&gt;
+    &lt;script src="${ExtensionsDir}/MathJax-2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"&gt;&lt;/script&gt;
 &lt;/body&gt;
 
 &lt;/html&gt;</value>

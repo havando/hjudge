@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Markdig;
@@ -10,6 +13,7 @@ namespace Client
     /// </summary>
     public partial class ProblemDescription : Window
     {
+        private string _curAddress = null;
         public ProblemDescription()
         {
             InitializeComponent();
@@ -39,8 +43,36 @@ namespace Client
             Title = $"题目描述 - {problemIndex}";
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var result = Properties.Resources.MarkdownStyleHead + "\n" + Markdown.ToHtml(description, pipeline) + "\n" +
-                         Properties.Resources.MarkdownStyleTail;
-            Description.NavigateToString(result);
+                         Properties.Resources.MarkdownStyleTail; var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
+            if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
+            result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
+            curDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
+            if (!string.IsNullOrEmpty(_curAddress))
+                try
+                {
+                    File.Delete(_curAddress);
+                }
+                catch
+                {
+                    //ignored
+                }
+            _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+            File.WriteAllText(_curAddress, result, Encoding.Unicode);
+            Description.Navigate(new Uri(_curAddress));
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_curAddress))
+                try
+                {
+                    File.Delete(_curAddress);
+                }
+                catch
+                {
+                    //ignored
+                }
         }
     }
 }
