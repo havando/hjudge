@@ -563,7 +563,7 @@ namespace Server
                         try
                         {
                             JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
-                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
+                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakPagedMemorySize64 >> 10);
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
