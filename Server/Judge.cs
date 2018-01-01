@@ -353,10 +353,10 @@ namespace Server
                 }
                 return;
             }
-            var compileResult = Compile(compiler);
-            additionInfo += compileResult.compileLog;
+            var (isSucceeded, compileLog) = Compile(compiler);
+            additionInfo += compileLog;
             JudgeResult.AdditionInfo = additionInfo;
-            if (compileResult.isSucceeded)
+            if (isSucceeded)
                 Judging(textBlock, runExec, runArgs);
             else
                 for (var i = 0; i < JudgeResult.Result.Length; i++)
@@ -574,7 +574,7 @@ namespace Server
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
-                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 30)
+                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 10)
                                 {
                                     _isExited = true;
                                     isNoResponding = true;
