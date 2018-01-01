@@ -46,7 +46,7 @@ namespace Client
                          Properties.Resources.MarkdownStyleTail; var curDir = AppDomain.CurrentDomain.BaseDirectory.Replace("\\", "/");
             if (curDir.EndsWith("/")) curDir = curDir.Substring(0, curDir.Length - 1);
             result = result.Replace("${ExtensionsDir}", "file://" + curDir + "/Extensions");
-            curDir = AppDomain.CurrentDomain.BaseDirectory;
+            curDir = Environment.GetEnvironmentVariable("temp");
             if (curDir.EndsWith("\\")) curDir = curDir.Substring(0, curDir.Length - 1);
             if (!string.IsNullOrEmpty(_curAddress))
                 try
@@ -57,7 +57,7 @@ namespace Client
                 {
                     //ignored
                 }
-            _curAddress = curDir + Guid.NewGuid().ToString() + ".html";
+            _curAddress = curDir + "\\" + Guid.NewGuid().ToString() + ".html";
             File.WriteAllText(_curAddress, result, Encoding.Unicode);
             Description.Navigate(new Uri(_curAddress));
         }
