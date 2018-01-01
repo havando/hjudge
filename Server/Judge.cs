@@ -509,15 +509,8 @@ namespace Server
                         {
                             //ignored
                         }
-                        try
-                        {
-                            execute?.Close();
-                            execute?.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                        execute?.Close();
+                        execute?.Dispose();
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
@@ -669,47 +662,19 @@ namespace Server
                             }
                             noRespondingState = true;
                         }
-                        try
-                        {
-                            process.Close();
-                            process.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                        try
-                        {
-                            execute?.Close();
-                            execute?.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                        process?.Close();
+                        process?.Dispose();
+                        execute?.Close();
+                        execute?.Dispose();
                         if (noRespondingTime[cur] < 3) cur--;
                         continue;
                     }
                     if (_isFault)
                     {
-                        try
-                        {
-                            process.Close();
-                            process.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                        try
-                        {
-                            execute?.Close();
-                            execute?.Dispose();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                        process?.Close();
+                        process?.Dispose();
+                        execute?.Close();
+                        execute?.Dispose();
                         continue;
                     }
                     Thread.Sleep(1);
@@ -727,34 +692,12 @@ namespace Server
                         File.WriteAllText(_workingdir + "\\" + _problem.OutputFileName + ".htmp",
                             res?.Result ?? string.Empty, Encoding.Default);
                     }
-                    try
-                    {
-                        outputStream?.Close();
-                        outputStream?.Dispose();
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
-
-                    try
-                    {
-                        process.Close();
-                        process.Dispose();
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
-                    try
-                    {
-                        execute?.Close();
-                        execute?.Dispose();
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
+                    outputStream?.Close();
+                    outputStream?.Dispose();
+                    process?.Close();
+                    process?.Dispose();
+                    execute?.Close();
+                    execute?.Dispose();
                     Thread.Sleep(1);
                     lock (Connection.ComparingLock)
                     {
