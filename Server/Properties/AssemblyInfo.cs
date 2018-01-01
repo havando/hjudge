@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("hez2010")]
 [assembly: AssemblyProduct("Server")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright © 2016-2018 hez2010, All Rights Reserved")]
 [assembly: AssemblyTrademark("hjudge")]
 [assembly: AssemblyCulture("")]
 
