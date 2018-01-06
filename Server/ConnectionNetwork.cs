@@ -1035,6 +1035,18 @@ namespace Server
                                     }));
                                     break;
                                 }
+                            case "QueryProblemsBelongsToCompetition":
+                                {
+                                    ActionList.Enqueue(new Task(() =>
+                                    {
+                                        var c = GetCompetition(
+                                            Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0])));
+                                        var pList = c.ProblemSet.Select(GetProblem).ToList();
+                                        SendData("QueryProblemsBelongsToCompetition",
+                                            JsonConvert.SerializeObject(pList), res.obj.Client.ConnId, res.token);
+                                    }));
+                                    break;
+                                }
                             case "GetProblemDescription":
                                 {
                                     ActionList.Enqueue(new Task(() =>
