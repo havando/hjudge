@@ -39,8 +39,29 @@ namespace Server
                         return;
                     }
             }
+
             JudgeResult.JudgeId = Connection.NewJudge(description);
+            _problem = Connection.GetProblem(problemId);
+            _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
+            JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+            JudgeResult.ProblemId = _problem.ProblemId;
+            JudgeResult.Code = code;
+            JudgeResult.UserId = userId;
+            JudgeResult.Exitcode = new int[_problem.DataSets.Length];
+            JudgeResult.Result = new string[_problem.DataSets.Length];
+            JudgeResult.Score = new float[_problem.DataSets.Length];
+            JudgeResult.Timeused = new long[_problem.DataSets.Length];
+            JudgeResult.Memoryused = new long[_problem.DataSets.Length];
+            JudgeResult.Type = type;
+            JudgeResult.Description = description;
+            JudgeResult.CompetitionId = competitionId;
+            JudgeResult.AdditionInfo = string.Empty;
+            Connection.UpdateJudgeInfo(JudgeResult);
             idCallBack?.Invoke(JudgeResult.JudgeId);
+
+            var textBlock = Connection.UpdateMainPageState(
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
+
             while (true)
             {
                 if (Connection.CurJudgingCnt < (Configuration.Configurations.MutiThreading == 0
@@ -56,27 +77,12 @@ namespace Server
                 Thread.Sleep(100);
             }
             Connection.CanPostJudgTask = true;
+
             _isFinished = false;
+
+            JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
             try
             {
-                _problem = Connection.GetProblem(problemId);
-                _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
-                JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-                JudgeResult.ProblemId = _problem.ProblemId;
-                JudgeResult.Code = code;
-                JudgeResult.UserId = userId;
-                JudgeResult.Exitcode = new int[_problem.DataSets.Length];
-                JudgeResult.Result = new string[_problem.DataSets.Length];
-                JudgeResult.Score = new float[_problem.DataSets.Length];
-                JudgeResult.Timeused = new long[_problem.DataSets.Length];
-                JudgeResult.Memoryused = new long[_problem.DataSets.Length];
-                JudgeResult.Type = type;
-                JudgeResult.Description = description;
-                JudgeResult.CompetitionId = competitionId;
-                JudgeResult.AdditionInfo = string.Empty;
-
-                var textBlock = Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
 
                 if (Configuration.Configurations.MutiThreading == 0)
                     while (true)
@@ -95,7 +101,7 @@ namespace Server
                                 var maxMemoryNeeded = _problem.DataSets.Select(i => i.MemoryLimit)
                                     .Concat(new long[] { 0 })
                                     .Max();
-                                if (cpuCounter.NextValue() <= 75 &&
+                                if (cpuCounter.NextValue() <= 70 &&
                                     ramCounter.NextValue() > maxMemoryNeeded + 262144)
                                     break;
                             }
@@ -104,7 +110,7 @@ namespace Server
                         {
                             //ignored
                         }
-                        Thread.Sleep(100);
+                        Thread.Sleep(1000);
                     }
 
                 new Thread(Killwerfault).Start();
@@ -575,7 +581,6 @@ namespace Server
                                 lastDt = JudgeResult.Timeused[cur];
                             }
                             process.Refresh();
-
                             if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                             {
                                 _isFault = true;
@@ -640,10 +645,9 @@ namespace Server
                     {
                         if (!_isExited)
                         {
-                            if (taskCount == 0)
+                            if (taskCount != 2)
                             {
-                                _isExited = true;
-                                isNoResponding = true;
+                                process.Refresh();
                             }
                             goto Monitor;
                         }
