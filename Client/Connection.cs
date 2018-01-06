@@ -109,10 +109,10 @@ namespace Client
             var p = Guid.NewGuid().ToString().ToCharArray();
             header.Token = new char[32];
             var j = 0;
-            for (var i = 0; i < p.Length; i++)
+            foreach (var t in p)
             {
-                if (p[i] != '-')
-                    header.Token[j++] = p[i];
+                if (t != '-')
+                    header.Token[j++] = t;
             }
             var headerBytes = HClient.StructureToByte(header);
             var ptr = IntPtr.Zero;

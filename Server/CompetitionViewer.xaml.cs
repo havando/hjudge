@@ -57,7 +57,7 @@ namespace Server
 
         private void Refresh()
         {
-            while (true)
+            while (!Environment.HasShutdownStarted)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -101,8 +101,8 @@ namespace Server
             if ((_competition.Option & 1) != 0)
                 ComMode.Text =
                     $"限制提交赛：{(_competition.SubmitLimit == 0 ? "无限" : _competition.SubmitLimit.ToString())} 次";
-            if ((_competition.Option & 2) != 0) ComMode.Text = $"最后提交赛";
-            if ((_competition.Option & 4) != 0) ComMode.Text = $"罚时计时赛";
+            if ((_competition.Option & 2) != 0) ComMode.Text = "最后提交赛";
+            if ((_competition.Option & 4) != 0) ComMode.Text = "罚时计时赛";
             ListView.ItemsSource = _curJudgeInfo;
             Description.Text = _competition.Description;
             ProblemFilter.ItemsSource = _problemFilter;
@@ -199,8 +199,7 @@ namespace Server
                         var cnt = 0;
                         var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
                             .ToList();
-                        var noAccepted = x.Where(p =>
-                                  p.UserName == i && p.ProblemId == _competition.ProblemSet[j] && p.ResultSummary == "Accepted").Count() == 0 ? true : false;
+                        var noAccepted = !x.Any(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j] && p.ResultSummary == "Accepted");
                         if ((_competition.Option & 2) == 0)
                         {
                             if ((_competition.Option & 32) == 0)

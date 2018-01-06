@@ -301,8 +301,7 @@ namespace Client
                         var cnt = 0;
                         var tmpScoreBase = x.Where(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j])
                             .ToList();
-                        var noAccepted = x.Where(p =>
-                                  p.UserName == i && p.ProblemId == _competition.ProblemSet[j] && p.ResultSummary == "Accepted").Count() == 0 ? true : false;
+                        var noAccepted = !x.Any(p => p.UserName == i && p.ProblemId == _competition.ProblemSet[j] && p.ResultSummary == "Accepted");
                         if ((_competition.Option & 2) == 0)
                         {
                             if ((_competition.Option & 32) == 0)

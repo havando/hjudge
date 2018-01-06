@@ -5,7 +5,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -419,7 +418,6 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                int origin;
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
@@ -434,6 +432,7 @@ namespace Server
                         parameters1[0].Value = userId;
                         cmd.Parameters.AddRange(parameters1);
                         var result = cmd.ExecuteScalar();
+                        int origin;
                         if (result != null)
                         {
                             origin = (int)result;
@@ -1184,10 +1183,7 @@ namespace Server
 
                     using (var cmd = new SQLiteCommand(sqLite))
                     {
-                        if (userId != 0)
-                            cmd.CommandText =
-                                $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}";
-                        else cmd.CommandText = $"SELECT * From Judge Where CompetitionId={competitionId}";
+                        cmd.CommandText = userId != 0 ? $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}" : $"SELECT * From Judge Where CompetitionId={competitionId}";
                         var reader = cmd.ExecuteReader();
                         if (!reader.HasRows) return a;
                         while (reader.Read())

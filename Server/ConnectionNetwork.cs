@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using HPSocketCS;
 using Newtonsoft.Json;
+using ZipFile = Ionic.Zip.ZipFile;
 
 namespace Server
 {
@@ -37,7 +38,7 @@ namespace Server
 
         public static byte[] CompressBytes(byte[] bytes)
         {
-            using (MemoryStream compressStream = new MemoryStream())
+            using (var compressStream = new MemoryStream())
             {
                 using (var zipStream = new GZipStream(compressStream, CompressionMode.Compress))
                     zipStream.Write(bytes, 0, bytes.Length);
@@ -63,11 +64,11 @@ namespace Server
         private static string CharArrayToString(char[] array)
         {
             var res = new StringBuilder();
-            for (var i = 0; i < array.Length; i++)
+            foreach (var t in array)
             {
-                if (array[i] != '\0')
+                if (t != '\0')
                 {
-                    res.Append(array[i]);
+                    res.Append(t);
                 }
             }
             return res.ToString();
@@ -83,10 +84,10 @@ namespace Server
             var p = token?.ToCharArray() ?? new char[0];
             header.Token = new char[32];
             var j = 0;
-            for (var i = 0; i < p.Length; i++)
+            foreach (var t in p)
             {
-                if (p[i] != '-')
-                    header.Token[j++] = p[i];
+                if (t != '-')
+                    header.Token[j++] = t;
             }
             var headerBytes = HServer.StructureToByte(header);
             var ptr = IntPtr.Zero;
@@ -545,7 +546,7 @@ namespace Server
                                                 }
 
                                                 var ms = new MemoryStream();
-                                                using (var zip = new Ionic.Zip.ZipFile())
+                                                using (var zip = new ZipFile())
                                                 {
                                                     for (var i = 0; i < problem.DataSets.Length; i++)
                                                     {
@@ -617,7 +618,7 @@ namespace Server
                                         ActionList.Enqueue(new Task(() =>
                                             new Thread(() =>
                                             {
-                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, (jid) => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code, CompetitionId = 0 }), res.obj.Client.ConnId, res.token); });
+                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, jid => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code, CompetitionId = 0 }), res.obj.Client.ConnId, res.token); });
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
                                             }).Start()));
@@ -795,7 +796,7 @@ namespace Server
                                         foreach (var i in pl)
                                             SendData("ProblemList", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
-                                        if (pl.Count() == 0)
+                                        if (!pl.Any())
                                             SendData("ProblemList",
                                                 id + Divpar + JsonConvert.SerializeObject(null),
                                                 res.obj.Client.ConnId, res.token);
@@ -1494,7 +1495,7 @@ namespace Server
                                         foreach (var i in t)
                                             SendData("RequestMsgList", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
-                                        if (t.Count() == 0)
+                                        if (!t.Any())
                                             SendData("RequestMsgList",
                                                 id + Divpar + JsonConvert.SerializeObject(null),
                                                 res.obj.Client.ConnId, res.token);
@@ -1571,7 +1572,7 @@ namespace Server
                                         foreach (var i in p)
                                             SendData("RequestMsgTargetUser", id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
-                                        if (p.Count() == 0)
+                                        if (!p.Any())
                                             SendData("RequestMsgTargetUser",
                                                 id + Divpar + JsonConvert.SerializeObject(null),
                                                 res.obj.Client.ConnId, res.token);
@@ -1607,8 +1608,7 @@ namespace Server
                                     var count = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[1]));
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryCompetition(start, count, false)?.Reverse();
-                                        if (t == null) t = new List<Competition>();
+                                        var t = QueryCompetition(start, count, false)?.Reverse() ?? new List<Competition>();
                                         SendData("RequestCompetitionListGrouped",
                                             JsonConvert.SerializeObject(t),
                                             res.obj.Client.ConnId, res.token);
@@ -1620,13 +1620,13 @@ namespace Server
                                     var id = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     ActionList.Enqueue(new Task(() =>
                                     {
-                                        var t = QueryCompetition(0, -10, false)?.Reverse();
+                                        var t = QueryCompetition(0, -10, false)?.Reverse().ToList();
                                         if (t == null) return;
                                         foreach (var i in t)
                                             SendData("RequestCompetitionList",
                                                 id + Divpar + JsonConvert.SerializeObject(i),
                                                 res.obj.Client.ConnId, res.token);
-                                        if (t.Count() == 0)
+                                        if (!t.Any())
                                             SendData("RequestCompetitionList",
                                                 id + Divpar + JsonConvert.SerializeObject(null),
                                                 res.obj.Client.ConnId, res.token);
@@ -1692,7 +1692,7 @@ namespace Server
                                             new Thread(() =>
                                             {
                                                 var j = new Judge(pid, userId, code, type, true, "在线评测",
-                                                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, (jid) => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code, CompetitionId = cid }), res.obj.Client.ConnId, res.token); });
+                                                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, jid => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code, CompetitionId = cid }), res.obj.Client.ConnId, res.token); });
                                                 if (j.Cancelled)
                                                 {
                                                     SendData("JudgeIdForCompetition", "Failed", res.obj.Client.ConnId, res.token);
