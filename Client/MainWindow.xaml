@@ -251,7 +251,9 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <Label Name="UpdateLabel" Visibility="Hidden" Content="正在更新，请稍等" FontSize="20" HorizontalAlignment="Center" Margin="0,150,0,0" VerticalAlignment="Top"/>
+        <Label Name="UpdateLabel" FontSize="20" HorizontalAlignment="Center" Visibility="Hidden" Margin="0,150,0,0" VerticalAlignment="Top"/>
+
+        <Label Name="UpdateProgress" FontSize="12" HorizontalAlignment="Center" Visibility="Hidden" Margin="0,190,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

@@ -399,6 +399,7 @@ namespace Client
                                                     $"/select,\"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}\"");
                                                 UpdateMainPage($"FileReceived{Divpar}Done");
                                             }
+                                            else UpdateMainPage($"ClientReceiving{Divpar}正在做最后的准备工作，程序即将自动重新启动");
                                             if (res.Operation == "RequestClient")
                                             {
                                                 using (var zFile = new Ionic.Zip.ZipFile(
@@ -453,9 +454,10 @@ exit
                                         }
                                         else
                                         {
-                                            if (res.Operation == "File")
-                                                UpdateMainPage(
-                                                    $"FileReceiving{Divpar}{Math.Round((double)fs.CurrentLength * 100 / fs.TotLength, 1)} %");
+                                            UpdateMainPage(
+                                                res.Operation == "File"
+                                                    ? $"FileReceiving{Divpar}{Math.Round((double) fs.CurrentLength * 100 / fs.TotLength, 1)} %"
+                                                    : $"ClientReceiving{Divpar}{Math.Round((double) fs.CurrentLength * 100 / fs.TotLength, 1)} %");
                                         }
                                     }
                                     else

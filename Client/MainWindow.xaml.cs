@@ -523,6 +523,11 @@ namespace Client
                             Dispatcher.Invoke(() => { ReceivingProcess.Content = content; });
                             break;
                         }
+                    case "ClientReceiving":
+                        {
+                            Dispatcher.Invoke(() => UpdateProgress.Content = content);
+                            break;
+                        }
                     case "ProblemDataSet":
                         {
                             if (string.IsNullOrEmpty(Connection.CurrentUserName)) break;
@@ -561,7 +566,9 @@ namespace Client
                                 {
                                     LoginGrid.Visibility = Visibility.Hidden;
                                     UpdateLabel.Content = $"正在更新至 {content} 版本，请稍等……";
+                                    UpdateProgress.Content = "0 %";
                                     UpdateLabel.Visibility = Visibility.Visible;
+                                    UpdateProgress.Visibility = Visibility.Visible;
                                 });
                             }
                             break;
