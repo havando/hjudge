@@ -29,7 +29,7 @@ namespace Server
             get
             {
                 if (Result == null)
-                    return "Unknown Error";
+                    return "Judging...";
                 if (Result.Length == 0)
                     return "Problem Configuration Error";
                 var error = new int[11];
