@@ -373,7 +373,6 @@ namespace Server
 
         private static bool UpdateCoins(int userId, int delta)
         {
-            int origin;
             using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
@@ -390,6 +389,7 @@ namespace Server
                         parameters1[0].Value = userId;
                         cmd.Parameters.AddRange(parameters1);
                         var result = cmd.ExecuteScalar();
+                        int origin;
                         if (result != null)
                         {
                             origin = (int)result;
@@ -507,46 +507,48 @@ namespace Server
 
         public static bool UpdateCompetition(Competition competition)
         {
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (DataBaseLock.Write())
                     {
-                        cmd.CommandText =
-                            "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
-                        SQLiteParameter[] parameters =
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
-                            new SQLiteParameter("@1", DbType.String),
-                            new SQLiteParameter("@2", DbType.String),
-                            new SQLiteParameter("@3", DbType.String),
-                            new SQLiteParameter("@4", DbType.String),
-                            new SQLiteParameter("@5", DbType.Int32),
-                            new SQLiteParameter("@6", DbType.String),
-                            new SQLiteParameter("@7", DbType.Int32),
-                            new SQLiteParameter("@8", DbType.String),
-                            new SQLiteParameter("@9", DbType.Int32)
-                        };
-                        parameters[0].Value = competition.CompetitionName;
-                        parameters[1].Value = competition.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
-                        parameters[2].Value = competition.EndTime.ToString("yyyy/MM/dd HH:mm:ss");
-                        parameters[3].Value = JsonConvert.SerializeObject(competition.ProblemSet);
-                        parameters[4].Value = competition.Option;
-                        parameters[5].Value = competition.Description;
-                        parameters[6].Value = competition.SubmitLimit;
-                        parameters[7].Value = competition.Password;
-                        parameters[8].Value = competition.CompetitionId;
-                        cmd.Parameters.AddRange(parameters);
-                        try
-                        {
-                            cmd.ExecuteNonQuery();
-                            return true;
-                        }
-                        catch
-                        {
-                            return false;
+                            cmd.CommandText =
+                                "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.String),
+                                new SQLiteParameter("@3", DbType.String),
+                                new SQLiteParameter("@4", DbType.String),
+                                new SQLiteParameter("@5", DbType.Int32),
+                                new SQLiteParameter("@6", DbType.String),
+                                new SQLiteParameter("@7", DbType.Int32),
+                                new SQLiteParameter("@8", DbType.String),
+                                new SQLiteParameter("@9", DbType.Int32)
+                            };
+                            parameters[0].Value = competition.CompetitionName;
+                            parameters[1].Value = competition.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
+                            parameters[2].Value = competition.EndTime.ToString("yyyy/MM/dd HH:mm:ss");
+                            parameters[3].Value = JsonConvert.SerializeObject(competition.ProblemSet);
+                            parameters[4].Value = competition.Option;
+                            parameters[5].Value = competition.Description;
+                            parameters[6].Value = competition.SubmitLimit;
+                            parameters[7].Value = competition.Password;
+                            parameters[8].Value = competition.CompetitionId;
+                            cmd.Parameters.AddRange(parameters);
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                                return true;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -645,28 +647,30 @@ namespace Server
 
         public static void UpdateUserInfo(UserInfo toUpdateInfo)
         {
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (DataBaseLock.Write())
                     {
-                        cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
-                        SQLiteParameter[] parameters =
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
-                            new SQLiteParameter("@1", DbType.String),
-                            new SQLiteParameter("@2", DbType.String),
-                            new SQLiteParameter("@3", DbType.String),
-                            new SQLiteParameter("@4", DbType.Int32)
-                        };
-                        parameters[0].Value = toUpdateInfo.UserName;
-                        parameters[1].Value = toUpdateInfo.Password;
-                        parameters[2].Value = toUpdateInfo.Icon;
-                        parameters[3].Value = toUpdateInfo.UserId;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
+                            cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.String),
+                                new SQLiteParameter("@3", DbType.String),
+                                new SQLiteParameter("@4", DbType.Int32)
+                            };
+                            parameters[0].Value = toUpdateInfo.UserName;
+                            parameters[1].Value = toUpdateInfo.Password;
+                            parameters[2].Value = toUpdateInfo.Icon;
+                            parameters[3].Value = toUpdateInfo.UserId;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
                 }
             }
@@ -1625,69 +1629,72 @@ namespace Server
 
         public static void UpdateJudgeInfo(JudgeInfo pInfo)
         {
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (DataBaseLock.Write())
                     {
-                        cmd.CommandText =
-                            "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
-                        SQLiteParameter[] parameters =
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
-                            new SQLiteParameter("@1", DbType.Int32),
-                            new SQLiteParameter("@2", DbType.Int32),
-                            new SQLiteParameter("@3", DbType.String),
-                            new SQLiteParameter("@4", DbType.String),
-                            new SQLiteParameter("@5", DbType.String),
-                            new SQLiteParameter("@6", DbType.String),
-                            new SQLiteParameter("@7", DbType.String),
-                            new SQLiteParameter("@8", DbType.String),
-                            new SQLiteParameter("@9", DbType.Int32),
-                            new SQLiteParameter("@10", DbType.String),
-                            new SQLiteParameter("@11", DbType.String),
-                            new SQLiteParameter("@12", DbType.Int32),
-                            new SQLiteParameter("@13", DbType.String)
-                        };
-                        parameters[0].Value = pInfo.UserId;
-                        parameters[1].Value = pInfo.ProblemId;
-                        parameters[2].Value = pInfo.Code;
-                        string timeused = string.Empty,
-                            memoryused = string.Empty,
-                            exitcode = string.Empty,
-                            result = string.Empty,
-                            score = string.Empty;
-                        for (var i = 0; i < pInfo.Result.Length; i++)
-                            if (i != pInfo.Timeused.Length - 1)
+                            cmd.CommandText =
+                                "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
+                            SQLiteParameter[] parameters =
                             {
-                                timeused += pInfo.Timeused[i] + ",";
-                                memoryused += pInfo.Memoryused[i] + ",";
-                                exitcode += pInfo.Exitcode[i] + ",";
-                                result += pInfo.Result[i] + ",";
-                                score += pInfo.Score[i] + ",";
-                            }
-                            else
-                            {
-                                timeused += pInfo.Timeused[i];
-                                memoryused += pInfo.Memoryused[i];
-                                exitcode += pInfo.Exitcode[i];
-                                result += pInfo.Result[i];
-                                score += pInfo.Score[i];
-                            }
-                        parameters[3].Value = timeused;
-                        parameters[4].Value = memoryused;
-                        parameters[5].Value = exitcode;
-                        parameters[6].Value = result;
-                        parameters[7].Value = score;
-                        parameters[8].Value = pInfo.JudgeId;
-                        parameters[9].Value = pInfo.Type;
-                        parameters[10].Value = pInfo.Description;
-                        parameters[11].Value = pInfo.CompetitionId;
-                        parameters[12].Value = pInfo.AdditionInfo;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
+                                new SQLiteParameter("@1", DbType.Int32),
+                                new SQLiteParameter("@2", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.String),
+                                new SQLiteParameter("@4", DbType.String),
+                                new SQLiteParameter("@5", DbType.String),
+                                new SQLiteParameter("@6", DbType.String),
+                                new SQLiteParameter("@7", DbType.String),
+                                new SQLiteParameter("@8", DbType.String),
+                                new SQLiteParameter("@9", DbType.Int32),
+                                new SQLiteParameter("@10", DbType.String),
+                                new SQLiteParameter("@11", DbType.String),
+                                new SQLiteParameter("@12", DbType.Int32),
+                                new SQLiteParameter("@13", DbType.String)
+                            };
+                            parameters[0].Value = pInfo.UserId;
+                            parameters[1].Value = pInfo.ProblemId;
+                            parameters[2].Value = pInfo.Code;
+                            string timeused = string.Empty,
+                                memoryused = string.Empty,
+                                exitcode = string.Empty,
+                                result = string.Empty,
+                                score = string.Empty;
+                            for (var i = 0; i < pInfo.Result.Length; i++)
+                                if (i != pInfo.Timeused.Length - 1)
+                                {
+                                    timeused += pInfo.Timeused[i] + ",";
+                                    memoryused += pInfo.Memoryused[i] + ",";
+                                    exitcode += pInfo.Exitcode[i] + ",";
+                                    result += pInfo.Result[i] + ",";
+                                    score += pInfo.Score[i] + ",";
+                                }
+                                else
+                                {
+                                    timeused += pInfo.Timeused[i];
+                                    memoryused += pInfo.Memoryused[i];
+                                    exitcode += pInfo.Exitcode[i];
+                                    result += pInfo.Result[i];
+                                    score += pInfo.Score[i];
+                                }
+
+                            parameters[3].Value = timeused;
+                            parameters[4].Value = memoryused;
+                            parameters[5].Value = exitcode;
+                            parameters[6].Value = result;
+                            parameters[7].Value = score;
+                            parameters[8].Value = pInfo.JudgeId;
+                            parameters[9].Value = pInfo.Type;
+                            parameters[10].Value = pInfo.Description;
+                            parameters[11].Value = pInfo.CompetitionId;
+                            parameters[12].Value = pInfo.AdditionInfo;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
                 }
             }
@@ -1824,45 +1831,48 @@ namespace Server
 
         public static void UpdateProblem(Problem toUpdateProblem)
         {
-            using (DataBaseLock.Write())
+            using (DataBaseLock.UpgradeableRead())
             {
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (DataBaseLock.Write())
                     {
-                        cmd.CommandText =
-                            "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";
-                        SQLiteParameter[] parameters =
+                        using (var cmd = new SQLiteCommand(sqLite))
                         {
-                            new SQLiteParameter("@1", DbType.String),
-                            new SQLiteParameter("@2", DbType.Int32),
-                            new SQLiteParameter("@3", DbType.String),
-                            new SQLiteParameter("@4", DbType.Int32),
-                            new SQLiteParameter("@5", DbType.String),
-                            new SQLiteParameter("@6", DbType.String),
-                            new SQLiteParameter("@7", DbType.String),
-                            new SQLiteParameter("@8", DbType.String),
-                            new SQLiteParameter("@9", DbType.String),
-                            new SQLiteParameter("@10", DbType.Int32),
-                            new SQLiteParameter("@11", DbType.String),
-                            new SQLiteParameter("@12", DbType.Int32)
-                        };
-                        parameters[0].Value = toUpdateProblem.ProblemName;
-                        parameters[1].Value = toUpdateProblem.Level;
-                        parameters[2].Value = JsonConvert.SerializeObject(toUpdateProblem.DataSets);
-                        parameters[3].Value = toUpdateProblem.Type;
-                        parameters[4].Value = toUpdateProblem.SpecialJudge;
-                        parameters[5].Value = JsonConvert.SerializeObject(toUpdateProblem.ExtraFiles);
-                        parameters[6].Value = toUpdateProblem.InputFileName;
-                        parameters[7].Value = toUpdateProblem.OutputFileName;
-                        parameters[8].Value = toUpdateProblem.CompileCommand;
-                        parameters[9].Value = toUpdateProblem.Option;
-                        parameters[10].Value = toUpdateProblem.Description;
-                        parameters[11].Value = toUpdateProblem.ProblemId;
-                        cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
+                            cmd.CommandText =
+                                "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";
+                            SQLiteParameter[] parameters =
+                            {
+                                new SQLiteParameter("@1", DbType.String),
+                                new SQLiteParameter("@2", DbType.Int32),
+                                new SQLiteParameter("@3", DbType.String),
+                                new SQLiteParameter("@4", DbType.Int32),
+                                new SQLiteParameter("@5", DbType.String),
+                                new SQLiteParameter("@6", DbType.String),
+                                new SQLiteParameter("@7", DbType.String),
+                                new SQLiteParameter("@8", DbType.String),
+                                new SQLiteParameter("@9", DbType.String),
+                                new SQLiteParameter("@10", DbType.Int32),
+                                new SQLiteParameter("@11", DbType.String),
+                                new SQLiteParameter("@12", DbType.Int32)
+                            };
+                            parameters[0].Value = toUpdateProblem.ProblemName;
+                            parameters[1].Value = toUpdateProblem.Level;
+                            parameters[2].Value = JsonConvert.SerializeObject(toUpdateProblem.DataSets);
+                            parameters[3].Value = toUpdateProblem.Type;
+                            parameters[4].Value = toUpdateProblem.SpecialJudge;
+                            parameters[5].Value = JsonConvert.SerializeObject(toUpdateProblem.ExtraFiles);
+                            parameters[6].Value = toUpdateProblem.InputFileName;
+                            parameters[7].Value = toUpdateProblem.OutputFileName;
+                            parameters[8].Value = toUpdateProblem.CompileCommand;
+                            parameters[9].Value = toUpdateProblem.Option;
+                            parameters[10].Value = toUpdateProblem.Description;
+                            parameters[11].Value = toUpdateProblem.ProblemId;
+                            cmd.Parameters.AddRange(parameters);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
                 }
             }
