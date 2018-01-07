@@ -522,8 +522,7 @@ namespace Server
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
-
-                    var running = false;
+                    
                     var process = JudgeHelper.Processes[testId];
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
 
@@ -531,6 +530,55 @@ namespace Server
                     var taskCount = 0;
                     try
                     {
+                        new Thread(() =>
+                        {
+                            if (_problem.InputFileName == "stdin")
+                                try
+                                {
+                                    res = outputStream.ReadToEndAsync();
+                                    inputStream.AutoFlush = true;
+                                    if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                        lock (Connection.StdinWriterLock)
+                                            inputStream.WriteAsync(
+                                                    File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                                .ContinueWith(o =>
+                                                {
+                                                    inputStream.Close();
+                                                });
+                                    else
+                                    {
+                                        inputStream.WriteAsync("\0")
+                                            .ContinueWith(o =>
+                                            {
+                                                inputStream.Close();
+                                            });
+                                    }
+                                }
+                                catch
+                                {
+                                        //ignored
+                                    }
+                            else
+                                try
+                                {
+                                    inputStream.Write("\0");
+                                    inputStream.Close();
+                                }
+                                catch
+                                {
+                                        //ignored
+                                    }
+                        }).Start();
+                        try
+                        {
+                            JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
+                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                        JudgeHelper.ResumeProcess(process.Id);
                         while (!_isExited)
                         {
                             taskCount = 0;
@@ -578,52 +626,6 @@ namespace Server
                                 noChangeTime = DateTime.Now;
                                 lastDt = JudgeResult.Timeused[cur];
                             }
-
-                            if (!running)
-                            {
-                                running = true;
-                                new Thread(() =>
-                                {
-                                    if (_problem.InputFileName == "stdin")
-                                        try
-                                        {
-                                            res = outputStream.ReadToEndAsync();
-                                            inputStream.AutoFlush = true;
-                                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                                lock (Connection.StdinWriterLock)
-                                                    inputStream.WriteAsync(
-                                                            File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                                        .ContinueWith(o =>
-                                                        {
-                                                            inputStream.Close();
-                                                        });
-                                            else
-                                            {
-                                                inputStream.WriteAsync("\0")
-                                                    .ContinueWith(o =>
-                                                    {
-                                                        inputStream.Close();
-                                                    });
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            //ignored
-                                        }
-                                    else
-                                        try
-                                        {
-                                            inputStream.Write("\0");
-                                            inputStream.Close();
-                                        }
-                                        catch
-                                        {
-                                            //ignored
-                                        }
-                                }).Start();
-                                JudgeHelper.ResumeProcess(process.Id);
-                            }
-
                             process.Refresh();
                         }
                     }
