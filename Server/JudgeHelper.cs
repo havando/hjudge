@@ -115,10 +115,7 @@ namespace Server
         private static readonly ManagementEventWatcher WCreate = new ManagementEventWatcher(QCreate);
         public static void Init()
         {
-            WCreate.EventArrived += (sender, e) =>
-            {
-                GetInfo(e.NewEvent);
-            };
+            WCreate.EventArrived += (sender, e) => GetInfo(e.NewEvent);
 
             WCreate.Start();
         }
@@ -132,42 +129,29 @@ namespace Server
             var testguid = (string)instance["Name"];
             if (testguid.ToLower().Contains("werfault"))
             {
-                ResumeProcess(pid);
-                try
-                {
-                    var p = Process.GetProcessById(Convert.ToInt32(instance["ProcessId"]));
-                    while (p.MainWindowHandle == IntPtr.Zero)
-                    {
-                        p.Refresh();
-                        if (p.HasExited) return;
-                    }
-                    p.WaitForInputIdle();
-                    p.CloseMainWindow();
-                    p.Kill();
-                    p.Close();
-                }
-                catch
-                {
-                    //ignored
-                }
+                TerminateProcess(pid);
             }
+
             if (!testguid.Contains("test_hjudge_"))
             {
                 ResumeProcess(pid);
                 return;
             }
+
             var index = testguid.IndexOf(".", StringComparison.Ordinal);
             if (index < 0)
             {
                 ResumeProcess(pid);
                 return;
             }
+
             testguid = testguid.Substring(0, index);
             if (string.IsNullOrEmpty(testguid) || !Processes.ContainsKey(testguid))
             {
                 ResumeProcess(pid);
                 return;
             }
+
             try
             {
                 Processes[testguid] = Process.GetProcessById(pid);

@@ -494,6 +494,8 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
+                    var inputStream = execute.StandardInput;
+                    var outputStream = execute.StandardOutput;
                     while (JudgeHelper.Processes[testId] == null)
                     {
                         if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 10)
@@ -501,7 +503,6 @@ namespace Server
                             failToCatchProcess = true;
                             break;
                         }
-
                         Thread.Sleep(10);
                     }
                     if (failToCatchProcess)
@@ -521,51 +522,11 @@ namespace Server
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
+
+                    var running = false;
                     var process = JudgeHelper.Processes[testId];
-                    var inputStream = execute.StandardInput;
-                    var outputStream = execute.StandardOutput;
-                    process.Exited += exit; //Subscribe exit event
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
-
-                    //Input
-                    if (_problem.InputFileName == "stdin")
-                        try
-                        {
-                            res = outputStream.ReadToEndAsync();
-                            inputStream.AutoFlush = true;
-                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                lock (Connection.StdinWriterLock)
-                                    inputStream.WriteAsync(
-                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                    .ContinueWith(o =>
-                                    {
-                                        inputStream.Close();
-                                    });
-                            else
-                            {
-                                inputStream.WriteAsync("\0")
-                                .ContinueWith(o =>
-                                {
-                                    inputStream.Close();
-                                });
-                            }
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                    else
-                        try
-                        {
-                            inputStream.Write("\0");
-                            inputStream.Close();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-
-                    JudgeHelper.ResumeProcess(process.Id);
+                    
                     Monitor:
                     var taskCount = 0;
                     try
@@ -616,6 +577,52 @@ namespace Server
                                 JudgeResult.Score[cur] = 0;
                                 JudgeResult.Exitcode[cur] = 0;
                             }
+
+                            if (!running)
+                            {
+                                running = true;
+                                new Thread(() =>
+                                {
+                                    if (_problem.InputFileName == "stdin")
+                                        try
+                                        {
+                                            res = outputStream.ReadToEndAsync();
+                                            inputStream.AutoFlush = true;
+                                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                                lock (Connection.StdinWriterLock)
+                                                    inputStream.WriteAsync(
+                                                            File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                                        .ContinueWith(o =>
+                                                        {
+                                                            inputStream.Close();
+                                                        });
+                                            else
+                                            {
+                                                inputStream.WriteAsync("\0")
+                                                    .ContinueWith(o =>
+                                                    {
+                                                        inputStream.Close();
+                                                    });
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            //ignored
+                                        }
+                                    else
+                                        try
+                                        {
+                                            inputStream.Write("\0");
+                                            inputStream.Close();
+                                        }
+                                        catch
+                                        {
+                                            //ignored
+                                        }
+                                }).Start();
+                                JudgeHelper.ResumeProcess(process.Id);
+                            }
+
                             process.Refresh();
                         }
                     }
@@ -630,7 +637,20 @@ namespace Server
                             goto Monitor;
                         }
                     }
-                    
+                    if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
+                    {
+                        _isFault = true;
+                        JudgeResult.Result[cur] = "Time Limit Exceeded";
+                        JudgeResult.Score[cur] = 0;
+                        JudgeResult.Exitcode[cur] = 0;
+                    }
+                    if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
+                    {
+                        _isFault = true;
+                        JudgeResult.Result[cur] = "Memory Limit Exceeded";
+                        JudgeResult.Score[cur] = 0;
+                        JudgeResult.Exitcode[cur] = 0;
+                    }
                     try
                     {
                         process.Kill();
