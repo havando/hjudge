@@ -522,124 +522,137 @@ namespace Server
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
-                    
+
                     var process = JudgeHelper.Processes[testId];
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
 
-                    Monitor:
-                    var taskCount = 0;
-                    try
-                    {
-                        new Thread(() =>
-                        {
-                            if (_problem.InputFileName == "stdin")
-                                try
-                                {
-                                    res = outputStream.ReadToEndAsync();
-                                    inputStream.AutoFlush = true;
-                                    if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                        lock (Connection.StdinWriterLock)
-                                            inputStream.WriteAsync(
-                                                    File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                                .ContinueWith(o =>
-                                                {
-                                                    inputStream.Close();
-                                                });
-                                    else
-                                    {
-                                        inputStream.WriteAsync("\0")
-                                            .ContinueWith(o =>
-                                            {
-                                                inputStream.Close();
-                                            });
-                                    }
-                                }
-                                catch
-                                {
-                                        //ignored
-                                    }
-                            else
-                                try
-                                {
-                                    inputStream.Write("\0");
-                                    inputStream.Close();
-                                }
-                                catch
-                                {
-                                        //ignored
-                                    }
-                        }).Start();
+                    if (_problem.InputFileName == "stdin")
                         try
                         {
-                            JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
-                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
+                            res = outputStream.ReadToEndAsync();
+                            inputStream.AutoFlush = true;
+                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                lock (Connection.StdinWriterLock)
+                                    inputStream.WriteAsync(
+                                            File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                        .ContinueWith(o =>
+                                        {
+                                            inputStream.Close();
+                                        });
+                            else
+                            {
+                                inputStream.WriteAsync("\0")
+                                    .ContinueWith(o =>
+                                    {
+                                        inputStream.Close();
+                                    });
+                            }
                         }
                         catch
                         {
                             //ignored
                         }
-                        JudgeHelper.ResumeProcess(process.Id);
-                        while (!_isExited)
+                    else
+                        try
                         {
-                            taskCount = 0;
-                            JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
-                            if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
-                            {
-                                _isFault = true;
-                                _isExited = true;
-                                JudgeResult.Result[cur] = "Time Limit Exceeded";
-                                JudgeResult.Score[cur] = 0;
-                                JudgeResult.Exitcode[cur] = 0;
-                            }
-                            taskCount++;
-                            JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
-                            if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
-                            {
-                                _isFault = true;
-                                _isExited = true;
-                                JudgeResult.Result[cur] = "Memory Limit Exceeded";
-                                JudgeResult.Score[cur] = 0;
-                                JudgeResult.Exitcode[cur] = 0;
-                            }
-                            taskCount++;
-
-                            if (lastDt == JudgeResult.Timeused[cur])
-                            {
-                                if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
-                                    (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 10)
-                                {
-                                    _isExited = true;
-                                    isNoResponding = true;
-                                    break;
-                                }
-                                try
-                                {
-                                    process.CloseMainWindow();
-                                }
-                                catch
-                                {
-                                    //ignored
-                                }
-                            }
-                            else
-                            {
-                                noChangeTime = DateTime.Now;
-                                lastDt = JudgeResult.Timeused[cur];
-                            }
-                            process.Refresh();
+                            inputStream.Write("\0");
+                            inputStream.Close();
                         }
+                        catch
+                        {
+                            //ignored
+                        }
+                    try
+                    {
+                        JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
+                        JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
                     }
                     catch
                     {
-                        if (!_isExited)
+                        //ignored
+                    }
+
+                    var resume = false;
+                    
+                    do
+                    {
+                        var taskCount = 0;
+                        try
                         {
-                            if (taskCount != 2)
+                            while (!_isExited)
                             {
+                                taskCount = 0;
+                                if (!resume)
+                                {
+                                    resume = true;
+                                    JudgeHelper.ResumeProcess(process.Id);
+                                }
+                                JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur],
+                                    Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
+                                if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
+                                {
+                                    _isFault = true;
+                                    _isExited = true;
+                                    JudgeResult.Result[cur] = "Time Limit Exceeded";
+                                    JudgeResult.Score[cur] = 0;
+                                    JudgeResult.Exitcode[cur] = 0;
+                                }
+
+                                taskCount++;
+                                JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur],
+                                    process.PeakWorkingSet64 >> 10);
+                                if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
+                                {
+                                    _isFault = true;
+                                    _isExited = true;
+                                    JudgeResult.Result[cur] = "Memory Limit Exceeded";
+                                    JudgeResult.Score[cur] = 0;
+                                    JudgeResult.Exitcode[cur] = 0;
+                                }
+
+                                taskCount++;
+
+                                if (lastDt == JudgeResult.Timeused[cur])
+                                {
+                                    if ((DateTime.Now - noChangeTime).TotalMilliseconds >
+                                        _problem.DataSets[cur].TimeLimit *
+                                        (Connection.CurJudgingCnt - Connection.IntelligentAdditionWorkingThread) * 10)
+                                    {
+                                        _isExited = true;
+                                        isNoResponding = true;
+                                        break;
+                                    }
+
+                                    try
+                                    {
+                                        process.CloseMainWindow();
+                                    }
+                                    catch
+                                    {
+                                        //ignored
+                                    }
+                                }
+                                else
+                                {
+                                    noChangeTime = DateTime.Now;
+                                    lastDt = JudgeResult.Timeused[cur];
+                                }
+
                                 process.Refresh();
                             }
-                            goto Monitor;
                         }
-                    }
+                        catch
+                        {
+                            if (!_isExited)
+                            {
+                                if (taskCount != 2)
+                                {
+                                    process.Refresh();
+                                }
+                            }
+                        }
+                    } while (!_isExited);
+
                     try
                     {
                         process.Kill();
@@ -658,26 +671,22 @@ namespace Server
                     }
                     try
                     {
-                        try
-                        {
-                            JudgeResult.Exitcode[cur] = process.ExitCode;
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
                         JudgeResult.Exitcode[cur] = execute.ExitCode;
+                        if (JudgeResult.Exitcode[cur] == 0)
+                            JudgeResult.Exitcode[cur] = process.ExitCode;
                         if (JudgeResult.Exitcode[cur] != 0 && !_isFault)
                         {
                             JudgeResult.Result[cur] = "Runtime Error";
                             JudgeResult.Score[cur] = 0;
                             _isFault = true;
+                            isNoResponding = false;
                         }
                     }
                     catch
                     {
                         //ignored
                     }
+                    JudgeHelper.TerminateProcess(process.Id);
                     if (isNoResponding)
                     {
                         JudgeResult.Result[cur] = "Time Limit Exceeded";
