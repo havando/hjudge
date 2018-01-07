@@ -118,6 +118,8 @@ namespace Server
             WCreate.EventArrived += (sender, e) => GetInfo(e.NewEvent);
 
             WCreate.Start();
+
+            new Thread(KillWerFault).Start();
         }
 
         public static void GetInfo(ManagementBaseObject mobj)
@@ -127,11 +129,6 @@ namespace Server
             var pid = Convert.ToInt32(instance["ProcessId"]);
             SuspendProcess(pid);
             var testguid = (string)instance["Name"];
-            if (testguid.ToLower().Contains("werfault"))
-            {
-                TerminateProcess(pid);
-            }
-
             if (!testguid.Contains("test_hjudge_"))
             {
                 ResumeProcess(pid);
@@ -225,6 +222,33 @@ namespace Server
                 // Don't forget to close handle you created.
                 if (hProc != IntPtr.Zero)
                     CloseHandle(hProc);
+            }
+        }
+
+        public static void KillWerFault()
+        {
+            while (!Connection.IsExited)
+            {
+                if (Connection.CurJudgingCnt != 0)
+                {
+                    try
+                    {
+                        var ps = Process.GetProcessesByName("werfault");
+                        foreach (var item in ps)
+                            if (item.MainWindowHandle != IntPtr.Zero)
+                            {
+                                item.WaitForInputIdle();
+                                item.CloseMainWindow();
+                                item.Kill();
+                                item.Close();
+                            }
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+                else Thread.Sleep(100);
             }
         }
     }
