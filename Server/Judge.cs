@@ -480,7 +480,6 @@ namespace Server
                     var startCatch = DateTime.Now;
                     JudgeHelper.Subscribe(testId);
                     long lastDt = 0;
-                    var isNoResponding = false;
                     try
                     {
                         execute.Start();
@@ -503,7 +502,7 @@ namespace Server
                             failToCatchProcess = true;
                             break;
                         }
-                        Thread.Sleep(10);
+                        Thread.Sleep(1);
                     }
                     if (failToCatchProcess)
                     {
@@ -526,42 +525,7 @@ namespace Server
                     var process = JudgeHelper.Processes[testId];
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
 
-                    if (_problem.InputFileName == "stdin")
-                        try
-                        {
-                            res = outputStream.ReadToEndAsync();
-                            inputStream.AutoFlush = true;
-                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
-                                lock (Connection.StdinWriterLock)
-                                    inputStream.WriteAsync(
-                                            File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
-                                        .ContinueWith(o =>
-                                        {
-                                            inputStream.Close();
-                                        });
-                            else
-                            {
-                                inputStream.WriteAsync("\0")
-                                    .ContinueWith(o =>
-                                    {
-                                        inputStream.Close();
-                                    });
-                            }
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
-                    else
-                        try
-                        {
-                            inputStream.Write("\0");
-                            inputStream.Close();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                    
                     try
                     {
                         JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
@@ -571,9 +535,9 @@ namespace Server
                     {
                         //ignored
                     }
-
                     var resume = false;
-                    
+
+                    var isNoResponding = false;
                     do
                     {
                         var taskCount = 0;
@@ -585,6 +549,47 @@ namespace Server
                                 if (!resume)
                                 {
                                     resume = true;
+                                    
+                                    new Thread(() =>
+                                    {
+                                        if (_problem.InputFileName == "stdin")
+                                            try
+                                            {
+                                                res = outputStream.ReadToEndAsync();
+                                                inputStream.AutoFlush = true;
+                                                if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                                    lock (Connection.StdinWriterLock)
+                                                        inputStream.WriteAsync(
+                                                                File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                                            .ContinueWith(o =>
+                                                            {
+                                                                inputStream.Close();
+                                                            });
+                                                else
+                                                {
+                                                    inputStream.WriteAsync("\0")
+                                                        .ContinueWith(o =>
+                                                        {
+                                                            inputStream.Close();
+                                                        });
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                //ignored
+                                            }
+                                        else
+                                            try
+                                            {
+                                                inputStream.Write("\0");
+                                                inputStream.Close();
+                                            }
+                                            catch
+                                            {
+                                                //ignored
+                                            }
+                                    }).Start();
+
                                     JudgeHelper.ResumeProcess(process.Id);
                                 }
                                 JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur],
@@ -612,7 +617,7 @@ namespace Server
 
                                 taskCount++;
 
-                                if (lastDt == JudgeResult.Timeused[cur])
+                                if (lastDt == Convert.ToInt64(process.TotalProcessorTime.TotalMilliseconds))
                                 {
                                     if ((DateTime.Now - noChangeTime).TotalMilliseconds >
                                         _problem.DataSets[cur].TimeLimit *
@@ -635,7 +640,7 @@ namespace Server
                                 else
                                 {
                                     noChangeTime = DateTime.Now;
-                                    lastDt = JudgeResult.Timeused[cur];
+                                    lastDt = Convert.ToInt64(process.TotalProcessorTime.TotalMilliseconds);
                                 }
 
                                 process.Refresh();
