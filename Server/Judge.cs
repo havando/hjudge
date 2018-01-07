@@ -377,7 +377,6 @@ namespace Server
             var failToCatchProcessTime = new int[_problem.DataSets.Length];
             while (cur < _problem.DataSets.Length - 1)
             {
-                Thread.Sleep(10);
                 var failToCatchProcess = false;
                 cur++;
                 if (cur != 0)
