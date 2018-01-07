@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Windows;
 
@@ -25,6 +26,28 @@ namespace Server
             foreach (var i in e.Args)
                 if (i == "-silent")
                     Configuration.IsHidden = true;
+
+            try
+            {
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\AppData");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Files"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Files");
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Data"))
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Data");
+                if (Environment.Is64BitProcess)
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x64\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
+                else
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x86\\HPSocket4C_U.dll",
+                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
+            }
+            catch
+            {
+                MessageBox.Show("程序初始化失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(1);
+            }
+
             JudgeHelper.Init();
         }
     }

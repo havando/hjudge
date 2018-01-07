@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Server
 {
@@ -234,7 +235,8 @@ namespace Server
                     try
                     {
                         var ps = Process.GetProcessesByName("werfault");
-                        foreach (var item in ps)
+                        Parallel.ForEach(ps, item =>
+                        {
                             if (item.MainWindowHandle != IntPtr.Zero)
                             {
                                 item.WaitForInputIdle();
@@ -242,6 +244,7 @@ namespace Server
                                 item.Kill();
                                 item.Close();
                             }
+                        });
                     }
                     catch
                     {

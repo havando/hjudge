@@ -26,44 +26,13 @@ namespace Server
             Icon = Properties.Resources.Server
         };
 
-        private ConcurrentQueue<Thread> _uiUpdate = new ConcurrentQueue<Thread>();
+        private readonly ConcurrentQueue<Thread> _uiUpdate = new ConcurrentQueue<Thread>();
 
         private JudgeLogs _judgeLogsForm;
 
         public MainWindow()
         {
-            //if (File.Exists($"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe"))
-            //{
-            //    new Process
-            //    {
-            //        StartInfo =
-            //        {
-            //            FileName = $"{AppDomain.CurrentDomain.BaseDirectory}\\Updater.exe",
-            //            Arguments =
-            //                $"Server {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version} {Process.GetCurrentProcess().Id} \"{AppDomain.CurrentDomain.BaseDirectory}\""
-            //        }
-            //    }.Start();
-            //}
-            try
-            {
-                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData"))
-                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\AppData");
-                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Files"))
-                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Files");
-                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\Data"))
-                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\Data");
-                if (Environment.Is64BitProcess)
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x64\\HPSocket4C_U.dll",
-                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
-                else
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + "\\x86\\HPSocket4C_U.dll",
-                        AppDomain.CurrentDomain.BaseDirectory + "\\HPSocket4C_U.dll", true);
-            }
-            catch
-            {
-                MessageBox.Show("程序初始化失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(1);
-            }
+
             InitializeComponent();
             _notifyIcon.MouseClick += (sender, args) =>
             {

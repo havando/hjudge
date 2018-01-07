@@ -526,7 +526,7 @@ namespace Server
                     var running = false;
                     var process = JudgeHelper.Processes[testId];
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
-                    
+
                     Monitor:
                     var taskCount = 0;
                     try
@@ -535,9 +535,26 @@ namespace Server
                         {
                             taskCount = 0;
                             JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));
+                            if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
+                            {
+                                _isFault = true;
+                                _isExited = true;
+                                JudgeResult.Result[cur] = "Time Limit Exceeded";
+                                JudgeResult.Score[cur] = 0;
+                                JudgeResult.Exitcode[cur] = 0;
+                            }
                             taskCount++;
                             JudgeResult.Memoryused[cur] = Math.Max(JudgeResult.Memoryused[cur], process.PeakWorkingSet64 >> 10);
+                            if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
+                            {
+                                _isFault = true;
+                                _isExited = true;
+                                JudgeResult.Result[cur] = "Memory Limit Exceeded";
+                                JudgeResult.Score[cur] = 0;
+                                JudgeResult.Exitcode[cur] = 0;
+                            }
                             taskCount++;
+
                             if (lastDt == JudgeResult.Timeused[cur])
                             {
                                 if ((DateTime.Now - noChangeTime).TotalMilliseconds > _problem.DataSets[cur].TimeLimit *
@@ -560,22 +577,6 @@ namespace Server
                             {
                                 noChangeTime = DateTime.Now;
                                 lastDt = JudgeResult.Timeused[cur];
-                            }
-                            if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
-                            {
-                                _isFault = true;
-                                _isExited = true;
-                                JudgeResult.Result[cur] = "Time Limit Exceeded";
-                                JudgeResult.Score[cur] = 0;
-                                JudgeResult.Exitcode[cur] = 0;
-                            }
-                            if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
-                            {
-                                _isFault = true;
-                                _isExited = true;
-                                JudgeResult.Result[cur] = "Memory Limit Exceeded";
-                                JudgeResult.Score[cur] = 0;
-                                JudgeResult.Exitcode[cur] = 0;
                             }
 
                             if (!running)
@@ -636,20 +637,6 @@ namespace Server
                             }
                             goto Monitor;
                         }
-                    }
-                    if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
-                    {
-                        _isFault = true;
-                        JudgeResult.Result[cur] = "Time Limit Exceeded";
-                        JudgeResult.Score[cur] = 0;
-                        JudgeResult.Exitcode[cur] = 0;
-                    }
-                    if (JudgeResult.Memoryused[cur] > _problem.DataSets[cur].MemoryLimit)
-                    {
-                        _isFault = true;
-                        JudgeResult.Result[cur] = "Memory Limit Exceeded";
-                        JudgeResult.Score[cur] = 0;
-                        JudgeResult.Exitcode[cur] = 0;
                     }
                     try
                     {
