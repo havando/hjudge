@@ -331,7 +331,12 @@ namespace Server
             {
                 Parallel.ForEach(Recv, (t, state) =>
                 {
-                    if (IsExited) state.Stop();
+                    if (IsExited)
+                    {
+                        state.Stop();
+                        return;
+                    }
+                    if (t.Data.Count == 0) return;
                     try
                     {
                         while (t.Data.TryDequeue(out var temp))
@@ -1980,7 +1985,7 @@ namespace Server
                             res.obj.Client.ConnId, res.token);
                     }
                 }
-                else Thread.Sleep(1);
+                else Thread.Sleep(100);
             }
         }
 

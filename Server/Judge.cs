@@ -13,7 +13,6 @@ namespace Server
     public class Judge
     {
         private readonly string _id;
-        private readonly bool _isFinished;
         private readonly Problem _problem;
         private readonly string _workingdir;
         public readonly bool Cancelled;
@@ -78,8 +77,6 @@ namespace Server
             }
             Connection.CanPostJudgTask = true;
 
-            _isFinished = false;
-
             JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
             try
             {
@@ -113,7 +110,6 @@ namespace Server
                         Thread.Sleep(1000);
                     }
 
-                new Thread(Killwerfault).Start();
                 Connection.UpdateJudgeInfo(JudgeResult);
                 _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + _id;
 
@@ -137,7 +133,6 @@ namespace Server
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                         textBlock);
-                    _isFinished = true;
                     return;
                 }
                 var extList = t.ExtName.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -160,7 +155,6 @@ namespace Server
                     Connection.UpdateMainPageState(
                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                         textBlock);
-                    _isFinished = true;
                     return;
                 }
 
@@ -240,7 +234,7 @@ namespace Server
             {
                 //ignored
             }
-            _isFinished = true;
+            JudgeHelper.Desubscribe("test_hjudge_" + _id);
             lock (Connection.JudgeListCntLock)
             {
                 Connection.CurJudgingCnt--;
@@ -453,6 +447,13 @@ namespace Server
                         {
                             //ignored
                         }
+
+                    void exit(object sender, EventArgs args)
+                    {
+                        _isExited = true;
+                    }
+
+                    var testId = $"test_hjudge_{_id}";
                     var execute = new Process
                     {
                         StartInfo =
@@ -471,12 +472,13 @@ namespace Server
                         },
                         EnableRaisingEvents = true
                     };
-                    execute.Exited += (sender, e) => _isExited = true;
+
+                    execute.Exited += exit;
                     Task<string> res = null;
                     _isFault = false;
                     _isExited = false;
                     var startCatch = DateTime.Now;
-                    var processes = new Process[0];
+                    JudgeHelper.Subscribe(testId);
                     long lastDt = 0;
                     var isNoResponding = false;
                     try
@@ -492,24 +494,15 @@ namespace Server
                         JudgeResult.Memoryused[cur] = 0;
                         continue;
                     }
-                    var inputStream = execute.StandardInput;
-                    var outputStream = execute.StandardOutput;
-                    try
+                    while (JudgeHelper.Processes[testId] == null)
                     {
-                        while (processes.Length == 0)
+                        if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 10)
                         {
-                            if (_isExited || (DateTime.Now - startCatch).TotalSeconds > 10)
-                            {
-                                failToCatchProcess = true;
-                                break;
-                            }
-
-                            processes = Process.GetProcessesByName($"test_hjudge_{_id}");
+                            failToCatchProcess = true;
+                            break;
                         }
-                    }
-                    catch
-                    {
-                        failToCatchProcess = true;
+
+                        Thread.Sleep(10);
                     }
                     if (failToCatchProcess)
                     {
@@ -525,27 +518,54 @@ namespace Server
                             //ignored
                         }
                         execute.Close();
-                        foreach (var iProcess in processes ?? new Process[0])
-                        {
-                            try
-                            {
-                                iProcess.Kill();
-                            }
-                            catch
-                            {
-                                //ignored
-                            }
-                            finally
-                            {
-                                iProcess.Close();
-                            }
-                        }
                         if (failToCatchProcessTime[cur] < 3) cur--;
                         continue;
                     }
-                    var process = processes[0];
-                    var noChangeTime = DateTime.Now;
-                    var hasInput = false;
+                    var process = JudgeHelper.Processes[testId];
+                    var inputStream = execute.StandardInput;
+                    var outputStream = execute.StandardOutput;
+                    process.Exited += exit; //Subscribe exit event
+                    var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
+
+                    //Input
+                    if (_problem.InputFileName == "stdin")
+                        try
+                        {
+                            res = outputStream.ReadToEndAsync();
+                            inputStream.AutoFlush = true;
+                            if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile))
+                                lock (Connection.StdinWriterLock)
+                                    inputStream.WriteAsync(
+                                        File.ReadAllText(_problem.DataSets[cur].InputFile, Encoding.Default) + "\0")
+                                    .ContinueWith(o =>
+                                    {
+                                        inputStream.Close();
+                                    });
+                            else
+                            {
+                                inputStream.WriteAsync("\0")
+                                .ContinueWith(o =>
+                                {
+                                    inputStream.Close();
+                                });
+                            }
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+                    else
+                        try
+                        {
+                            inputStream.Write("\0");
+                            inputStream.Close();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
+
+                    JudgeHelper.ResumeProcess(process.Id);
                     Monitor:
                     var taskCount = 0;
                     try
@@ -580,7 +600,6 @@ namespace Server
                                 noChangeTime = DateTime.Now;
                                 lastDt = JudgeResult.Timeused[cur];
                             }
-                            process.Refresh();
                             if (JudgeResult.Timeused[cur] > _problem.DataSets[cur].TimeLimit)
                             {
                                 _isFault = true;
@@ -597,48 +616,7 @@ namespace Server
                                 JudgeResult.Score[cur] = 0;
                                 JudgeResult.Exitcode[cur] = 0;
                             }
-                            if (hasInput) continue;
-                            hasInput = true;
-                            var cur1 = cur;
-                            new Thread(() =>
-                            {
-                                if (_problem.InputFileName == "stdin")
-                                    try
-                                    {
-                                        res = outputStream.ReadToEndAsync();
-                                        inputStream.AutoFlush = true;
-                                        if (!string.IsNullOrWhiteSpace(_problem.DataSets[cur1].InputFile))
-                                            lock (Connection.StdinWriterLock)
-                                                inputStream.WriteAsync(
-                                                    File.ReadAllText(_problem.DataSets[cur1].InputFile, Encoding.Default) + "\0")
-                                                .ContinueWith(o =>
-                                                {
-                                                    inputStream.Close();
-                                                });
-                                        else
-                                        {
-                                            inputStream.WriteAsync("\0")
-                                            .ContinueWith(o =>
-                                            {
-                                                inputStream.Close();
-                                            });
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        //ignored
-                                    }
-                                else
-                                    try
-                                    {
-                                        inputStream.Write("\0");
-                                        inputStream.Close();
-                                    }
-                                    catch
-                                    {
-                                        //ignored
-                                    }
-                            }).Start();
+                            process.Refresh();
                         }
                     }
                     catch
@@ -652,16 +630,14 @@ namespace Server
                             goto Monitor;
                         }
                     }
-                    foreach (var iProcess in processes ?? new Process[0])
+                    
+                    try
                     {
-                        try
-                        {
-                            iProcess.Kill();
-                        }
-                        catch
-                        {
-                            //ignored
-                        }
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        //ignored
                     }
                     try
                     {
@@ -706,16 +682,14 @@ namespace Server
                             }
                             noRespondingState = true;
                         }
-                        foreach (var iProcess in processes ?? new Process[0])
-                            iProcess.Close();
+                        process.Close();
                         execute.Close();
                         if (noRespondingTime[cur] < 3) cur--;
                         continue;
                     }
                     if (_isFault)
                     {
-                        foreach (var iProcess in processes ?? new Process[0])
-                            iProcess.Close();
+                        process.Close();
                         execute.Close();
                         continue;
                     }
@@ -735,8 +709,7 @@ namespace Server
                             res?.Result ?? string.Empty, Encoding.Default);
                     }
                     outputStream.Close();
-                    foreach (var iProcess in processes ?? new Process[0])
-                        iProcess.Close();
+                    process.Close();
                     execute.Close();
                     Thread.Sleep(1);
                     lock (Connection.ComparingLock)
@@ -871,30 +844,6 @@ namespace Server
                 {
                     Connection.IntelligentAdditionWorkingThread--;
                 }
-        }
-
-        private void Killwerfault()
-        {
-            while (!_isFinished)
-            {
-                try
-                {
-                    var ps = Process.GetProcessesByName("werfault");
-                    foreach (var item in ps)
-                        if (item.MainWindowHandle != IntPtr.Zero)
-                        {
-                            item.WaitForInputIdle();
-                            item.CloseMainWindow();
-                            item.Kill();
-                            item.Close();
-                        }
-                }
-                catch
-                {
-                    // ignored
-                }
-                Thread.Sleep(1);
-            }
         }
 
         private static string Dn(string filename)

@@ -25,6 +25,7 @@ namespace Server
             foreach (var i in e.Args)
                 if (i == "-silent")
                     Configuration.IsHidden = true;
+            JudgeHelper.Init();
         }
     }
 }
