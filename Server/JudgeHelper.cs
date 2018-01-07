@@ -163,7 +163,7 @@ namespace Server
                 return;
             }
             testguid = testguid.Substring(0, index);
-            if (!Processes.ContainsKey(testguid))
+            if (string.IsNullOrEmpty(testguid) || !Processes.ContainsKey(testguid))
             {
                 ResumeProcess(pid);
                 return;
