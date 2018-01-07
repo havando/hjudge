@@ -247,6 +247,7 @@ namespace Server
                     {
                         // ignored
                     }
+                    Thread.Sleep(10);
                 }
                 else Thread.Sleep(100);
             }
