@@ -166,7 +166,8 @@ namespace Server
             }
             catch
             {
-                //ignored
+                Processes[testguid] = null;
+                ResumeProcess(pid);
             }
         }
 
