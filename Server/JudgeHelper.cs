@@ -94,6 +94,9 @@ namespace Server
         [DllImport("ntdll.dll")]
         private static extern uint NtSuspendProcess([In] IntPtr processHandle);
 
+        [DllImport("ntdll.dll")]
+        private static extern uint NtTerminateProcess([In] IntPtr processHandle);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr OpenProcess(
             ProcessAccess desiredAccess,
@@ -160,6 +163,11 @@ namespace Server
                 return;
             }
             testguid = testguid.Substring(0, index);
+            if (!Processes.ContainsKey(testguid))
+            {
+                ResumeProcess(pid);
+                return;
+            }
             try
             {
                 Processes[testguid] = Process.GetProcessById(pid);
@@ -167,7 +175,7 @@ namespace Server
             catch
             {
                 Processes[testguid] = null;
-                ResumeProcess(pid);
+                TerminateProcess(pid);
             }
         }
 
@@ -209,6 +217,24 @@ namespace Server
                 hProc = OpenProcess(ProcessAccess.SuspendResume, false, processId);
                 if (hProc != IntPtr.Zero)
                     NtResumeProcess(hProc);
+            }
+            finally
+            {
+                // Don't forget to close handle you created.
+                if (hProc != IntPtr.Zero)
+                    CloseHandle(hProc);
+            }
+        }
+
+        public static void TerminateProcess(int processId)
+        {
+            IntPtr hProc = IntPtr.Zero;
+            try
+            {
+                // Gets the handle to the Process
+                hProc = OpenProcess(ProcessAccess.Terminate, false, processId);
+                if (hProc != IntPtr.Zero)
+                    NtTerminateProcess(hProc);
             }
             finally
             {
