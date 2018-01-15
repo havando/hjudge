@@ -234,7 +234,6 @@ namespace Server
             {
                 //ignored
             }
-            JudgeHelper.Desubscribe("test_hjudge_" + _id);
             lock (Connection.JudgeListCntLock)
             {
                 Connection.CurJudgingCnt--;
@@ -490,6 +489,7 @@ namespace Server
                         JudgeResult.Score[cur] = 0;
                         JudgeResult.Timeused[cur] = 0;
                         JudgeResult.Memoryused[cur] = 0;
+                        JudgeHelper.Desubscribe(testId);
                         continue;
                     }
                     var inputStream = execute.StandardInput;
@@ -505,6 +505,7 @@ namespace Server
                     }
                     if (failToCatchProcess)
                     {
+                        JudgeHelper.Desubscribe(testId);
                         JudgeResult.Result[cur] = "Unknown Error";
                         JudgeResult.Score[cur] = 0;
                         failToCatchProcessTime[cur]++;
@@ -524,7 +525,8 @@ namespace Server
                     var process = JudgeHelper.Processes[testId];
                     var noChangeTime = DateTime.Now; //Prevent from process suspending / IO block causing no response
 
-                    
+                    JudgeHelper.Desubscribe(testId);
+
                     try
                     {
                         JudgeResult.Timeused[cur] = Math.Max(JudgeResult.Timeused[cur], Convert.ToInt64(process.UserProcessorTime.TotalMilliseconds));

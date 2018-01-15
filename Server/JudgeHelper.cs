@@ -111,14 +111,15 @@ namespace Server
 
         public static ConcurrentDictionary<string, Process> Processes = new ConcurrentDictionary<string, Process>();
         private static readonly WqlEventQuery QCreate = new WqlEventQuery("__InstanceCreationEvent",
-            TimeSpan.FromTicks(10),
+            TimeSpan.FromTicks(1),
             "TargetInstance ISA 'Win32_Process'");
         private static readonly ManagementEventWatcher WCreate = new ManagementEventWatcher(QCreate);
+        private static readonly object Jlock = new object();
+        private static int _cnt = 0;
+
         public static void Init()
         {
             WCreate.EventArrived += (sender, e) => GetInfo(e.NewEvent);
-
-            WCreate.Start();
 
             new Thread(KillWerFault).Start();
         }
@@ -163,12 +164,25 @@ namespace Server
 
         public static void Subscribe(string testguid)
         {
+            lock (Jlock)
+            {
+                if (_cnt == 0)
+                    WCreate.Start();
+                _cnt++;
+            }
+
             Processes[testguid] = null;
         }
 
 
         public static void Desubscribe(string testguid)
         {
+            lock (Jlock)
+            {
+                _cnt--;
+                if (_cnt == 0) WCreate.Stop();
+            }
+
             Processes.TryRemove(testguid, out var res);
         }
 
