@@ -111,7 +111,7 @@ namespace Server
 
         public static ConcurrentDictionary<string, Process> Processes = new ConcurrentDictionary<string, Process>();
         private static readonly WqlEventQuery QCreate = new WqlEventQuery("__InstanceCreationEvent",
-            TimeSpan.FromTicks(1),
+            TimeSpan.FromTicks(10),
             "TargetInstance ISA 'Win32_Process'");
         private static readonly ManagementEventWatcher WCreate = new ManagementEventWatcher(QCreate);
         public static void Init()
