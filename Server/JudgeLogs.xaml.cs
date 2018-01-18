@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,7 +17,7 @@ namespace Server
     /// </summary>
     public partial class JudgeLogs : Window
     {
-        private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
+        private readonly ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
         private bool _isFilterActivated;
         private readonly ObservableCollection<string> _problemFilter = new ObservableCollection<string>();
@@ -51,9 +49,28 @@ namespace Server
             _isFilterActivated = false;
             _curJudgeInfoBak.Clear();
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
-            _curJudgeInfo = Connection.QueryJudgeLog(true);
-            ListView.ItemsSource = _curJudgeInfo;
-            ListView.Items.Refresh();
+            
+            _curJudgeInfo.Clear();
+            _problemFilter.Clear();
+            _userFilter.Clear();
+
+            var t = Connection.QueryJudgeLog(true).Reverse().ToList();
+            var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
+            var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
+            foreach (var judgeInfo in t)
+            {
+                _curJudgeInfo.Add(judgeInfo);
+            }
+            foreach (var problemName in problemList)
+            {
+                _problemFilter.Add(problemName);
+            }
+            foreach (var userName in userList)
+            {
+                _userFilter.Add(userName);
+            }
+            
+
             CheckBox.IsChecked = false;
         }
 
@@ -73,37 +90,29 @@ namespace Server
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (UserHelper.CurrentUser.Type >= 3) ClearLabel.Visibility = Visibility.Hidden;
-            ListView.ItemsSource = _curJudgeInfo;
 
             _curJudgeInfo.Clear();
             _problemFilter.Clear();
             _userFilter.Clear();
+            
+            var t = Connection.QueryJudgeLog(true).Reverse().ToList();
+            var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
+            var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
+            foreach (var judgeInfo in t)
+            {
+                _curJudgeInfo.Add(judgeInfo);
+            }
+            foreach (var problemName in problemList)
+            {
+                _problemFilter.Add(problemName);
+            }
+            foreach (var userName in userList)
+            {
+                _userFilter.Add(userName);
+            }
+            ListView.ItemsSource = _curJudgeInfo;
             ProblemFilter.ItemsSource = _problemFilter;
             UserFilter.ItemsSource = _userFilter;
-            Task.Run(() =>
-            {
-                var t = Connection.QueryJudgeLog(true).Reverse();
-                var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
-                var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
-                foreach (var judgeInfo in t)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _curJudgeInfo.Add(judgeInfo);
-                    });
-                    Thread.Sleep(1);
-                }
-                foreach(var problemName in problemList)
-                {
-                    Dispatcher.Invoke(() => _problemFilter.Add(problemName));
-                    Thread.Sleep(1);
-                }
-                foreach(var userName in userList)
-                {
-                    Dispatcher.Invoke(() => _userFilter.Add(userName));
-                    Thread.Sleep(1);
-                }
-            });
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -182,7 +191,7 @@ namespace Server
                 }
                 try
                 {
-                    ExcelUtility.CreateExcel(sfg.FileName, new[] {dt}, new[] {"结果"});
+                    ExcelUtility.CreateExcel(sfg.FileName, new[] { dt }, new[] { "结果" });
                     MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -209,7 +218,7 @@ namespace Server
                 if (sdc.Count > 0)
                 {
                     var sd = sdc[0];
-                    sortDirection = (ListSortDirection) (((int) sd.Direction + 1) % 2);
+                    sortDirection = (ListSortDirection)(((int)sd.Direction + 1) % 2);
                     sdc.Clear();
                 }
                 if (bindingProperty != null) sdc.Add(new SortDescription(bindingProperty, sortDirection));
@@ -246,56 +255,49 @@ namespace Server
         private bool Filter(JudgeInfo p)
         {
             var now = DateTime.Now;
-            string pf = null, uf = null;
-            var tf = -1;
-            Dispatcher.Invoke(() =>
-            {
-                pf = ProblemFilter.SelectedItem as string;
-                uf = UserFilter.SelectedItem as string;
-                tf = TimeFilter.SelectedIndex;
-            });
-            if (pf != null) if (p.ProblemName != pf) return false;
-            if (uf != null) if (p.UserName != uf) return false;
+            var tf = TimeFilter.SelectedIndex;
+            if (ProblemFilter.SelectedItem is string pf) if (p.ProblemName != pf) return false;
+            if (UserFilter.SelectedItem is string uf) if (p.UserName != uf) return false;
             if (tf != -1)
             {
                 var ti = Convert.ToDateTime(p.JudgeDate);
                 switch (tf)
                 {
                     case 0:
-                    {
-                        if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
-                        break;
-                    }
+                        {
+                            if (ti.Year != now.Year || ti.Month != now.Month || ti.Day != now.Day) return false;
+                            break;
+                        }
                     case 1:
-                    {
-                        if ((now - ti).TotalDays > 3) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 3) return false;
+                            break;
+                        }
                     case 2:
-                    {
-                        if ((now - ti).TotalDays > 7) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 7) return false;
+                            break;
+                        }
                     case 3:
-                    {
-                        if ((now - ti).TotalDays > 30) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 30) return false;
+                            break;
+                        }
                     case 4:
-                    {
-                        if ((now - ti).TotalDays > 91) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 91) return false;
+                            break;
+                        }
                     case 5:
-                    {
-                        if ((now - ti).TotalDays > 182) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 182) return false;
+                            break;
+                        }
                     case 6:
-                    {
-                        if ((now - ti).TotalDays > 365) return false;
-                        break;
-                    }
+                        {
+                            if ((now - ti).TotalDays > 365) return false;
+                            break;
+                        }
                 }
             }
             return true;
@@ -304,37 +306,37 @@ namespace Server
         private void ResetFilterButton_Click(object sender, RoutedEventArgs e)
         {
             CheckBox.IsChecked = false;
+
+            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             if (_isFilterActivated)
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
+                    _curJudgeInfo.Add(p);
             }
             _isFilterActivated = false;
-            ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
             ListView.ItemsSource = _curJudgeInfo;
-            ListView.Items.Refresh();
         }
 
         private void DoFilterButton_Click(object sender, RoutedEventArgs e)
         {
             CheckBox.IsChecked = false;
+
             if (_isFilterActivated)
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
+                    _curJudgeInfo.Add(p);
             }
+
             _isFilterActivated = true;
-            Task.Run(() =>
-            {
-                Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
-                foreach (var p in _curJudgeInfo)
-                    Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
-                Dispatcher.Invoke(() => _curJudgeInfo.Clear());
-                foreach (var p in _curJudgeInfoBak.Where(Filter))
-                    Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
-            });
+            _curJudgeInfoBak.Clear();
+            foreach (var p in _curJudgeInfo)
+                _curJudgeInfoBak.Add(p);
+            _curJudgeInfo.Clear();
+            foreach (var p in _curJudgeInfoBak.Where(Filter))
+                _curJudgeInfo.Add(p);
+            ListView.ItemsSource = _curJudgeInfo;
         }
     }
 }

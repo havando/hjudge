@@ -21,7 +21,7 @@ namespace Client
     /// </summary>
     public partial class JudgingLogsPage : Page
     {
-        private ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
+        private readonly ObservableCollection<JudgeInfo> _curJudgeInfo = new ObservableCollection<JudgeInfo>();
         private readonly ObservableCollection<JudgeInfo> _curJudgeInfoBak = new ObservableCollection<JudgeInfo>();
         private bool _isFilterActivated;
 
@@ -55,10 +55,8 @@ namespace Client
             _isFilterActivated = false;
             _curJudgeInfoBak.Clear();
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
-            _curJudgeInfo = Connection.QueryJudgeLog();
-            ListView.ItemsSource = _curJudgeInfo;
-            ListView.Items.Refresh();
             CheckBox.IsChecked = false;
+            Load();
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -208,49 +206,44 @@ namespace Client
             _curJudgeInfo.Clear();
             _problemFilter.Clear();
             _userFilter.Clear();
-            ListView.ItemsSource = _curJudgeInfo;
-            ProblemFilter.ItemsSource = _problemFilter;
-            UserFilter.ItemsSource = _userFilter;
             Task.Run(() =>
             {
-                var t = Connection.QueryJudgeLog().Reverse();
+                var t = Connection.QueryJudgeLog().Reverse().ToList();
                 var problemList = t.Select(i => i.ProblemName).Distinct().OrderBy(j => j);
                 var userList = t.Select(i => i.UserName).Distinct().OrderBy(j => j);
-                foreach (var judgeInfo in t)
+                Dispatcher.Invoke(() =>
                 {
-                    Dispatcher.Invoke(() =>
+                    foreach (var judgeInfo in t)
                     {
                         _curJudgeInfo.Add(judgeInfo);
-                    });
-                    Thread.Sleep(1);
-                }
-                foreach (var problemName in problemList)
-                {
-                    Dispatcher.Invoke(() => _problemFilter.Add(problemName));
-                    Thread.Sleep(1);
-                }
-                foreach (var userName in userList)
-                {
-                    Dispatcher.Invoke(() => _userFilter.Add(userName));
-                    Thread.Sleep(1);
-                }
+                    }
+                    foreach (var problemName in problemList)
+                    {
+                        _problemFilter.Add(problemName);
+                    }
+                    foreach (var userName in userList)
+                    {
+                        _userFilter.Add(userName);
+                    }
+                });
                 Dispatcher.Invoke(() => Dealing.Visibility = Visibility.Hidden);
+            }).ContinueWith(o =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ListView.ItemsSource = _curJudgeInfo;
+                    ProblemFilter.ItemsSource = _problemFilter;
+                    UserFilter.ItemsSource = _userFilter;
+                });
             });
         }
 
         private bool Filter(JudgeInfo p)
         {
             var now = DateTime.Now;
-            string pf = null, uf = null;
-            var tf = -1;
-            Dispatcher.Invoke(() =>
-            {
-                pf = ProblemFilter.SelectedItem as string ?? null;
-                uf = UserFilter.SelectedItem as string ?? null;
-                tf = TimeFilter.SelectedIndex;
-            });
-            if (pf != null) if (p.ProblemName != pf) return false;
-            if (uf != null) if (p.UserName != uf) return false;
+            var tf = TimeFilter.SelectedIndex;
+            if (ProblemFilter.SelectedItem is string pf) if (p.ProblemName != pf) return false;
+            if (UserFilter.SelectedItem is string uf) if (p.UserName != uf) return false;
             if (tf != -1)
             {
                 var ti = Convert.ToDateTime(p.JudgeDate);
@@ -303,12 +296,10 @@ namespace Client
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
+                    _curJudgeInfo.Add(p);
             }
             _isFilterActivated = false;
             ProblemFilter.SelectedIndex = UserFilter.SelectedIndex = TimeFilter.SelectedIndex = -1;
-            ListView.ItemsSource = _curJudgeInfo;
-            ListView.Items.Refresh();
         }
 
         private void DoFilterButton_Click(object sender, RoutedEventArgs e)
@@ -318,18 +309,15 @@ namespace Client
             {
                 _curJudgeInfo.Clear();
                 foreach (var p in _curJudgeInfoBak)
-                    Dispatcher.Invoke(() => { _curJudgeInfo.Add(p); });
+                    _curJudgeInfo.Add(p);
             }
             _isFilterActivated = true;
-            Task.Run(() =>
-            {
-                Dispatcher.Invoke(() => _curJudgeInfoBak.Clear());
-                foreach (var p in _curJudgeInfo)
-                    Dispatcher.Invoke(() => _curJudgeInfoBak.Add(p));
-                Dispatcher.Invoke(() => _curJudgeInfo.Clear());
-                foreach (var p in _curJudgeInfoBak.Where(Filter))
-                    Dispatcher.Invoke(() => _curJudgeInfo.Add(p));
-            });
+            _curJudgeInfoBak.Clear();
+            foreach (var p in _curJudgeInfo)
+                _curJudgeInfoBak.Add(p);
+            _curJudgeInfo.Clear();
+            foreach (var p in _curJudgeInfoBak.Where(Filter))
+                _curJudgeInfo.Add(p);
         }
     }
 
