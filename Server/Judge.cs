@@ -16,6 +16,7 @@ namespace Server
         private readonly Problem _problem;
         private readonly string _workingdir;
         public readonly bool Cancelled;
+        public int DeltaCoins, DeltaExperience;
 
         public readonly JudgeInfo JudgeResult = new JudgeInfo();
         private bool _isExited;
@@ -220,6 +221,27 @@ namespace Server
                 Connection.UpdateMainPageState(
                     $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 评测完毕 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}，结果：{JudgeResult.ResultSummary}",
                     textBlock);
+
+                if (userId > 1)
+                {
+                    if (JudgeResult.ResultSummary.Contains("Exceeded"))
+                    {
+                        DeltaCoins = Connection.RandomNum.Next(4, 16);
+                        DeltaExperience = Connection.RandomNum.Next(8, 16);
+                    }
+                    else if (JudgeResult.ResultSummary.Contains("Accepted"))
+                    {
+                        DeltaCoins = Connection.RandomNum.Next(16, 64);
+                        DeltaExperience = Connection.RandomNum.Next(32, 64);
+                    }
+                    else
+                    {
+                        DeltaExperience = Connection.RandomNum.Next(2, 4);
+                    }
+
+                    Connection.UpdateCoins(userId, DeltaCoins);
+                    Connection.UpdateExperience(userId, DeltaExperience);
+                }
             }
             catch
             {

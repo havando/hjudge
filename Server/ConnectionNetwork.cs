@@ -626,6 +626,9 @@ namespace Server
                                                 var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, jid => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code, CompetitionId = 0 }), res.obj.Client.ConnId, res.token); });
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
+                                                SendData("UpdateCoinsAndExperience",
+                                                    $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
+                                                    res.token);
                                             }).Start()));
                                     }
                                     break;
@@ -1706,6 +1709,10 @@ namespace Server
                                                 var jr = JsonConvert.SerializeObject(j.JudgeResult);
                                                 if ((t.Option & 8) != 0)
                                                     SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
+
+                                                SendData("UpdateCoinsAndExperience",
+                                                    $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
+                                                    res.token);
                                             }).Start();
                                         }));
                                     }

@@ -13,6 +13,7 @@ namespace Server
         private static int _id;
         public static bool CanPostJudgTask;
         public static int IntelligentAdditionWorkingThread;
+        public static Random RandomNum = new Random();
 
         private static readonly ConcurrentQueue<Task> ActionList = new ConcurrentQueue<Task>();
 

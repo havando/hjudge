@@ -370,7 +370,7 @@ namespace Server
             }
         }
 
-        private static bool UpdateCoins(int userId, int delta)
+        public static bool UpdateCoins(int userId, int delta)
         {
             using (DataBaseLock.UpgradeableRead())
             {
@@ -414,7 +414,7 @@ namespace Server
             }
         }
 
-        private static bool UpdateExperience(int userId, int delta)
+        public static bool UpdateExperience(int userId, int delta)
         {
             using (DataBaseLock.UpgradeableRead())
             {

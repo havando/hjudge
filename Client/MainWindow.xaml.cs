@@ -41,7 +41,6 @@ namespace Client
         private string _requestMsgListId;
         private string _requestMsgTargetUserId;
         private string _requestProblemListId;
-        private float _bonus;
 
         public MainWindow()
         {
@@ -285,46 +284,7 @@ namespace Client
                                     Text =
                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
                                 });
-                                if (p.ResultSummary == "Accepted")
-                                {
-                                    var delta = 4 + _random.Next() % 32;
-                                    var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
-                                    Connection.SendData("UpdateExperience", delta.ToString());
-                                    _experience += delta;
-                                    Connection.SendData("UpdateCoins", delta2.ToString());
-                                    _coins += delta2;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
-                                    });
-                                }
-                                else if (p.ResultSummary.Contains("Exceeded"))
-                                {
-                                    var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
-                                    var delta2 = 8 + _random.Next() % 4;
-                                    Connection.SendData("UpdateCoins", delta.ToString());
-                                    _coins += delta;
-                                    Connection.SendData("UpdateExperience", delta2.ToString());
-                                    _experience += delta2;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
-                                    });
-                                }
-                                else
-                                {
-                                    var delta = 1 + _random.Next() % 4;
-                                    Connection.SendData("UpdateExperience", delta.ToString());
-                                    _experience += delta;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
-                                    });
-                                }
                                 _judgeInfos.Insert(0, p);
-                                Coins.Content = _coins;
-                                Experience.Content = _experience;
-                                SetLevel(_experience);
                                 ShowJudgeDetails(p);
                             });
                             break;
@@ -340,47 +300,30 @@ namespace Client
                                     Text =
                                         $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 收到题目 {p.ProblemName} 的评测结果：{p.ResultSummary}"
                                 });
-                                if (p.ResultSummary == "Accepted")
-                                {
-                                    var delta = 4 + _random.Next() % 32;
-                                    var delta2 = Convert.ToInt32((16 + _random.Next() % 12) * _bonus);
-                                    Connection.SendData("UpdateExperience", delta.ToString());
-                                    _experience += delta;
-                                    Connection.SendData("UpdateCoins", delta2.ToString());
-                                    _coins += delta2;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta2}，经验 +{delta}"
-                                    });
-                                }
-                                else if (p.ResultSummary.Contains("Exceeded"))
-                                {
-                                    var delta = Convert.ToInt32((2 + _random.Next() % 16) * _bonus);
-                                    var delta2 = 8 + _random.Next() % 4;
-                                    Connection.SendData("UpdateCoins", delta.ToString());
-                                    _coins += delta;
-                                    Connection.SendData("UpdateExperience", delta2.ToString());
-                                    _experience += delta2;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{delta}，经验 +{delta2}"
-                                    });
-                                }
-                                else
-                                {
-                                    var delta = 1 + _random.Next() % 4;
-                                    Connection.SendData("UpdateExperience", delta.ToString());
-                                    _experience += delta;
-                                    ActiveBox.Items.Add(new TextBlock
-                                    {
-                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 经验 +{delta}"
-                                    });
-                                }
-                                Coins.Content = _coins;
-                                Experience.Content = _experience;
-                                SetLevel(_experience);
                                 ShowJudgeDetails(p);
                             });
+                            break;
+                        }
+                    case "UpdateCoinsAndExperience":
+                        {
+                            var res = content.Split(new[] { Connection.Divpar }, StringSplitOptions.RemoveEmptyEntries);
+                            if (res.Length == 2)
+                            {
+                                var deltaC = Convert.ToInt32(res[0]);
+                                var deltaE = Convert.ToInt32(res[1]);
+                                _coins += deltaC;
+                                _experience += deltaE;
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ActiveBox.Items.Add(new TextBlock
+                                    {
+                                        Text = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 金币 +{deltaC}，经验 +{deltaE}"
+                                    });
+                                    Coins.Content = _coins;
+                                    Experience.Content = _experience;
+                                    SetLevel(_experience);
+                                });
+                            }
                             break;
                         }
                     case "JudgeIdForCompetition":
@@ -793,140 +736,120 @@ namespace Client
         {
             if (experience >= 1048576)
             {
-                _bonus = 3;
                 Level.Content = "最强王者";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level6));
             }
             else if (experience >= 524288)
             {
-                _bonus = 2.9F;
                 Level.Content = "璀璨钻石 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
             }
             else if (experience >= 262144)
             {
-                _bonus = 2.75F;
                 Level.Content = "璀璨钻石 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
             }
             else if (experience >= 131072)
             {
-                _bonus = 2.5F;
                 Level.Content = "璀璨钻石 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level5));
             }
             else if (experience >= 65536)
             {
-                _bonus = 2.3F;
                 Level.Content = "华贵铂金 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
             }
             else if (experience >= 32768)
             {
-                _bonus = 2.1F;
                 Level.Content = "华贵铂金 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
             }
             else if (experience >= 16384)
             {
-                _bonus = 2;
                 Level.Content = "华贵铂金 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level4));
             }
             else if (experience >= 8192)
             {
-                _bonus = 1.75F;
                 Level.Content = "荣耀黄金 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
             }
             else if (experience >= 4096)
             {
-                _bonus = 1.55F;
                 Level.Content = "荣耀黄金 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
             }
             else if (experience >= 2048)
             {
-                _bonus = 1.5F;
                 Level.Content = "荣耀黄金 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level3));
             }
             else if (experience >= 1024)
             {
-                _bonus = 1.25F;
                 Level.Content = "不屈白银 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
             }
             else if (experience >= 512)
             {
-                _bonus = 1.15F;
                 Level.Content = "不屈白银 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
             }
             else if (experience >= 256)
             {
-                _bonus = 1.12F;
                 Level.Content = "不屈白银 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level2));
             }
             else if (experience >= 128)
             {
-                _bonus = 1.1F;
                 Level.Content = "英勇黄铜 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
             }
             else if (experience >= 64)
             {
-                _bonus = 1.05F;
                 Level.Content = "英勇黄铜 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
             }
             else if (experience >= 32)
             {
-                _bonus = 1;
                 Level.Content = "英勇黄铜 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level1));
             }
             else if (experience >= 16)
             {
-                _bonus = 0.9F;
                 Level.Content = "一只辣鸡 Lev.3";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
             }
             else if (experience >= 8)
             {
-                _bonus = 0.8F;
                 Level.Content = "一只辣鸡 Lev.2";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
             }
             else if (experience >= 4)
             {
-                _bonus = 0.65F;
                 Level.Content = "一只辣鸡 Lev.1";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.level0));
             }
             else
             {
-                _bonus = 0.5F;
                 Level.Content = "蒟蒻来袭";
                 LevelImage.Source =
                     ByteImageConverter.ByteToImage(Convert.FromBase64String(Properties.Resources.nolevel));
