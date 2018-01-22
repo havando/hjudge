@@ -620,16 +620,18 @@ namespace Server
                                         var problemId = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[0]));
                                         var type = Encoding.Unicode.GetString(res.obj.Content[1]);
                                         var userId = res.obj.Client.UserId;
-                                        ActionList.Enqueue(new Task(() =>
-                                            new Thread(() =>
-                                            {
-                                                var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, jid => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code, CompetitionId = 0 }), res.obj.Client.ConnId, res.token); });
-                                                var jr = JsonConvert.SerializeObject(j.JudgeResult);
-                                                SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
-                                                SendData("UpdateCoinsAndExperience",
-                                                    $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
-                                                    res.token);
-                                            }).Start()));
+                                        new Thread(() =>
+                                        {
+                                            var j = new Judge(problemId, userId, code, type, true, "在线评测", null, 0, jid => { SendData("JudgeId", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = problemId, UserId = res.obj.Client.UserId, Code = code, CompetitionId = 0 }), res.obj.Client.ConnId, res.token); });
+                                            var jr = JsonConvert.SerializeObject(j.JudgeResult);
+                                            SendData("JudgeResult", jr, res.obj.Client.ConnId, res.token);
+                                            SendData("UpdateCoinsAndExperience",
+                                                $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
+                                                res.token);
+                                        })
+                                        {
+                                            Priority = ThreadPriority.AboveNormal
+                                        }.Start();
                                     }
                                     break;
                                 }
@@ -1709,26 +1711,27 @@ namespace Server
                                         var userId = res.obj.Client.UserId;
                                         UpdateMainPageState(
                                             $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 用户 {res.obj.Client.UserName} 提交了题目 {GetProblemName(pid)} 的代码");
-                                        ActionList.Enqueue(new Task(() =>
-                                        {
-                                            new Thread(() =>
-                                            {
-                                                var j = new Judge(pid, userId, code, type, true, "在线评测",
-                                                    DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, jid => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code, CompetitionId = cid }), res.obj.Client.ConnId, res.token); });
-                                                if (j.Cancelled)
-                                                {
-                                                    SendData("JudgeIdForCompetition", "Failed", res.obj.Client.ConnId, res.token);
-                                                    return;
-                                                }
-                                                var jr = JsonConvert.SerializeObject(j.JudgeResult);
-                                                if ((t.Option & 8) != 0)
-                                                    SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
 
-                                                SendData("UpdateCoinsAndExperience",
-                                                    $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
-                                                    res.token);
-                                            }).Start();
-                                        }));
+                                        new Thread(() =>
+                                        {
+                                            var j = new Judge(pid, userId, code, type, true, "在线评测",
+                                                DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), cid, jid => { SendData("JudgeIdForCompetition", JsonConvert.SerializeObject(new JudgeInfo { JudgeId = jid, ProblemId = pid, UserId = res.obj.Client.UserId, Code = code, CompetitionId = cid }), res.obj.Client.ConnId, res.token); });
+                                            if (j.Cancelled)
+                                            {
+                                                SendData("JudgeIdForCompetition", "Failed", res.obj.Client.ConnId, res.token);
+                                                return;
+                                            }
+                                            var jr = JsonConvert.SerializeObject(j.JudgeResult);
+                                            if ((t.Option & 8) != 0)
+                                                SendData("JudgeResultForCompetition", jr, res.obj.Client.ConnId, res.token);
+
+                                            SendData("UpdateCoinsAndExperience",
+                                                $"{j.DeltaCoins}{Divpar}{j.DeltaExperience}", res.obj.Client.ConnId,
+                                                res.token);
+                                        })
+                                        {
+                                            Priority = ThreadPriority.AboveNormal
+                                        }.Start();
                                     }
                                     break;
                                 }
