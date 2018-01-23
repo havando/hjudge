@@ -358,7 +358,7 @@ namespace Server
                     a.Start();
                     var staticRes1 = a.StandardOutput.ReadToEndAsync();
                     var staticRes2 = a.StandardError.ReadToEndAsync();
-                    if (!a.WaitForExit(1000 * 30))
+                    if (!a.WaitForExit(1000 * 60))
                     {
                         try
                         {
@@ -798,7 +798,19 @@ namespace Server
                                                     Dn(_workingdir + "\\hjudge_spj_result.dat"),
                                         WindowStyle = ProcessWindowStyle.Hidden
                                     };
-                                    Process.Start(xx).WaitForExit();
+                                    var pcs = new Process { StartInfo = xx };
+                                    pcs.Start();
+                                    if (!pcs.WaitForExit(1000 * 60))
+                                    {
+                                        try
+                                        {
+                                            pcs.Kill();
+                                        }
+                                        catch
+                                        {
+                                            pcs.Close();
+                                        }
+                                    }
                                     Thread.Sleep(1);
                                     if (!File.Exists(_workingdir + "\\hjudge_spj_result.dat"))
                                     {
@@ -926,7 +938,7 @@ namespace Server
                 b.Start();
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();
-                if (!b.WaitForExit(1000 * 30))
+                if (!b.WaitForExit(1000 * 60))
                 {
                     try
                     {
