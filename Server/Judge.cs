@@ -358,7 +358,17 @@ namespace Server
                     a.Start();
                     var staticRes1 = a.StandardOutput.ReadToEndAsync();
                     var staticRes2 = a.StandardError.ReadToEndAsync();
-                    a.WaitForExit();
+                    if (!a.WaitForExit(1000 * 30))
+                    {
+                        try
+                        {
+                            a.Kill();
+                        }
+                        finally
+                        {
+                            a.Close();
+                        }
+                    }
                     additionInfo += "æ≤Ã¨ºÏ≤È£∫\n" + staticRes1.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n";
                 }
             }
@@ -572,7 +582,7 @@ namespace Server
                                 if (!resume)
                                 {
                                     resume = true;
-                                    
+
                                     new Thread(() =>
                                     {
                                         if (_problem.InputFileName == "stdin")
@@ -916,7 +926,17 @@ namespace Server
                 b.Start();
                 var stdErr = b.StandardError.ReadToEndAsync();
                 var stdOut = b.StandardOutput.ReadToEndAsync();
-                b.WaitForExit();
+                if (!b.WaitForExit(1000 * 30))
+                {
+                    try
+                    {
+                        b.Kill();
+                    }
+                    finally
+                    {
+                        b.Close();
+                    }
+                }
                 var log = "±‡“Î»’÷æ£∫\n" + stdOut.Result + "\n" + stdErr.Result;
                 log = log.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...");
                 Thread.Sleep(1);
