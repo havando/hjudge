@@ -41,6 +41,7 @@ namespace Server
             }
 
             JudgeResult.JudgeId = Connection.NewJudge(description);
+            idCallBack?.Invoke(JudgeResult.JudgeId);
             _problem = Connection.GetProblem(problemId);
             _id = Guid.NewGuid().ToString().Replace("-", string.Empty);
             JudgeResult.JudgeDate = defaultTime ?? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
@@ -57,7 +58,6 @@ namespace Server
             JudgeResult.CompetitionId = competitionId;
             JudgeResult.AdditionInfo = string.Empty;
             Connection.UpdateJudgeInfo(JudgeResult);
-            idCallBack?.Invoke(JudgeResult.JudgeId);
 
             var textBlock = Connection.UpdateMainPageState(
                 $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} 准备评测 #{JudgeResult.JudgeId}，题目：{JudgeResult.ProblemName}，用户：{JudgeResult.UserName}");
