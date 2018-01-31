@@ -872,7 +872,14 @@ namespace Server
                                 };
                                 parameters[0].Value = t;
                                 cmd.Parameters.AddRange(parameters);
-                                cmd.ExecuteNonQuery();
+                                try
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logs.CommitLogs($"DeleteUser - {ex.Message}");
+                                }
                                 cmd.Parameters.Clear();
                             }
                         }
@@ -918,7 +925,14 @@ namespace Server
                                         parameters[1].Value = t.Type;
                                         parameters[2].Value = t.UserId;
                                         cmd.Parameters.AddRange(parameters);
-                                        cmd.ExecuteNonQuery();
+                                        try
+                                        {
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Logs.CommitLogs($"UpdateUser1 - {ex.Message}");
+                                        }
                                         cmd.Parameters.Clear();
                                     }
                                 }
@@ -948,7 +962,14 @@ namespace Server
                                         parameters[6].Value = 0;
                                         parameters[7].Value = 0;
                                         cmd.Parameters.AddRange(parameters);
-                                        cmd.ExecuteNonQuery();
+                                        try
+                                        {
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Logs.CommitLogs($"UpdateUser2 - {ex.Message}");
+                                        }
                                         cmd.Parameters.Clear();
                                     }
                                 }
@@ -1011,7 +1032,14 @@ namespace Server
                                         parameters[1].Value = t.Type;
                                         parameters[2].Value = t.UserId;
                                         cmd.Parameters.AddRange(parameters);
-                                        cmd.ExecuteNonQuery();
+                                        try
+                                        {
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Logs.CommitLogs($"SaveUser1 - {ex.Message}");
+                                        }
                                         cmd.Parameters.Clear();
                                     }
                                 }
@@ -1046,7 +1074,14 @@ namespace Server
                                         parameters[6].Value = 0;
                                         parameters[7].Value = 0;
                                         cmd.Parameters.AddRange(parameters);
-                                        cmd.ExecuteNonQuery();
+                                        try
+                                        {
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Logs.CommitLogs($"SaveUser2 - {ex.Message}");
+                                        }
                                         cmd.Parameters.Clear();
                                     }
                                 }
