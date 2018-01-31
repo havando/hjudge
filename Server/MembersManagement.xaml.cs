@@ -45,6 +45,7 @@ namespace Server
                     break;
             }
             UserIdentity.SelectedIndex = 0;
+            UserHelper.GetUserBelongs();
             Dispatcher.BeginInvoke(new Action(() => ListView.ItemsSource = UserHelper.UsersBelongs));
         }
 
