@@ -123,6 +123,7 @@
       <DependentUpon>JudgeLogs.xaml</DependentUpon>
     </Compile>
     <Compile Include="JudgeResult.cs" />
+    <Compile Include="Logs.cs" />
     <Compile Include="MembersManagement.xaml.cs">
       <DependentUpon>MembersManagement.xaml</DependentUpon>
     </Compile>

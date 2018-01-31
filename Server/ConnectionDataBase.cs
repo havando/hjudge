@@ -29,8 +29,8 @@ namespace Server
                         cmd.CommandText = "SELECT * From Judge Where JudgeId=@1";
                         SQLiteParameter[] parameters =
                         {
-                        new SQLiteParameter("@1", DbType.Int32)
-                    };
+                            new SQLiteParameter("@1", DbType.Int32)
+                        };
                         parameters[0].Value = judgeId;
                         cmd.Parameters.AddRange(parameters);
                         var reader = cmd.ExecuteReader();
@@ -56,8 +56,9 @@ namespace Server
                                         AdditionInfo = reader.GetString(13)
                                     };
                                 }
-                                catch
+                                catch (Exception ex)
                                 {
+                                    Logs.CommitLogs($"GetJudgeInfo - {ex.Message}");
                                     return new JudgeInfo
                                     {
                                         JudgeId = reader.GetInt32(0),
@@ -154,8 +155,9 @@ namespace Server
                                         //if (t.ResultSummary == "Judging...") continue;
                                         ji.Add(t);
                                     }
-                                    catch
+                                    catch (Exception ex)
                                     {
+                                        Logs.CommitLogs($"QueryCustomJudgeInfo - {ex.Message}");
                                         ji.Add(new JudgeInfo
                                         {
                                             JudgeId = reader.GetInt32(0),
@@ -221,8 +223,10 @@ namespace Server
                                     if (t.ResultSummary == "Judging...") continue;
                                     ji.Add(t);
                                 }
-                                catch
+
+                                catch (Exception ex)
                                 {
+                                    Logs.CommitLogs($"GetJudgeRecord - {ex.Message}");
                                     ji.Add(new JudgeInfo
                                     {
                                         JudgeId = reader.GetInt32(0),
@@ -276,8 +280,9 @@ namespace Server
                             cmd.ExecuteNonQuery();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Logs.CommitLogs($"RegisterUser - {ex.Message}");
                         return false;
                     }
                 }
@@ -360,7 +365,16 @@ namespace Server
                                 parameters2[0].Value = sb2.ToString();
                                 parameters2[1].Value = userName;
                                 cmd.Parameters.AddRange(parameters2);
-                                cmd.ExecuteNonQuery();
+                                try
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    Logs.CommitLogs($"RemoteChangePassword - {ex.Message}");
+                                    return false;
+                                }
                             }
                             return true;
                         }
@@ -406,7 +420,15 @@ namespace Server
                             parameters[0].Value = delta + origin;
                             parameters[1].Value = userId;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"UpdateCoins - {ex.Message}");
+                                return false;
+                            }
                         }
                         return true;
                     }
@@ -450,7 +472,15 @@ namespace Server
                             parameters[0].Value = delta + origin;
                             parameters[1].Value = userId;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"UpdateExperience - {ex.Message}");
+                                return false;
+                            }
                         }
                         return true;
                     }
@@ -492,7 +522,15 @@ namespace Server
                             parameters[6].Value = string.Empty;
                             parameters[7].Value = 0;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"NewCompetition - {ex.Message}");
+                                return 0;
+                            }
                         }
 
 
@@ -542,12 +580,13 @@ namespace Server
                             try
                             {
                                 cmd.ExecuteNonQuery();
-                                return true;
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                Logs.CommitLogs($"UpdateCompetition - {ex.Message}");
                                 return false;
                             }
+                            return true;
                         }
                     }
                 }
@@ -581,12 +620,13 @@ namespace Server
                         try
                         {
                             cmd.ExecuteNonQuery();
-                            return true;
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Logs.CommitLogs($"RemoteUpdateProfile - {ex.Message}");
                             return false;
                         }
+                        return true;
                     }
                 }
             }
@@ -668,7 +708,14 @@ namespace Server
                             parameters[2].Value = toUpdateInfo.Icon;
                             parameters[3].Value = toUpdateInfo.UserId;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"UpdateUserInfo - {ex.Message}");
+                            }
                         }
                     }
                 }
@@ -791,9 +838,9 @@ namespace Server
                                 a.Option = reader.GetInt32(11);
                                 a.Description = reader.GetString(12);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                //ignored
+                                Logs.CommitLogs($"GetProblem - {ex.Message}");
                             }
                             return a;
                         }
@@ -833,8 +880,9 @@ namespace Server
                         {
                             trans.Commit();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Logs.CommitLogs($"DeleteUser - {ex.Message}");
                             trans.Rollback();
                         }
                     }
@@ -909,8 +957,9 @@ namespace Server
                         {
                             trans.Commit();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Logs.CommitLogs($"UpdateUser - {ex.Message}");
                             trans.Rollback();
                         }
                     }
@@ -1006,8 +1055,9 @@ namespace Server
                         {
                             trans.Commit();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Logs.CommitLogs($"SaveUser - {ex.Message}");
                             trans.Rollback();
                         }
                     }
@@ -1076,7 +1126,14 @@ namespace Server
                         cmd.CommandText = "Delete From Judge";
                         cmd.ExecuteNonQuery();
                         cmd.CommandText = "DELETE FROM sqlite_sequence WHERE name = 'Judge'";
-                        cmd.ExecuteNonQuery();
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logs.CommitLogs($"ClearJudgeLog - {ex.Message}");
+                        }
                     }
                 }
             }
@@ -1093,7 +1150,14 @@ namespace Server
                     using (var cmd = new SQLiteCommand(sqLite))
                     {
                         cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
-                        cmd.ExecuteNonQuery();
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch
+                        {
+                            //ignored
+                        }
                     }
                 }
             }
@@ -1209,8 +1273,9 @@ namespace Server
                                 if (t.ResultSummary == "Judging...") continue;
                                 a.Add(t);
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                Logs.CommitLogs($"QueryJudgeLogBelongsToCompetition - {ex.Message}");
                                 a.Add(new JudgeInfo
                                 {
                                     JudgeId = reader.GetInt32(0),
@@ -1261,8 +1326,9 @@ namespace Server
                                     AdditionInfo = reader.GetString(13)
                                 });
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                Logs.CommitLogs($"QueryJudgeLog - {ex.Message}");
                                 curJudgeInfo.Add(new JudgeInfo
                                 {
                                     JudgeId = reader.GetInt32(0),
@@ -1300,9 +1366,9 @@ namespace Server
                                 t.State = reader.GetInt32(5);
                                 t.Direction = userId == reader.GetInt32(1) ? "发送" : "接收";
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                //ignored
+                                Logs.CommitLogs($"GetMsg - {ex.Message}");
                             }
                     }
                 }
@@ -1363,9 +1429,9 @@ namespace Server
                                         State = reader.GetInt32(5)
                                     });
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                //ignored
+                                Logs.CommitLogs($"QueryMsg - {ex.Message}");
                             }
                         }
                     }
@@ -1384,8 +1450,9 @@ namespace Server
                 {
                     f[i] = Convert.ToInt32(p[i]);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logs.CommitLogs($"CastStringArrToIntArr - {ex.Message}");
                     f[i] = 0;
                 }
             return f;
@@ -1400,8 +1467,9 @@ namespace Server
                 {
                     f[i] = Convert.ToInt64(p[i]);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logs.CommitLogs($"CastStringArrToLongArr - {ex.Message}");
                     f[i] = 0;
                 }
             return f;
@@ -1416,8 +1484,9 @@ namespace Server
                 {
                     f[i] = Convert.ToSingle(p[i]);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logs.CommitLogs($"CastStringArrToFloatArr - {ex.Message}");
                     f[i] = 0;
                 }
             return f;
@@ -1612,7 +1681,15 @@ namespace Server
                             parameters[1].Value = description;
                             parameters[2].Value = competitionId;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"NewJudge - {ex.Message}");
+                                return 0;
+                            }
                         }
 
                         cmd.CommandText = "select last_insert_rowid() from Judge";
@@ -1689,7 +1766,14 @@ namespace Server
                             parameters[11].Value = pInfo.CompetitionId;
                             parameters[12].Value = pInfo.AdditionInfo;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"UpdateJudgeInfo - {ex.Message}");
+                            }
                         }
                     }
                 }
@@ -1737,8 +1821,9 @@ namespace Server
                                     Description = reader.GetString(12)
                                 });
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                Logs.CommitLogs($"QueryProblems - {ex.Message}");
                                 curJudgeInfo.Add(new Problem
                                 {
                                     AddDate = reader.GetString(2),
@@ -1793,7 +1878,15 @@ namespace Server
                             parameters[10].Value = 0;
                             parameters[11].Value = string.Empty;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"NewProblem - {ex.Message}");
+                                return 0;
+                            }
                         }
                         cmd.CommandText = "select last_insert_rowid() from Problem";
                         return Convert.ToInt32(cmd.ExecuteScalar());
@@ -1819,7 +1912,14 @@ namespace Server
                         };
                         parameters[0].Value = problemId;
                         cmd.Parameters.AddRange(parameters);
-                        cmd.ExecuteNonQuery();
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logs.CommitLogs($"DeleteProblem - {ex.Message}");
+                        }
                     }
                 }
             }
@@ -1867,7 +1967,14 @@ namespace Server
                             parameters[10].Value = toUpdateProblem.Description;
                             parameters[11].Value = toUpdateProblem.ProblemId;
                             cmd.Parameters.AddRange(parameters);
-                            cmd.ExecuteNonQuery();
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logs.CommitLogs($"UpdateProblem - {ex.Message}");
+                            }
                         }
                     }
                 }

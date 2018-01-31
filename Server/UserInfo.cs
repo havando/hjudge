@@ -1,4 +1,4 @@
-using System.ComponentModel;
+ï»¿using System.ComponentModel;
 
 namespace Server
 {
@@ -33,12 +33,12 @@ namespace Server
                 switch (Type)
                 {
                     case 1: return "BOSS";
-                    case 2: return "¹ÜÀíÔ±";
-                    case 3: return "½ÌÊ¦";
-                    case 4: return "Ñ¡ÊÖ";
-                    case 5: return "´ıÉóºË";
+                    case 2: return "ç®¡ç†å‘˜";
+                    case 3: return "æ•™å¸ˆ";
+                    case 4: return "é€‰æ‰‹";
+                    case 5: return "å¾…å®¡æ ¸";
                 }
-                return "Î´Öª";
+                return "æœªçŸ¥";
             }
             set
             {
@@ -47,13 +47,13 @@ namespace Server
                     case "BOSS":
                         Type = 1;
                         break;
-                    case "¹ÜÀíÔ±":
+                    case "ç®¡ç†å‘˜":
                         Type = 2;
                         break;
-                    case "½ÌÊ¦":
+                    case "æ•™å¸ˆ":
                         Type = 3;
                         break;
-                    case "Ñ¡ÊÖ":
+                    case "é€‰æ‰‹":
                         Type = 4;
                         break;
                 }
