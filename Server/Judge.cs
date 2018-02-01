@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -60,7 +60,7 @@ namespace Server
             Connection.UpdateJudgeInfo(JudgeResult);
 
             var textBlock = Connection.UpdateMainPageState(
-                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ×¼±¸ÆÀ²â #{JudgeResult.JudgeId}£¬ÌâÄ¿£º{JudgeResult.ProblemName}£¬ÓÃ»§£º{JudgeResult.UserName}");
+                $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} å‡†å¤‡è¯„æµ‹ #{JudgeResult.JudgeId}ï¼Œé¢˜ç›®ï¼š{JudgeResult.ProblemName}ï¼Œç”¨æˆ·ï¼š{JudgeResult.UserName}");
 
             while (true)
             {
@@ -132,7 +132,7 @@ namespace Server
                         Connection.CurJudgingCnt--;
                     }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ÆÀ²âÍê±Ï #{JudgeResult.JudgeId}£¬ÌâÄ¿£º{JudgeResult.ProblemName}£¬ÓÃ»§£º{JudgeResult.UserName}£¬½á¹û£º{JudgeResult.ResultSummary}",
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} è¯„æµ‹å®Œæ¯• #{JudgeResult.JudgeId}ï¼Œé¢˜ç›®ï¼š{JudgeResult.ProblemName}ï¼Œç”¨æˆ·ï¼š{JudgeResult.UserName}ï¼Œç»“æœï¼š{JudgeResult.ResultSummary}",
                         textBlock);
                     return;
                 }
@@ -154,7 +154,7 @@ namespace Server
                         Connection.CurJudgingCnt--;
                     }
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ÆÀ²âÍê±Ï #{JudgeResult.JudgeId}£¬ÌâÄ¿£º{JudgeResult.ProblemName}£¬ÓÃ»§£º{JudgeResult.UserName}£¬½á¹û£º{JudgeResult.ResultSummary}",
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} è¯„æµ‹å®Œæ¯• #{JudgeResult.JudgeId}ï¼Œé¢˜ç›®ï¼š{JudgeResult.ProblemName}ï¼Œç”¨æˆ·ï¼š{JudgeResult.UserName}ï¼Œç»“æœï¼š{JudgeResult.ResultSummary}",
                         textBlock);
                     return;
                 }
@@ -196,7 +196,7 @@ namespace Server
                 _problem.OutputFileName = GetRealString(_problem.OutputFileName, 0, extList[0]);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ¿ªÊ¼ÆÀ²â #{JudgeResult.JudgeId}£¬ÌâÄ¿£º{JudgeResult.ProblemName}£¬ÓÃ»§£º{JudgeResult.UserName}",
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} å¼€å§‹è¯„æµ‹ #{JudgeResult.JudgeId}ï¼Œé¢˜ç›®ï¼š{JudgeResult.ProblemName}ï¼Œç”¨æˆ·ï¼š{JudgeResult.UserName}",
                     textBlock);
 
                 BeginJudge(
@@ -219,7 +219,7 @@ namespace Server
                 Connection.UpdateJudgeInfo(JudgeResult);
 
                 Connection.UpdateMainPageState(
-                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ÆÀ²âÍê±Ï #{JudgeResult.JudgeId}£¬ÌâÄ¿£º{JudgeResult.ProblemName}£¬ÓÃ»§£º{JudgeResult.UserName}£¬½á¹û£º{JudgeResult.ResultSummary}",
+                    $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} è¯„æµ‹å®Œæ¯• #{JudgeResult.JudgeId}ï¼Œé¢˜ç›®ï¼š{JudgeResult.ProblemName}ï¼Œç”¨æˆ·ï¼š{JudgeResult.UserName}ï¼Œç»“æœï¼š{JudgeResult.ResultSummary}",
                     textBlock);
 
                 if (userId > 1)
@@ -369,7 +369,7 @@ namespace Server
                             a.Close();
                         }
                     }
-                    additionInfo += "¾²Ì¬¼ì²é£º\n" + staticRes1.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n";
+                    additionInfo += "é™æ€æ£€æŸ¥ï¼š\n" + staticRes1.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n" + staticRes2.Result.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...") + "\n";
                 }
             }
             catch (Exception ex)
@@ -412,7 +412,7 @@ namespace Server
                 cur++;
                 if (cur != 0)
                     Connection.UpdateMainPageState(
-                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} ÆÀ²â #{JudgeResult.JudgeId} Êı¾İµã {cur}/{_problem.DataSets.Length} Íê±Ï£¬½á¹û£º{JudgeResult.Result[cur - 1]}",
+                        $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} è¯„æµ‹ #{JudgeResult.JudgeId} æ•°æ®ç‚¹ {cur}/{_problem.DataSets.Length} å®Œæ¯•ï¼Œç»“æœï¼š{JudgeResult.Result[cur - 1]}",
                         textBlock);
                 if ((!string.IsNullOrWhiteSpace(_problem.DataSets[cur].InputFile) && !File.Exists(_problem.DataSets[cur].InputFile)) || !File.Exists(_problem.DataSets[cur].OutputFile))
                 {
@@ -949,7 +949,7 @@ namespace Server
                         b.Close();
                     }
                 }
-                var log = "±àÒëÈÕÖ¾£º\n" + stdOut.Result + "\n" + stdErr.Result;
+                var log = "ç¼–è¯‘æ—¥å¿—ï¼š\n" + stdOut.Result + "\n" + stdErr.Result;
                 log = log.Replace(_workingdir, "...").Replace(GetFileNameWSL(_workingdir), "...");
                 Thread.Sleep(1);
                 return (File.Exists(_workingdir + $"\\test_hjudge_{_id}.exe"), log);
