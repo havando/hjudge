@@ -301,66 +301,66 @@ namespace Server
 
             if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"))
                 SQLiteConnection.CreateFile(AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db");
-            var sqLite = new SQLiteConnection("Data Source=" +
-                                              $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;");
-            sqLite.Open();
+            //var DbSQLiteConnection = new SQLiteConnection("Data Source=" +
+            //                                  $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;");
+            if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-            if (!CreateJudgeTable(sqLite))
+            if (!CreateJudgeTable(DbSQLiteConnection))
                 if (MessageBox.Show("版本升级需要清空所有评测记录，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    DropTable(sqLite, "Judge");
-                    CreateJudgeTable(sqLite);
+                    DropTable(DbSQLiteConnection, "Judge");
+                    CreateJudgeTable(DbSQLiteConnection);
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
-            if (!CreateUserTable(sqLite))
+            if (!CreateUserTable(DbSQLiteConnection))
                 if (MessageBox.Show("版本升级需要清空所有用户信息，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    DropTable(sqLite, "User");
-                    CreateUserTable(sqLite);
+                    DropTable(DbSQLiteConnection, "User");
+                    CreateUserTable(DbSQLiteConnection);
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
-            if (!CreateProblemTable(sqLite))
+            if (!CreateProblemTable(DbSQLiteConnection))
                 if (MessageBox.Show("版本升级需要清空所有题目信息，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    DropTable(sqLite, "Problem");
-                    CreateProblemTable(sqLite);
+                    DropTable(DbSQLiteConnection, "Problem");
+                    CreateProblemTable(DbSQLiteConnection);
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
-            if (!CreateMessageTable(sqLite))
+            if (!CreateMessageTable(DbSQLiteConnection))
                 if (MessageBox.Show("版本升级需要清空所有消息记录，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    DropTable(sqLite, "Message");
-                    CreateMessageTable(sqLite);
+                    DropTable(DbSQLiteConnection, "Message");
+                    CreateMessageTable(DbSQLiteConnection);
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
-            if (!CreateCompetitionTable(sqLite))
+            if (!CreateCompetitionTable(DbSQLiteConnection))
                 if (MessageBox.Show("版本升级需要清空所有比赛信息，是否继续？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
                     MessageBoxResult.Yes)
                 {
-                    DropTable(sqLite, "Competition");
-                    CreateCompetitionTable(sqLite);
+                    DropTable(DbSQLiteConnection, "Competition");
+                    CreateCompetitionTable(DbSQLiteConnection);
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
-            sqLite.Close();
+            DbSQLiteConnection.Close();
             #endregion
 
             #region Network

@@ -14,16 +14,16 @@ namespace Server
     {
         #region DataBase
         public static string ConnectionString = "Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Synchronous=Normal;Enlist=N;";
-
+        public static SQLiteConnection DbSQLiteConnection = new SQLiteConnection(ConnectionString);
         private static JudgeInfo GetJudgeInfo(int judgeId)
         {
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
 
                         cmd.CommandText = "SELECT * From Judge Where JudgeId=@1";
@@ -78,11 +78,11 @@ namespace Server
             if (userType <= 0 || userType > 5) return a;
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From User Where Type=@1";
                         SQLiteParameter[] parameters =
@@ -123,11 +123,11 @@ namespace Server
             var ji = new List<JudgeInfo>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         try
                         {
@@ -182,11 +182,11 @@ namespace Server
             var ji = new List<JudgeInfo>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From Judge Where UserId=@1 and CompetitionId=0 order by JudgeId desc";
                         SQLiteParameter[] parameters =
@@ -247,13 +247,13 @@ namespace Server
                 return false;
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
                     try
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText =
                                 "INSERT INTO User (UserName,RegisterDate,Password,Type,Icon,Achievement,Coins,Experience) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)";
@@ -336,11 +336,11 @@ namespace Server
                 sb2.Append(t.ToString("x2"));
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT Password From User Where userName=@1";
                         SQLiteParameter[] parameters =
@@ -388,11 +388,11 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT Coins From User Where userId=@1";
                         SQLiteParameter[] parameters1 =
@@ -440,11 +440,11 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT Experience From User Where userId=@1";
                         SQLiteParameter[] parameters1 =
@@ -492,11 +492,11 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         using (DataBaseLock.Write())
                         {
@@ -546,12 +546,12 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
                     using (DataBaseLock.Write())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText =
                                 "UPDATE Competition SET CompetitionName=@1, StartTime=@2, EndTime=@3, ProblemSet=@4, Option=@5, Description=@6, SubmitLimit=@7, Password=@8 WHERE CompetitionId=@9";
@@ -600,11 +600,11 @@ namespace Server
                 return false;
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "UPDATE User SET UserName=@1, Icon=@2 WHERE UserId=@3";
                         SQLiteParameter[] parameters =
@@ -641,11 +641,11 @@ namespace Server
                 sb.Append(t.ToString("x2"));
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From User Where userName=@1";
                         SQLiteParameter[] parameters =
@@ -688,12 +688,12 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
                     using (DataBaseLock.Write())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText = "UPDATE User SET UserName=@1, Password=@2, Icon=@3 WHERE UserId=@4";
                             SQLiteParameter[] parameters =
@@ -728,11 +728,11 @@ namespace Server
             {
                 using (DataBaseLock.Read())
                 {
-                    using (var sqLite = new SQLiteConnection(ConnectionString))
+                    //using (var sqLite = new SQLiteConnection(ConnectionString))
                     {
-                        sqLite.Open();
+                        if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText = "SELECT * From User Where userName=@1";
                             SQLiteParameter[] parameters =
@@ -760,11 +760,11 @@ namespace Server
             if (userType <= 0 || userType >= 4) return a;
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From User Where Type>@1";
                         SQLiteParameter[] parameters =
@@ -805,11 +805,11 @@ namespace Server
             var a = new Problem();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From Problem Where ProblemId=@1";
                         SQLiteParameter[] parameters =
@@ -855,13 +855,13 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var trans = sqLite.BeginTransaction())
+                    using (var trans = DbSQLiteConnection.BeginTransaction())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             foreach (var t in toDelete)
                             {
@@ -901,16 +901,16 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var trans = sqLite.BeginTransaction())
+                    using (var trans = DbSQLiteConnection.BeginTransaction())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             foreach (var t in toUpdate)
-                                if (CheckUser(t.UserName, sqLite) != 0)
+                                if (CheckUser(t.UserName, DbSQLiteConnection) != 0)
                                 {
                                     using (DataBaseLock.Write())
                                     {
@@ -993,12 +993,12 @@ namespace Server
             var failed = new List<string>();
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
-                    using (var trans = sqLite.BeginTransaction())
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                    using (var trans = DbSQLiteConnection.BeginTransaction())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             using (DataBaseLock.Write())
                             {
@@ -1045,7 +1045,7 @@ namespace Server
                                 }
                                 else
                                 {
-                                    if (CheckUser(t.UserName, sqLite) != 0)
+                                    if (CheckUser(t.UserName, DbSQLiteConnection) != 0)
                                     {
                                         failed.Add(t.UserName);
                                         continue;
@@ -1107,11 +1107,11 @@ namespace Server
             {
                 if (conn == null)
                 {
-                    using (var sqLite = new SQLiteConnection(ConnectionString))
+                    //using (var sqLite = new SQLiteConnection(ConnectionString))
                     {
-                        sqLite.Open();
+                        if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                             SQLiteParameter[] parameters =
@@ -1152,11 +1152,11 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "Delete From Judge";
                         cmd.ExecuteNonQuery();
@@ -1178,11 +1178,11 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = $"Delete From Competition Where CompetitionId={competitionId}";
                         try
@@ -1203,11 +1203,11 @@ namespace Server
             var a = new Competition();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = $"SELECT * From Competition where CompetitionId={competitionId}";
                         var reader = cmd.ExecuteReader();
@@ -1235,11 +1235,11 @@ namespace Server
             var a = new ObservableCollection<Competition>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From Competition";
                         var reader = cmd.ExecuteReader();
@@ -1276,11 +1276,11 @@ namespace Server
             var a = new List<JudgeInfo>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = userId != 0 ? $"SELECT * From Judge Where CompetitionId={competitionId} and UserId={userId}" : $"SELECT * From Judge Where CompetitionId={competitionId}";
                         var reader = cmd.ExecuteReader();
@@ -1329,11 +1329,11 @@ namespace Server
             var curJudgeInfo = new ObservableCollection<JudgeInfo>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = UserHelper.CurrentUser.Type < 4
                             ? "SELECT * From Judge"
@@ -1382,11 +1382,11 @@ namespace Server
             var t = new Message();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = $"SELECT * From Message Where MessageId={msgId}";
                         var reader = cmd.ExecuteReader();
@@ -1416,11 +1416,11 @@ namespace Server
             var t = new List<Message>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = $"SELECT * From Message Where FromUserId={userId} OR ToUserId={userId}";
                         var reader = cmd.ExecuteReader();
@@ -1532,11 +1532,11 @@ namespace Server
             var userName = string.Empty;
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT UserName From User Where UserId=@1";
                         SQLiteParameter[] parameters =
@@ -1563,11 +1563,11 @@ namespace Server
             var userId = 0;
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT UserId From User Where UserName=@1";
                         SQLiteParameter[] parameters =
@@ -1593,11 +1593,11 @@ namespace Server
         {
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From User Where UserId=@1";
                         SQLiteParameter[] parameters =
@@ -1631,11 +1631,11 @@ namespace Server
         {
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From User Where UserName=@1";
                         SQLiteParameter[] parameters =
@@ -1670,11 +1670,11 @@ namespace Server
             var problemName = string.Empty;
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT ProblemName From Problem Where ProblemId=@1";
                         SQLiteParameter[] parameters =
@@ -1697,10 +1697,10 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         using (DataBaseLock.Write())
                         {
@@ -1738,12 +1738,12 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
                     using (DataBaseLock.Write())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText =
                                 "UPDATE Judge SET UserId=@1, ProblemId=@2, Code=@3, Timeused=@4, Memoryused=@5, Exitcode=@6, Result=@7, Score=@8, Type=@10, Description=@11, CompetitionId=@12, AdditionInfo=@13 Where JudgeId=@9";
@@ -1819,11 +1819,11 @@ namespace Server
             var curJudgeInfo = new ObservableCollection<Problem>();
             using (DataBaseLock.Read())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "SELECT * From Problem";
                         var reader = cmd.ExecuteReader();
@@ -1875,10 +1875,10 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         using (DataBaseLock.Write())
                         {
@@ -1933,11 +1933,11 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "Delete from Problem Where ProblemId=@1";
                         SQLiteParameter[] parameters =
@@ -1963,13 +1963,13 @@ namespace Server
         {
             using (DataBaseLock.UpgradeableRead())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
 
                     using (DataBaseLock.Write())
                     {
-                        using (var cmd = new SQLiteCommand(sqLite))
+                        using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                         {
                             cmd.CommandText =
                                 "UPDATE Problem SET ProblemName=@1, Level=@2, DataSets=@3, Type=@4, SpecialJudge=@5, ExtraFiles=@6, InputFileName=@7, OutputFileName=@8, CompileCommand=@9, Option=@10, Description=@11 Where ProblemId=@12";

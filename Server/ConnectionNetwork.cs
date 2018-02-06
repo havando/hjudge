@@ -168,10 +168,10 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText = "UPDATE Message SET State=@1 Where MessageId=@2";
                         SQLiteParameter[] parameters =
@@ -192,10 +192,10 @@ namespace Server
         {
             using (DataBaseLock.Write())
             {
-                using (var sqLite = new SQLiteConnection(ConnectionString))
+                //using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
-                    sqLite.Open();
-                    using (var cmd = new SQLiteCommand(sqLite))
+                    if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                    using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                     {
                         cmd.CommandText =
                             "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
@@ -655,10 +655,10 @@ namespace Server
                                     {
                                         using (DataBaseLock.Write())
                                         {
-                                            using (var sqLite = new SQLiteConnection(ConnectionString))
+                                            //using (var sqLite = new SQLiteConnection(ConnectionString))
                                             {
-                                                sqLite.Open();
-                                                using (var cmd = new SQLiteCommand(sqLite))
+                                                if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                                                using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                                                 {
                                                     cmd.CommandText =
                                                         "Insert INTO Message (FromUserId,ToUserId,SendDate,Content,State) VALUES (@1,@2,@3,@4,@5)";
