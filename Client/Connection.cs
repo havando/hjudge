@@ -385,7 +385,7 @@ namespace Client
                                             {
                                                 x.AddRange(res.Content[i]);
                                             }
-                                        fs.Fs.Position = length;
+                                        //fs.Fs.Position = length;
                                         fs.Fs.Write(x.ToArray(), 0, x.Count);
                                         fs.CurrentLength += x.Count;
                                         if (fs.CurrentLength >= fs.TotLength)
@@ -425,7 +425,9 @@ namespace Client
                                                         Environment.GetEnvironmentVariable("temp") +
                                                         "\\hjudgeClientUpdates",
                                                         ExtractExistingFileAction.OverwriteSilently);
-                                                    var batchCode = $@"@echo off
+                                                }
+
+                                                var batchCode = $@"@echo off
 title hjudge Updater
 color 3F
 cls
@@ -443,13 +445,20 @@ ping /n 2 0.0.0.0>nul
 start """" ""{AppDomain.CurrentDomain.BaseDirectory}\Client.exe""
 exit
 ";
-                                                    File.WriteAllText(Environment.GetEnvironmentVariable("temp") + "\\hjudgeClientUpdater.bat", batchCode, Encoding.Default);
-                                                    Process.Start(
-                                                        Environment.GetEnvironmentVariable("temp") +
-                                                        "\\hjudgeClientUpdater.bat");
-                                                    IsExited = true;
-                                                    Environment.Exit(0);
+                                                File.WriteAllText(Environment.GetEnvironmentVariable("temp") + "\\hjudgeClientUpdater.bat", batchCode, Encoding.Default);
+                                                try
+                                                {
+                                                    File.Delete($"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\{fileName}");
                                                 }
+                                                catch
+                                                {
+                                                    //ignored
+                                                }
+                                                Process.Start(
+                                                    Environment.GetEnvironmentVariable("temp") +
+                                                    "\\hjudgeClientUpdater.bat");
+                                                IsExited = true;
+                                                Environment.Exit(0);
                                             }
                                         }
                                         else
@@ -531,7 +540,7 @@ exit
                                             }
                                         default:
                                             {
-                                                MessageBox.Show("上传失败，可能因为已有同名文件存在", "提示", MessageBoxButton.OK,
+                                                MessageBox.Show("上传失败，可能因为数据包格式错误", "提示", MessageBoxButton.OK,
                                                     MessageBoxImage.Error);
                                                 break;
                                             }

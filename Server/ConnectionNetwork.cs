@@ -1159,82 +1159,87 @@ namespace Server
                                     }
                                     var fileName = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     var fileId = Encoding.Unicode.GetString(res.obj.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.obj.Content[2]));
-                                    if (FrInfo.Any(i => i.FileId == fileId))
-                                    {
-                                        var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
-                                        var x = new List<byte>();
-                                        for (var i = 3; i < res.obj.Content.Count; i++)
-                                            if (i != res.obj.Content.Count - 1)
-                                            {
-                                                x.AddRange(res.obj.Content[i]);
-                                                x.AddRange(Encoding.Unicode.GetBytes(Divpar));
-                                            }
-                                            else
-                                            {
-                                                x.AddRange(res.obj.Content[i]);
-                                            }
-                                        fs.Fs.Position = length;
-                                        fs.Fs.Write(x.ToArray(), 0, x.Count);
-                                        fs.CurrentLength += x.Count;
-                                        if (fs.CurrentLength >= fs.TotLength)
+                                    var length = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[2]));
+                                    lock (FileProcessingLock)
+                                        if (FrInfo.Any(i => i.FileId == fileId))
                                         {
-                                            var filePath =
-                                                $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}";
-                                            fs.Fs.Close();
-                                            fs.Fs.Dispose();
-                                            FrInfo.Remove(fs);
-                                            ActionList.Enqueue(new Task(() =>
+                                            var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                            var x = new List<byte>();
+                                            for (var i = 3; i < res.obj.Content.Count; i++)
+                                                if (i != res.obj.Content.Count - 1)
+                                                {
+                                                    x.AddRange(res.obj.Content[i]);
+                                                    x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                }
+                                                else
+                                                {
+                                                    x.AddRange(res.obj.Content[i]);
+                                                }
+                                            fs.Fs.Seek(length, SeekOrigin.Begin);
+                                            fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                            fs.CurrentLength += x.Count;
+                                            if (fs.CurrentLength >= fs.TotLength)
                                             {
-                                                try
-                                                {
-                                                    System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                        $"{AppDomain.CurrentDomain.BaseDirectory}\\Data");
-                                                }
-                                                catch
-                                                {
-                                                    SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
-                                                    return;
-                                                }
-                                                finally
+                                                var filePath =
+                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}";
+                                                fs.Fs.Close();
+                                                fs.Fs.Dispose();
+                                                FrInfo.Remove(fs);
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     try
                                                     {
-                                                        File.Delete(filePath);
+                                                        using (var zip = new ZipFile(filePath))
+                                                        {
+                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Data", Ionic.Zip.ExtractExistingFileAction.OverwriteSilently);
+                                                        }
                                                     }
                                                     catch
                                                     {
-                                                        //ignored
+                                                        SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
+                                                        return;
                                                     }
-                                                }
-                                                SendData("DataFile", "Succeeded", res.obj.Client.ConnId, res.token);
-                                            }));
+                                                    finally
+                                                    {
+                                                        try
+                                                        {
+                                                            File.Delete(filePath);
+                                                        }
+                                                        catch
+                                                        {
+                                                            //ignored
+                                                        }
+                                                    }
+                                                    SendData("DataFile", "Succeeded", res.obj.Client.ConnId, res.token);
+                                                }));
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        try
+                                        else
                                         {
-                                            if (!Directory.Exists($"{Environment.GetEnvironmentVariable("temp")}\\{fileId}")
-                                            )
-                                                Directory.CreateDirectory(
-                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}");
-                                            FrInfo.Add(new FileRecvInfo
+                                            try
                                             {
-                                                CurrentLength = 0,
-                                                FileId = fileId,
-                                                FileName = fileName,
-                                                Fs = new FileStream(
-                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}",
-                                                    FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
-                                                TotLength = length
-                                            });
+                                                if (!Directory.Exists($"{Environment.GetEnvironmentVariable("temp")}\\{fileId}")
+                                                )
+                                                    Directory.CreateDirectory(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}");
+                                                var fs = new FileStream(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}",
+                                                        FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+                                                fs.Write(new byte[length], 0, length);
+                                                FrInfo.Add(new FileRecvInfo
+                                                {
+                                                    CurrentLength = 0,
+                                                    FileId = fileId,
+                                                    FileName = fileName,
+                                                    Fs = fs,
+                                                    TotLength = length
+                                                });
+                                            }
+                                            catch
+                                            {
+                                                SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
+                                            }
                                         }
-                                        catch
-                                        {
-                                            SendData("DataFile", "Failed", res.obj.Client.ConnId, res.token);
-                                        }
-                                    }
                                     break;
                                 }
                             case "PublicFile":
@@ -1252,82 +1257,87 @@ namespace Server
                                     }
                                     var fileName = Encoding.Unicode.GetString(res.obj.Content[0]);
                                     var fileId = Encoding.Unicode.GetString(res.obj.Content[1]);
-                                    var length = Convert.ToInt64(Encoding.Unicode.GetString(res.obj.Content[2]));
-                                    if (FrInfo.Any(i => i.FileId == fileId))
-                                    {
-                                        var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
-                                        var x = new List<byte>();
-                                        for (var i = 3; i < res.obj.Content.Count; i++)
-                                            if (i != res.obj.Content.Count - 1)
-                                            {
-                                                x.AddRange(res.obj.Content[i]);
-                                                x.AddRange(Encoding.Unicode.GetBytes(Divpar));
-                                            }
-                                            else
-                                            {
-                                                x.AddRange(res.obj.Content[i]);
-                                            }
-                                        fs.Fs.Position = length;
-                                        fs.Fs.Write(x.ToArray(), 0, x.Count);
-                                        fs.CurrentLength += x.Count;
-                                        if (fs.CurrentLength >= fs.TotLength)
+                                    var length = Convert.ToInt32(Encoding.Unicode.GetString(res.obj.Content[2]));
+                                    lock (FileProcessingLock)
+                                        if (FrInfo.Any(i => i.FileId == fileId))
                                         {
-                                            var filePath =
-                                                $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}";
-                                            fs.Fs.Close();
-                                            fs.Fs.Dispose();
-                                            FrInfo.Remove(fs);
-                                            ActionList.Enqueue(new Task(() =>
+                                            var fs = FrInfo.FirstOrDefault(i => i.FileId == fileId);
+                                            var x = new List<byte>();
+                                            for (var i = 3; i < res.obj.Content.Count; i++)
+                                                if (i != res.obj.Content.Count - 1)
+                                                {
+                                                    x.AddRange(res.obj.Content[i]);
+                                                    x.AddRange(Encoding.Unicode.GetBytes(Divpar));
+                                                }
+                                                else
+                                                {
+                                                    x.AddRange(res.obj.Content[i]);
+                                                }
+                                            fs.Fs.Seek(length, SeekOrigin.Begin);
+                                            fs.Fs.Write(x.ToArray(), 0, x.Count);
+                                            fs.CurrentLength += x.Count;
+                                            if (fs.CurrentLength >= fs.TotLength)
                                             {
-                                                try
-                                                {
-                                                    System.IO.Compression.ZipFile.ExtractToDirectory(filePath,
-                                                        $"{AppDomain.CurrentDomain.BaseDirectory}\\Files");
-                                                }
-                                                catch
-                                                {
-                                                    SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
-                                                    return;
-                                                }
-                                                finally
+                                                var filePath =
+                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}";
+                                                fs.Fs.Close();
+                                                fs.Fs.Dispose();
+                                                FrInfo.Remove(fs);
+                                                ActionList.Enqueue(new Task(() =>
                                                 {
                                                     try
                                                     {
-                                                        File.Delete(filePath);
+                                                        using (var zip = new ZipFile(filePath))
+                                                        {
+                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Files", Ionic.Zip.ExtractExistingFileAction.OverwriteSilently);
+                                                        }
                                                     }
                                                     catch
                                                     {
-                                                        //ignored
+                                                        SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
+                                                        return;
                                                     }
-                                                }
-                                                SendData("PublicFile", "Succeeded", res.obj.Client.ConnId, res.token);
-                                            }));
+                                                    finally
+                                                    {
+                                                        try
+                                                        {
+                                                            File.Delete(filePath);
+                                                        }
+                                                        catch
+                                                        {
+                                                            //ignored
+                                                        }
+                                                    }
+                                                    SendData("PublicFile", "Succeeded", res.obj.Client.ConnId, res.token);
+                                                }));
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        try
+                                        else
                                         {
-                                            if (!Directory.Exists($"{Environment.GetEnvironmentVariable("temp")}\\{fileId}")
-                                            )
-                                                Directory.CreateDirectory(
-                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}");
-                                            FrInfo.Add(new FileRecvInfo
+                                            try
                                             {
-                                                CurrentLength = 0,
-                                                FileId = fileId,
-                                                FileName = fileName,
-                                                Fs = new FileStream(
-                                                    $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}",
-                                                    FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
-                                                TotLength = length
-                                            });
+                                                if (!Directory.Exists($"{Environment.GetEnvironmentVariable("temp")}\\{fileId}")
+                                                )
+                                                    Directory.CreateDirectory(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}");
+                                                var fs = new FileStream(
+                                                        $"{Environment.GetEnvironmentVariable("temp")}\\{fileId}\\{fileName}",
+                                                        FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+                                                fs.Write(new byte[length], 0, length);
+                                                FrInfo.Add(new FileRecvInfo
+                                                {
+                                                    CurrentLength = 0,
+                                                    FileId = fileId,
+                                                    FileName = fileName,
+                                                    Fs = fs,
+                                                    TotLength = length
+                                                });
+                                            }
+                                            catch
+                                            {
+                                                SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
+                                            }
                                         }
-                                        catch
-                                        {
-                                            SendData("PublicFile", "Failed", res.obj.Client.ConnId, res.token);
-                                        }
-                                    }
                                     break;
                                 }
                             case "ClearData":

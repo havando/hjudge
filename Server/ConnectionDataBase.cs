@@ -13,7 +13,7 @@ namespace Server
     public static partial class Connection
     {
         #region DataBase
-        public static string ConnectionString = "Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;";
+        public static string ConnectionString = "Data Source=" + $"{AppDomain.CurrentDomain.BaseDirectory + "\\AppData\\hjudgeData.db"};Initial Catalog=sqlite;Integrated Security=True;Synchronous=Normal;Enlist=N;";
 
         private static JudgeInfo GetJudgeInfo(int judgeId)
         {
@@ -1700,7 +1700,6 @@ namespace Server
                 using (var sqLite = new SQLiteConnection(ConnectionString))
                 {
                     sqLite.Open();
-
                     using (var cmd = new SQLiteCommand(sqLite))
                     {
                         using (DataBaseLock.Write())

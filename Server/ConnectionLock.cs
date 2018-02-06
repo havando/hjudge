@@ -14,5 +14,6 @@ namespace Server
         public static readonly object RemoveClientLock = new object();
         public static readonly object StdinWriterLock = new object();
         public static readonly object KillWerfaultLock = new object();
+        public static readonly object FileProcessingLock = new object();
     }
 }

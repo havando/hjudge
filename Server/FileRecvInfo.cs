@@ -6,8 +6,8 @@ namespace Server
     {
         public string FileId { get; set; }
         public string FileName { get; set; }
-        public long TotLength { get; set; }
-        public long CurrentLength { get; set; }
+        public int TotLength { get; set; }
+        public int CurrentLength { get; set; }
         public FileStream Fs { get; set; }
     }
 }
