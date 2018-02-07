@@ -419,9 +419,15 @@ namespace Server
             HServer.Port = 23333;
             if (!HServer.Start())
                 MessageBox.Show("服务端网络初始化失败，请检查系统设置", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-            new Thread(DealingBytes).Start();
+            new Thread(DealingBytes)
+            {
+                Priority = ThreadPriority.Highest
+            }.Start();
             for (var i = 0; i < Environment.ProcessorCount; i++)
-                new Thread(DealingOperations).Start();
+                new Thread(DealingOperations)
+                {
+                    Priority = ThreadPriority.Highest
+                }.Start();
             #endregion
         }
     }

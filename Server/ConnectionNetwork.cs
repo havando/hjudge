@@ -2043,7 +2043,7 @@ namespace Server
                 long tot = 0;
                 var last = 0;
                 var addition = 0;
-                var limit = Environment.ProcessorCount * 2;
+                var limit = Environment.ProcessorCount * 10;
                 var dealingTime = DateTime.Now;
                 var withAddition = false;
                 while (true)
@@ -2111,7 +2111,10 @@ namespace Server
                     }
                     else Thread.Sleep(1);
                 }
-            }).Start();
+            })
+            {
+                Priority = ThreadPriority.Highest
+            }.Start();
         }
     }
 }
