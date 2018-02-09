@@ -1901,7 +1901,7 @@ namespace Server
                 using (var cmd = new SQLiteCommand(DbSQLiteConnection))
                 {
                     if (withPrivate) cmd.CommandText = "SELECT COUNT(1) FROM Competition";
-                    else cmd.CommandText = "SELECT COUNT(1) FROM Problem WHERE (Option & 256) = 0";
+                    else cmd.CommandText = "SELECT COUNT(1) FROM Competition WHERE (Option & 256) = 0";
                     try
                     {
                         return Convert.ToInt32(cmd.ExecuteScalar());
