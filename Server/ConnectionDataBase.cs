@@ -1871,6 +1871,81 @@ namespace Server
             return curJudgeInfo;
         }
 
+        public static int GetProblemCount(bool withPrivate)
+        {
+            using (DataBaseLock.Read())
+            {
+                if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                using (var cmd = new SQLiteCommand(DbSQLiteConnection))
+                {
+                    if (withPrivate) cmd.CommandText = "SELECT COUNT(1) FROM Problem";
+                    else cmd.CommandText = "SELECT COUNT(1) FROM Problem WHERE (Option & 1) <> 0";
+                    try
+                    {
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                    catch (Exception ex)
+                    {
+                        Logs.CommitLogs($"GetProblemCount - {ex.Message}");
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        public static int GetCompetitionCount(bool withPrivate)
+        {
+            using (DataBaseLock.Read())
+            {
+                if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                using (var cmd = new SQLiteCommand(DbSQLiteConnection))
+                {
+                    if (withPrivate) cmd.CommandText = "SELECT COUNT(1) FROM Competition";
+                    else cmd.CommandText = "SELECT COUNT(1) FROM Problem WHERE (Option & 256) = 0";
+                    try
+                    {
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                    catch (Exception ex)
+                    {
+                        Logs.CommitLogs($"GetCoompetitionCount - {ex.Message}");
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        public static int GetJudgeLogsCount(List<QueryCommand> commandSet)
+        {
+            using (DataBaseLock.Read())
+            {
+                if (DbSQLiteConnection.State == ConnectionState.Closed) DbSQLiteConnection.Open();
+                using (var cmd = new SQLiteCommand(DbSQLiteConnection))
+                {
+                    var commandString = string.Empty;
+                    if (commandSet != null)
+                    {
+                        foreach (var c in commandSet)
+                        {
+                            commandString += c.Command;
+                        }
+                        if (commandSet.Count == 0) commandString = string.Empty;
+                        else commandString = "where " + commandString;
+                    }
+                    cmd.CommandText = "SELECT COUNT(1) FROM Judge " + commandString;
+                    try
+                    {
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                    catch (Exception ex)
+                    {
+                        Logs.CommitLogs($"GetJudgeLogsCount - {ex.Message}");
+                        return 0;
+                    }
+                }
+            }
+        }
+
         public static int NewProblem()
         {
             using (DataBaseLock.UpgradeableRead())

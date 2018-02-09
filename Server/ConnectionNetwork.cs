@@ -1989,12 +1989,15 @@ namespace Server
                                     {
                                         var commandSet = JsonConvert.DeserializeObject<List<QueryCommand>>(x);
                                         var command = string.Empty;
-                                        foreach (var c in commandSet)
+                                        if (commandSet != null)
                                         {
-                                            command += c.Command;
+                                            foreach (var c in commandSet)
+                                            {
+                                                command += c.Command;
+                                            }
+                                            if (commandSet.Count == 0) command = string.Empty;
+                                            else command = "where " + command;
                                         }
-                                        if (commandSet.Count == 0) command = string.Empty;
-                                        else command = "where " + command;
                                         SendData("QuerySpecialJudgeLogs", JsonConvert.SerializeObject(QueryCustomJudgeInfo(start, count, command)), res.obj.Client.ConnId, res.token);
                                     }));
                                     break;
@@ -2003,6 +2006,28 @@ namespace Server
                                 {
                                     SendFile(AppDomain.CurrentDomain.BaseDirectory + "\\ClientPkg.zip", res.obj.Client.ConnId,
                                         "RequestClient", res.token);
+                                    break;
+                                }
+                            case "RequestProblemCount":
+                                {
+                                    SendData("RequestProblemCount", GetProblemCount(false).ToString(), res.obj.Client.ConnId, res.token);
+                                    break;
+                                }
+                            case "RequestCompetitionCount":
+                                {
+                                    SendData("RequestCompetitionCount", GetCompetitionCount(false).ToString(), res.obj.Client.ConnId, res.token);
+                                    break;
+                                }
+                            case "RequestJudgeLogsCount":
+                                {
+                                    var x = string.Empty;
+                                    for (var i = 0; i < res.obj.Content.Count; i++)
+                                        if (i != res.obj.Content.Count - 1)
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]) + Divpar;
+                                        else
+                                            x += Encoding.Unicode.GetString(res.obj.Content[i]);
+                                    var commandSet = JsonConvert.DeserializeObject<List<QueryCommand>>(x);
+                                    SendData("RequestJudgeLogsCount", GetJudgeLogsCount(commandSet).ToString(), res.obj.Client.ConnId, res.token);
                                     break;
                                 }
                             default:
