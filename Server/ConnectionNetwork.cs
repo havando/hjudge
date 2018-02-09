@@ -1191,7 +1191,7 @@ namespace Server
                                                     {
                                                         using (var zip = new ZipFile(filePath))
                                                         {
-                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Data", Ionic.Zip.ExtractExistingFileAction.OverwriteSilently);
+                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Data", Ionic.Zip.ExtractExistingFileAction.Throw);
                                                         }
                                                     }
                                                     catch
@@ -1289,7 +1289,7 @@ namespace Server
                                                     {
                                                         using (var zip = new ZipFile(filePath))
                                                         {
-                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Files", Ionic.Zip.ExtractExistingFileAction.OverwriteSilently);
+                                                            zip.ExtractAll($"{AppDomain.CurrentDomain.BaseDirectory}\\Files", Ionic.Zip.ExtractExistingFileAction.Throw);
                                                         }
                                                     }
                                                     catch

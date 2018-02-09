@@ -540,7 +540,7 @@ exit
                                             }
                                         default:
                                             {
-                                                MessageBox.Show("上传失败，可能因为数据包格式错误", "提示", MessageBoxButton.OK,
+                                                MessageBox.Show("上传失败，可能因为存在同名文件或数据包格式错误", "提示", MessageBoxButton.OK,
                                                     MessageBoxImage.Error);
                                                 break;
                                             }
