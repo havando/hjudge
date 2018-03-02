@@ -9,7 +9,7 @@ namespace Server
 {
     public class UsingLock
     {
-        private static ReaderWriterLockSlim _rwl = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private ReaderWriterLockSlim _rwl = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
         private struct Lock : IDisposable
         {
