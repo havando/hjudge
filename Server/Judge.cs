@@ -112,7 +112,7 @@ namespace Server
                     }
 
                 Connection.UpdateJudgeInfo(JudgeResult);
-                _workingdir = Environment.GetEnvironmentVariable("temp") + "\\Judge_hjudge_" + _id;
+                _workingdir = Environment.GetEnvironmentVariable("temp") + "\\hjudgeWorkingDir\\Judge_hjudge_" + _id;
 
                 var t = Configuration.Configurations.Compiler.FirstOrDefault(i => i.DisplayName == type);
                 if (t == null)

@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{67F1C359-0F69-46EC-8F9A-13028125A99C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{B326579C-9136-4939-8426-8A57E7E3C9F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientConfiguration", "ClientConfiguration\ClientConfiguration.csproj", "{CF1C200E-3D6F-405B-A6D7-6DD820DB9909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransferTool", "TransferTool\TransferTool.csproj", "{2D7038B0-55F4-4C90-B497-715CE997F52C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{CF1C200E-3D6F-405B-A6D7-6DD820DB9909}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF1C200E-3D6F-405B-A6D7-6DD820DB9909}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF1C200E-3D6F-405B-A6D7-6DD820DB9909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7038B0-55F4-4C90-B497-715CE997F52C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7038B0-55F4-4C90-B497-715CE997F52C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7038B0-55F4-4C90-B497-715CE997F52C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7038B0-55F4-4C90-B497-715CE997F52C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
